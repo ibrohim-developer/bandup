@@ -1,0 +1,46 @@
+{
+  "kind": "collectionType",
+  "collectionName": "writing_tasks",
+  "info": {
+    "singularName": "writing-task",
+    "pluralName": "writing-tasks",
+    "displayName": "Writing Task"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "test": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::test.test",
+      "inversedBy": "writing_tasks"
+    },
+    "task_number": {
+      "type": "integer",
+      "required": true
+    },
+    "task_type": {
+      "type": "enumeration",
+      "enum": ["report", "essay"]
+    },
+    "prompt": {
+      "type": "richtext",
+      "required": true
+    },
+    "image_url": {
+      "type": "string"
+    },
+    "min_words": {
+      "type": "integer",
+      "required": true,
+      "default": 150
+    },
+    "sample_answer": {
+      "type": "richtext"
+    },
+    "time_limit": {
+      "type": "integer"
+    }
+  }
+}

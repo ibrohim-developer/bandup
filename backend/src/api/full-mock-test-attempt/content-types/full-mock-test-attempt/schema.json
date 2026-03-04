@@ -1,0 +1,53 @@
+{
+  "kind": "collectionType",
+  "collectionName": "full_mock_test_attempts",
+  "info": {
+    "singularName": "full-mock-test-attempt",
+    "pluralName": "full-mock-test-attempts",
+    "displayName": "Full Mock Test Attempt"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "user": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user"
+    },
+    "test": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::test.test"
+    },
+    "status": {
+      "type": "enumeration",
+      "enum": ["in_progress", "completed", "abandoned"],
+      "default": "in_progress"
+    },
+    "started_at": {
+      "type": "datetime"
+    },
+    "completed_at": {
+      "type": "datetime"
+    },
+    "listening_score": {
+      "type": "decimal"
+    },
+    "reading_score": {
+      "type": "decimal"
+    },
+    "writing_score": {
+      "type": "decimal"
+    },
+    "speaking_score": {
+      "type": "decimal"
+    },
+    "overall_band_score": {
+      "type": "decimal"
+    },
+    "time_spent_seconds": {
+      "type": "integer"
+    }
+  }
+}

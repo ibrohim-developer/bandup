@@ -1,0 +1,44 @@
+{
+  "kind": "collectionType",
+  "collectionName": "reading_passages",
+  "info": {
+    "singularName": "reading-passage",
+    "pluralName": "reading-passages",
+    "displayName": "Reading Passage"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "test": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::test.test",
+      "inversedBy": "reading_passages"
+    },
+    "passage_number": {
+      "type": "integer",
+      "required": true
+    },
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "content": {
+      "type": "richtext",
+      "required": true
+    },
+    "word_count": {
+      "type": "integer"
+    },
+    "time_limit": {
+      "type": "integer"
+    },
+    "questions": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::question.question",
+      "mappedBy": "reading_passage"
+    }
+  }
+}

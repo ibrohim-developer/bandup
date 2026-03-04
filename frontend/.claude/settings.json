@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:api.otaboyev-prep.uz)",
+      "WebFetch(domain:ieltstrainingonline.com)",
+      "WebFetch(domain:practicepteonline.com)",
+      "Bash(grep -n \"testRoutePattern\" /c/Users/User/web/developers-platform/src/components/layout/*.tsx)",
+      "Bash(cat \"/c/web/developers-platform/src/app/\\(dashboard\\)/dashboard/results/[attemptId]/page.tsx\")",
+      "Bash(xargs grep -l \"type\\\\|interface\")",
+      "Read(//c/web/developers-platform/**)",
+      "Bash(xargs grep -l \"supabase\")",
+      "Read(//c/web/bandup-cms/**)"
+    ]
+  }
+}

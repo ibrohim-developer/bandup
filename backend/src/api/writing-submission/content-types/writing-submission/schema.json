@@ -1,0 +1,53 @@
+{
+  "kind": "collectionType",
+  "collectionName": "writing_submissions",
+  "info": {
+    "singularName": "writing-submission",
+    "pluralName": "writing-submissions",
+    "displayName": "Writing Submission"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "test_attempt": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::test-attempt.test-attempt",
+      "inversedBy": "writing_submissions"
+    },
+    "writing_task": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::writing-task.writing-task"
+    },
+    "content": {
+      "type": "richtext",
+      "required": true
+    },
+    "word_count": {
+      "type": "integer"
+    },
+    "task_achievement_score": {
+      "type": "decimal"
+    },
+    "coherence_score": {
+      "type": "decimal"
+    },
+    "lexical_score": {
+      "type": "decimal"
+    },
+    "grammar_score": {
+      "type": "decimal"
+    },
+    "overall_band_score": {
+      "type": "decimal"
+    },
+    "feedback": {
+      "type": "richtext"
+    },
+    "submitted_at": {
+      "type": "datetime"
+    }
+  }
+}

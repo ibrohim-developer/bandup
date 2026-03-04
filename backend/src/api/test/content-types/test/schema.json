@@ -1,0 +1,54 @@
+{
+  "kind": "collectionType",
+  "collectionName": "tests",
+  "info": {
+    "singularName": "test",
+    "pluralName": "tests",
+    "displayName": "Test"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "description": {
+      "type": "text"
+    },
+    "difficulty_level": {
+      "type": "enumeration",
+      "enum": ["easy", "medium", "hard"],
+      "default": "medium"
+    },
+    "is_published": {
+      "type": "boolean",
+      "default": false
+    },
+    "reading_passages": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::reading-passage.reading-passage",
+      "mappedBy": "test"
+    },
+    "listening_sections": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::listening-section.listening-section",
+      "mappedBy": "test"
+    },
+    "writing_tasks": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::writing-task.writing-task",
+      "mappedBy": "test"
+    },
+    "speaking_topics": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::speaking-topic.speaking-topic",
+      "mappedBy": "test"
+    }
+  }
+}

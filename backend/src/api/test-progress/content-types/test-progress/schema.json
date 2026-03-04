@@ -1,0 +1,31 @@
+{
+  "kind": "collectionType",
+  "collectionName": "test_progresses",
+  "info": {
+    "singularName": "test-progress",
+    "pluralName": "test-progresses",
+    "displayName": "Test Progress"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "test_attempt": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::test-attempt.test-attempt"
+    },
+    "current_section": {
+      "type": "integer"
+    },
+    "current_question": {
+      "type": "integer"
+    },
+    "time_remaining_seconds": {
+      "type": "integer"
+    },
+    "answers_snapshot": {
+      "type": "json"
+    }
+  }
+}

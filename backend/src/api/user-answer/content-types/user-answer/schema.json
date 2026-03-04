@@ -1,0 +1,38 @@
+{
+  "kind": "collectionType",
+  "collectionName": "user_answers",
+  "info": {
+    "singularName": "user-answer",
+    "pluralName": "user-answers",
+    "displayName": "User Answer"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "test_attempt": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::test-attempt.test-attempt",
+      "inversedBy": "user_answers"
+    },
+    "question": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::question.question"
+    },
+    "user_answer": {
+      "type": "string"
+    },
+    "is_correct": {
+      "type": "boolean"
+    },
+    "points_earned": {
+      "type": "integer",
+      "default": 0
+    },
+    "answered_at": {
+      "type": "datetime"
+    }
+  }
+}

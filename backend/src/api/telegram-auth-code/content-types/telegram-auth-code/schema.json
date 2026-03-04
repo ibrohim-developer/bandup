@@ -1,0 +1,46 @@
+{
+  "kind": "collectionType",
+  "collectionName": "telegram_auth_codes",
+  "info": {
+    "singularName": "telegram-auth-code",
+    "pluralName": "telegram-auth-codes",
+    "displayName": "Telegram Auth Code"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "code": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "telegram_id": {
+      "type": "biginteger",
+      "required": true
+    },
+    "first_name": {
+      "type": "string"
+    },
+    "last_name": {
+      "type": "string"
+    },
+    "username": {
+      "type": "string"
+    },
+    "phone": {
+      "type": "string"
+    },
+    "photo_url": {
+      "type": "string"
+    },
+    "used": {
+      "type": "boolean",
+      "default": false
+    },
+    "expires_at": {
+      "type": "datetime",
+      "required": true
+    }
+  }
+}

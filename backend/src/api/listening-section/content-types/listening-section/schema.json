@@ -1,0 +1,43 @@
+{
+  "kind": "collectionType",
+  "collectionName": "listening_sections",
+  "info": {
+    "singularName": "listening-section",
+    "pluralName": "listening-sections",
+    "displayName": "Listening Section"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "test": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::test.test",
+      "inversedBy": "listening_sections"
+    },
+    "section_number": {
+      "type": "integer",
+      "required": true
+    },
+    "audio_url": {
+      "type": "string",
+      "required": true
+    },
+    "audio_duration_seconds": {
+      "type": "integer"
+    },
+    "transcript": {
+      "type": "richtext"
+    },
+    "time_limit": {
+      "type": "integer"
+    },
+    "questions": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::question.question",
+      "mappedBy": "listening_section"
+    }
+  }
+}

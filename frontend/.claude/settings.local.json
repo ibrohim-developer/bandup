@@ -1,0 +1,28 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:otaboyev-prep.uz)",
+      "Bash(npm install:*)",
+      "Bash(npx shadcn@latest init:*)",
+      "Bash(npx shadcn@latest add:*)",
+      "Bash(npm run build:*)",
+      "Bash(npx next build:*)",
+      "Bash(ls:*)",
+      "Bash(findstr:*)",
+      "Bash(find:*)",
+      "Bash(npx tsc:*)",
+      "Bash(test:*)",
+      "Bash(pnpm install:*)",
+      "Bash(pnpm --version:*)",
+      "Bash(npm ls:*)",
+      "Bash(pnpm add:*)",
+      "Bash(npx next:*)",
+      "Bash(wc:*)",
+      "Bash(xargs -I {} bash -c \"echo ''=== {} ==='' && head -30 {}\")",
+      "Bash(dir:*)"
+    ],
+    "additionalDirectories": [
+      "c:\\web\\developers-platform"
+    ]
+  }
+}

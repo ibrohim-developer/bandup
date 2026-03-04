@@ -1,0 +1,29 @@
+# Root
+node_modules
+
+# Frontend (Next.js)
+frontend/node_modules
+frontend/.next
+frontend/out
+frontend/build
+frontend/.env*
+frontend/.vercel
+frontend/*.tsbuildinfo
+frontend/next-env.d.ts
+
+# Backend (Strapi)
+backend/node_modules
+backend/.cache
+backend/dist
+backend/build
+backend/.strapi
+backend/.tmp
+backend/.env
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Misc
+*.pem
+*.log

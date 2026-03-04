@@ -1,0 +1,39 @@
+{
+  "kind": "collectionType",
+  "collectionName": "speaking_topics",
+  "info": {
+    "singularName": "speaking-topic",
+    "pluralName": "speaking-topics",
+    "displayName": "Speaking Topic"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "test": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::test.test",
+      "inversedBy": "speaking_topics"
+    },
+    "part_number": {
+      "type": "integer",
+      "required": true
+    },
+    "topic": {
+      "type": "text",
+      "required": true
+    },
+    "questions": {
+      "type": "json"
+    },
+    "preparation_time_seconds": {
+      "type": "integer",
+      "default": 0
+    },
+    "speaking_time_seconds": {
+      "type": "integer",
+      "required": true
+    }
+  }
+}

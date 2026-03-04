@@ -1,0 +1,67 @@
+{
+  "kind": "collectionType",
+  "collectionName": "test_attempts",
+  "info": {
+    "singularName": "test-attempt",
+    "pluralName": "test-attempts",
+    "displayName": "Test Attempt"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "user": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user"
+    },
+    "test": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::test.test"
+    },
+    "module_type": {
+      "type": "enumeration",
+      "enum": ["listening", "reading", "writing", "speaking", "full"],
+      "required": true
+    },
+    "status": {
+      "type": "enumeration",
+      "enum": ["in_progress", "completed", "abandoned", "evaluating"],
+      "default": "in_progress"
+    },
+    "started_at": {
+      "type": "datetime"
+    },
+    "completed_at": {
+      "type": "datetime"
+    },
+    "time_spent_seconds": {
+      "type": "integer"
+    },
+    "raw_score": {
+      "type": "integer"
+    },
+    "band_score": {
+      "type": "decimal"
+    },
+    "user_answers": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::user-answer.user-answer",
+      "mappedBy": "test_attempt"
+    },
+    "writing_submissions": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::writing-submission.writing-submission",
+      "mappedBy": "test_attempt"
+    },
+    "speaking_submissions": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::speaking-submission.speaking-submission",
+      "mappedBy": "test_attempt"
+    }
+  }
+}

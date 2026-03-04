@@ -1,0 +1,61 @@
+{
+  "kind": "collectionType",
+  "collectionName": "questions",
+  "info": {
+    "singularName": "question",
+    "pluralName": "questions",
+    "displayName": "Question"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "module_type": {
+      "type": "enumeration",
+      "enum": ["listening", "reading"],
+      "required": true
+    },
+    "reading_passage": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::reading-passage.reading-passage",
+      "inversedBy": "questions"
+    },
+    "listening_section": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::listening-section.listening-section",
+      "inversedBy": "questions"
+    },
+    "question_number": {
+      "type": "integer",
+      "required": true
+    },
+    "question_type": {
+      "type": "enumeration",
+      "enum": ["tfng", "ynng", "mcq_single", "mcq_multiple", "gap_fill", "matching_headings", "matching_info", "summary_completion", "short_answer"],
+      "required": true
+    },
+    "question_text": {
+      "type": "text",
+      "required": true
+    },
+    "options": {
+      "type": "json"
+    },
+    "correct_answer": {
+      "type": "string",
+      "required": true
+    },
+    "explanation": {
+      "type": "text"
+    },
+    "points": {
+      "type": "integer",
+      "default": 1
+    },
+    "metadata": {
+      "type": "json"
+    }
+  }
+}

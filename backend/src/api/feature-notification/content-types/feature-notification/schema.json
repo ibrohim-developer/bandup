@@ -1,0 +1,23 @@
+{
+  "kind": "collectionType",
+  "collectionName": "feature_notifications",
+  "info": {
+    "singularName": "feature-notification",
+    "pluralName": "feature-notifications",
+    "displayName": "Feature Notification"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "user": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user"
+    },
+    "feature": {
+      "type": "string",
+      "required": true
+    }
+  }
+}

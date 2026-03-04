@@ -1,0 +1,56 @@
+{
+  "kind": "collectionType",
+  "collectionName": "speaking_submissions",
+  "info": {
+    "singularName": "speaking-submission",
+    "pluralName": "speaking-submissions",
+    "displayName": "Speaking Submission"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "test_attempt": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::test-attempt.test-attempt",
+      "inversedBy": "speaking_submissions"
+    },
+    "speaking_topic": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::speaking-topic.speaking-topic"
+    },
+    "question_index": {
+      "type": "integer",
+      "required": true
+    },
+    "audio_url": {
+      "type": "string"
+    },
+    "duration_seconds": {
+      "type": "integer"
+    },
+    "transcript": {
+      "type": "text"
+    },
+    "fluency_score": {
+      "type": "decimal"
+    },
+    "lexical_score": {
+      "type": "decimal"
+    },
+    "grammar_score": {
+      "type": "decimal"
+    },
+    "pronunciation_score": {
+      "type": "decimal"
+    },
+    "overall_band_score": {
+      "type": "decimal"
+    },
+    "feedback": {
+      "type": "richtext"
+    }
+  }
+}

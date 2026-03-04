@@ -1,0 +1,31 @@
+{
+  "kind": "collectionType",
+  "collectionName": "business_inquiries",
+  "info": {
+    "singularName": "business-inquiry",
+    "pluralName": "business-inquiries",
+    "displayName": "Business Inquiry"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "name": {
+      "type": "string",
+      "required": true
+    },
+    "phone": {
+      "type": "string",
+      "required": true
+    },
+    "learning_centre_name": {
+      "type": "string"
+    },
+    "students_size": {
+      "type": "string"
+    },
+    "message": {
+      "type": "text"
+    }
+  }
+}
