@@ -9,11 +9,11 @@ type OptionsView = "main" | "contrast" | "textSize";
 
 export const contrastThemes: Record<
   ContrastMode,
-  { bg: string; bgAlt: string; text: string; textMuted: string; border: string; highlight: { bg: string; color: string } }
+  { bg: string; bgAlt: string; text: string; textMuted: string; border: string; highlight: { bg: string; color: string }; noteHighlight: { bg: string; color: string } }
 > = {
-  "black-on-white": { bg: "#ffffff", bgAlt: "#f3f4f6", text: "#111827", textMuted: "#6b7280", border: "#e5e7eb", highlight: { bg: "#fef08a", color: "#111827" } },
-  "white-on-black": { bg: "#0a0a0a", bgAlt: "#1a1a1a", text: "#ffffff", textMuted: "#a3a3a3", border: "#333333", highlight: { bg: "#60a5fa", color: "#111827" } },
-  "yellow-on-black": { bg: "#0a0a0a", bgAlt: "#1a1a1a", text: "#fde047", textMuted: "#d4b800", border: "#333333", highlight: { bg: "#4ade80", color: "#111827" } },
+  "black-on-white": { bg: "#ffffff", bgAlt: "#f3f4f6", text: "#111827", textMuted: "#6b7280", border: "#e5e7eb", highlight: { bg: "#fef08a", color: "#111827" }, noteHighlight: { bg: "#bfdbfe", color: "#111827" } },
+  "white-on-black": { bg: "#0a0a0a", bgAlt: "#1a1a1a", text: "#ffffff", textMuted: "#a3a3a3", border: "#333333", highlight: { bg: "#60a5fa", color: "#111827" }, noteHighlight: { bg: "#818cf8", color: "#111827" } },
+  "yellow-on-black": { bg: "#0a0a0a", bgAlt: "#1a1a1a", text: "#fde047", textMuted: "#d4b800", border: "#333333", highlight: { bg: "#4ade80", color: "#111827" }, noteHighlight: { bg: "#fb923c", color: "#111827" } },
 };
 
 export const textSizeScale: Record<TextSizeMode, string> = {

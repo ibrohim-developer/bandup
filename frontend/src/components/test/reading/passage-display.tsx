@@ -1,218 +1,308 @@
 "use client";
 
-import { useState, useRef, useCallback, useEffect } from "react";
-import type HighlighterType from "web-highlighter";
+import { useState, useRef, useCallback, useEffect, useMemo } from "react";
+import { createPortal } from "react-dom";
+import { Highlighter, StickyNote } from "lucide-react";
 
-interface PopupPosition {
+interface PopupState {
   x: number;
   y: number;
+  mode: "actions" | "remove";
 }
 
-type PopupMode = "highlight" | "remove";
+type MarkType = "highlight" | "note";
 
 interface PassageDisplayProps {
   title: string;
   content: string;
   highlight?: { bg: string; color: string };
+  noteHighlight?: { bg: string; color: string };
+  onHighlight?: (id: string, text: string) => void;
+  onRemoveHighlight?: (id: string) => void;
+  onNote?: (markId: string, selectedText: string) => void;
+  onNoteMarkClick?: (markId: string) => void;
+  cancelNoteMarkId?: string | null;
+  onCancelNoteMarkHandled?: () => void;
 }
 
-export function PassageDisplay({ title, content, highlight = { bg: "#fef08a", color: "#111827" } }: PassageDisplayProps) {
-  const [popup, setPopup] = useState<PopupPosition | null>(null);
-  const [popupMode, setPopupMode] = useState<PopupMode>("highlight");
-  const [pendingRange, setPendingRange] = useState<Range | null>(null);
-  const [pendingRemoveId, setPendingRemoveId] = useState<string | null>(null);
+function wrapRangeWithMark(
+  range: Range,
+  bgColor: string,
+  textColor: string,
+  markType: MarkType
+): string {
+  const id = crypto.randomUUID();
+  const mark = document.createElement("mark");
+  mark.dataset.highlightId = id;
+  mark.dataset.markType = markType;
+  mark.style.backgroundColor = bgColor;
+  mark.style.color = textColor;
+  mark.style.borderRadius = "2px";
+  mark.style.padding = "0 1px";
+  mark.style.cursor = "pointer";
+
+  try {
+    range.surroundContents(mark);
+  } catch {
+    const fragment = range.extractContents();
+    mark.appendChild(fragment);
+    range.insertNode(mark);
+  }
+
+  return id;
+}
+
+function removeMarkById(container: HTMLElement, id: string) {
+  const marks = container.querySelectorAll(
+    `mark[data-highlight-id="${id}"]`
+  );
+  marks.forEach((mark) => {
+    const parent = mark.parentNode;
+    while (mark.firstChild) {
+      parent?.insertBefore(mark.firstChild, mark);
+    }
+    parent?.removeChild(mark);
+    parent?.normalize();
+  });
+}
+
+export function PassageDisplay({
+  title,
+  content,
+  highlight = { bg: "#fef08a", color: "#111827" },
+  noteHighlight = { bg: "#bfdbfe", color: "#111827" },
+  onHighlight,
+  onRemoveHighlight,
+  onNote,
+  onNoteMarkClick,
+  cancelNoteMarkId,
+  onCancelNoteMarkHandled,
+}: PassageDisplayProps) {
+  const [popup, setPopup] = useState<PopupState | null>(null);
+  const pendingRangeRef = useRef<Range | null>(null);
+  const pendingSelectedTextRef = useRef<string>("");
+  const pendingRemoveIdRef = useRef<string | null>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const popupRef = useRef<HTMLDivElement>(null);
-  const highlighterRef = useRef<HighlighterType | null>(null);
 
-  const paragraphs = content.split(/\r?\n\r?\n/).filter((p) => p.trim());
-  const hasSubtitle =
-    paragraphs.length > 1 &&
-    paragraphs[0].length < 150 &&
-    !paragraphs[0].endsWith(".");
-  const subtitle = hasSubtitle ? paragraphs[0] : null;
-  const bodyParagraphs = hasSubtitle ? paragraphs.slice(1) : paragraphs;
+  const paragraphs = useMemo(() => {
+    const parts = content.split(/\r?\n\r?\n/).filter((p) => p.trim());
+    const hasSub =
+      parts.length > 1 && parts[0].length < 150 && !parts[0].endsWith(".");
+    return {
+      subtitle: hasSub ? parts[0] : null,
+      body: hasSub ? parts.slice(1) : parts,
+    };
+  }, [content]);
 
-  // Initialize web-highlighter scoped to the content area (dynamic import to avoid SSR window access)
+  // Update existing mark styles when contrast theme changes
   useEffect(() => {
     if (!contentRef.current) return;
-    let disposed = false;
-
-    import("web-highlighter").then(({ default: Highlighter }) => {
-      if (disposed || !contentRef.current) return;
-
-      const highlighter = new Highlighter({
-        $root: contentRef.current,
-        wrapTag: "span",
-        style: {
-          className: "highlight-yellow",
-        },
+    contentRef.current
+      .querySelectorAll('mark[data-mark-type="highlight"]')
+      .forEach((mark) => {
+        (mark as HTMLElement).style.backgroundColor = highlight.bg;
+        (mark as HTMLElement).style.color = highlight.color;
       });
+    contentRef.current
+      .querySelectorAll('mark[data-mark-type="note"]')
+      .forEach((mark) => {
+        (mark as HTMLElement).style.backgroundColor = noteHighlight.bg;
+        (mark as HTMLElement).style.color = noteHighlight.color;
+      });
+  }, [highlight.bg, highlight.color, noteHighlight.bg, noteHighlight.color]);
 
-      // Show "Remove" popup when clicking an existing highlight
-      highlighter.on(
-        Highlighter.event.CLICK,
-        ({ id }: { id: string }, _inst: HighlighterType, e: Event) => {
-          const mouseEvent = e as MouseEvent;
-          const target = mouseEvent.target as HTMLElement;
-          const rect = target.getBoundingClientRect();
+  // Handle cancel note mark from parent
+  useEffect(() => {
+    if (cancelNoteMarkId && contentRef.current) {
+      removeMarkById(contentRef.current, cancelNoteMarkId);
+      onCancelNoteMarkHandled?.();
+    }
+  }, [cancelNoteMarkId, onCancelNoteMarkHandled]);
 
-          setPendingRemoveId(id);
-          setPendingRange(null);
-          setPopupMode("remove");
-          setPopup({
-            x: rect.left + rect.width / 2,
-            y: rect.top - 8,
-          });
-        },
-      );
+  const closePopup = useCallback(() => {
+    setPopup(null);
+    pendingRangeRef.current = null;
+    pendingSelectedTextRef.current = "";
+    pendingRemoveIdRef.current = null;
+  }, []);
 
-      highlighterRef.current = highlighter;
-    });
+  const handleMouseUp = useCallback(
+    (e: React.MouseEvent) => {
+      const target = e.target as HTMLElement;
+      const markEl = target.closest("mark[data-highlight-id]") as HTMLElement;
 
-    return () => {
-      disposed = true;
-      if (highlighterRef.current) {
-        highlighterRef.current.dispose();
-        highlighterRef.current = null;
+      if (markEl) {
+        const id = markEl.dataset.highlightId;
+        const markType = markEl.dataset.markType;
+        if (!id) return;
+
+        // Note mark → open drawer with that note
+        if (markType === "note") {
+          onNoteMarkClick?.(id);
+          return;
+        }
+
+        // Highlight mark → show remove popup at click position
+        pendingRemoveIdRef.current = id;
+        pendingRangeRef.current = null;
+        pendingSelectedTextRef.current = "";
+        setPopup({
+          x: e.clientX,
+          y: e.clientY - 8,
+          mode: "remove",
+        });
+        return;
       }
-    };
-  }, []);
 
-  const handleMouseUp = useCallback(() => {
-    const selection = window.getSelection();
-    if (!selection || selection.isCollapsed || !selection.rangeCount) {
-      return;
-    }
+      const selection = window.getSelection();
+      if (!selection || selection.isCollapsed || !selection.rangeCount) {
+        return;
+      }
 
-    const range = selection.getRangeAt(0);
-    const selectedText = selection.toString().trim();
-    if (!selectedText) return;
+      const range = selection.getRangeAt(0);
+      const selectedText = selection.toString().trim();
+      if (!selectedText) return;
 
-    // Make sure selection is within our content area
-    if (!contentRef.current?.contains(range.commonAncestorContainer)) return;
+      if (!contentRef.current?.contains(range.commonAncestorContainer)) return;
 
-    const rect = range.getBoundingClientRect();
-
-    // Check if the selection is entirely within an existing highlight
-    const startNode = range.startContainer;
-    const startEl =
-      startNode.nodeType === Node.TEXT_NODE
-        ? startNode.parentElement
-        : (startNode as HTMLElement);
-    const existingId =
-      startEl && highlighterRef.current
-        ? highlighterRef.current.getIdByDom(startEl)
-        : null;
-
-    if (existingId) {
-      // Already highlighted — offer removal instead
-      setPendingRemoveId(existingId);
-      setPendingRange(null);
-      setPopupMode("remove");
-    } else {
-      setPendingRange(range.cloneRange());
-      setPendingRemoveId(null);
-      setPopupMode("highlight");
-    }
-
-    setPopup({
-      x: rect.left + rect.width / 2,
-      y: rect.top - 8,
-    });
-  }, []);
+      pendingRangeRef.current = range.cloneRange();
+      pendingSelectedTextRef.current = selectedText;
+      pendingRemoveIdRef.current = null;
+      setPopup({
+        x: e.clientX,
+        y: e.clientY - 8,
+        mode: "actions",
+      });
+    },
+    [onNoteMarkClick]
+  );
 
   const applyHighlight = useCallback(() => {
-    if (!pendingRange || !highlighterRef.current) return;
+    const range = pendingRangeRef.current;
+    const text = pendingSelectedTextRef.current;
+    if (!range || !contentRef.current) return;
 
-    highlighterRef.current.fromRange(pendingRange);
+    const id = wrapRangeWithMark(range, highlight.bg, highlight.color, "highlight");
     window.getSelection()?.removeAllRanges();
+    onHighlight?.(id, text);
     closePopup();
-  }, [pendingRange]);
+  }, [highlight.bg, highlight.color, onHighlight, closePopup]);
+
+  const handleNoteClick = useCallback(() => {
+    const range = pendingRangeRef.current;
+    const text = pendingSelectedTextRef.current;
+    if (!range || !text || !contentRef.current) return;
+
+    const markId = wrapRangeWithMark(range, noteHighlight.bg, noteHighlight.color, "note");
+    window.getSelection()?.removeAllRanges();
+    onNote?.(markId, text);
+    closePopup();
+  }, [noteHighlight.bg, noteHighlight.color, onNote, closePopup]);
 
   const removeHighlight = useCallback(() => {
-    if (!pendingRemoveId || !highlighterRef.current) return;
+    const id = pendingRemoveIdRef.current;
+    if (!id || !contentRef.current) return;
 
-    highlighterRef.current.remove(pendingRemoveId);
+    removeMarkById(contentRef.current, id);
+    onRemoveHighlight?.(id);
     closePopup();
-  }, [pendingRemoveId]);
-
-  const closePopup = () => {
-    setPopup(null);
-    setPendingRange(null);
-    setPendingRemoveId(null);
-  };
+  }, [onRemoveHighlight, closePopup]);
 
   // Close popup on click outside
   useEffect(() => {
+    if (!popup) return;
+
     const handleClickOutside = (e: MouseEvent) => {
       if (popupRef.current && !popupRef.current.contains(e.target as Node)) {
         closePopup();
       }
     };
-    if (popup) {
-      document.addEventListener("mousedown", handleClickOutside);
-      return () =>
-        document.removeEventListener("mousedown", handleClickOutside);
-    }
-  }, [popup]);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [popup, closePopup]);
+
+  const popupEl = popup
+    ? createPortal(
+        popup.mode === "actions" ? (
+          <div
+            ref={popupRef}
+            className="fixed z-50 flex items-center gap-1 rounded-lg shadow-lg overflow-hidden"
+            style={{
+              left: popup.x,
+              top: popup.y,
+              transform: "translate(-50%, -100%)",
+              backgroundColor: "#1f2937",
+            }}
+          >
+            <button
+              onClick={handleNoteClick}
+              className="cursor-pointer flex items-center gap-1.5 text-white text-sm font-medium px-3 py-2 hover:bg-white/10 transition-colors whitespace-nowrap"
+            >
+              <StickyNote className="h-3.5 w-3.5" />
+              Note
+            </button>
+            <div className="w-px h-5 bg-white/20" />
+            <button
+              onClick={applyHighlight}
+              className="cursor-pointer flex items-center gap-1.5 text-white text-sm font-medium px-3 py-2 hover:bg-white/10 transition-colors whitespace-nowrap"
+            >
+              <Highlighter className="h-3.5 w-3.5" />
+              Highlight
+            </button>
+            <div
+              className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0"
+              style={{
+                borderLeft: "6px solid transparent",
+                borderRight: "6px solid transparent",
+                borderTop: "6px solid #1f2937",
+              }}
+            />
+          </div>
+        ) : (
+          <div
+            ref={popupRef}
+            className="fixed z-50 flex items-center"
+            style={{
+              left: popup.x,
+              top: popup.y,
+              transform: "translate(-50%, -100%)",
+            }}
+          >
+            <button
+              onClick={removeHighlight}
+              className="cursor-pointer text-white text-sm font-medium px-3 py-1.5 rounded-md shadow-lg transition-colors whitespace-nowrap bg-red-600 hover:bg-red-700"
+            >
+              Remove highlight
+            </button>
+            <div
+              className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0"
+              style={{
+                borderLeft: "6px solid transparent",
+                borderRight: "6px solid transparent",
+                borderTop: "6px solid rgb(220, 38, 38)",
+              }}
+            />
+          </div>
+        ),
+        document.body
+      )
+    : null;
 
   return (
     <article className="p-8 space-y-4">
-      <style>{`
-        .highlight-yellow {
-          background-color: ${highlight.bg} !important;
-          color: ${highlight.color} !important;
-          border-radius: 2px;
-          padding: 0 1px;
-          cursor: pointer;
-        }
-      `}</style>
-
       <h2 className="text-xl font-bold">{title}</h2>
-      {subtitle && <p className="text-sm italic opacity-70">{subtitle}</p>}
+      {paragraphs.subtitle && (
+        <p className="text-sm italic opacity-70">{paragraphs.subtitle}</p>
+      )}
       <div ref={contentRef} className="space-y-4" onMouseUp={handleMouseUp}>
-        {bodyParagraphs.map((paragraph, index) => (
+        {paragraphs.body.map((paragraph, index) => (
           <p key={index} className="text-base leading-relaxed opacity-90">
             {paragraph}
           </p>
         ))}
       </div>
-
-      {/* Highlight / Remove Popup */}
-      {popup && (
-        <div
-          ref={popupRef}
-          className="fixed z-50 flex items-center"
-          style={{
-            left: popup.x,
-            top: popup.y,
-            transform: "translate(-50%, -100%)",
-          }}
-        >
-          <button
-            onClick={
-              popupMode === "highlight" ? applyHighlight : removeHighlight
-            }
-            className={`cursor-pointer text-white text-sm font-medium px-3 py-1.5 rounded-md shadow-lg transition-colors whitespace-nowrap ${
-              popupMode === "remove"
-                ? "bg-red-600 hover:bg-red-700"
-                : "bg-gray-900 hover:bg-gray-800"
-            }`}
-          >
-            {popupMode === "highlight" ? "Highlight" : "Remove highlight"}
-          </button>
-          {/* Arrow */}
-          <div
-            className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0"
-            style={{
-              borderLeft: "6px solid transparent",
-              borderRight: "6px solid transparent",
-              borderTop: `6px solid ${popupMode === "remove" ? "rgb(220, 38, 38)" : "rgb(17, 24, 39)"}`,
-            }}
-          />
-        </div>
-      )}
+      {popupEl}
     </article>
   );
 }

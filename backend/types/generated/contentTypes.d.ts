@@ -669,6 +669,52 @@ export interface ApiReadingPassageReadingPassage
   };
 }
 
+export interface ApiSpeakingSubmissionSpeakingSubmission
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'speaking_submissions';
+  info: {
+    displayName: 'Speaking Submission';
+    pluralName: 'speaking-submissions';
+    singularName: 'speaking-submission';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    audio_url: Schema.Attribute.String;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    duration_seconds: Schema.Attribute.Integer;
+    feedback: Schema.Attribute.RichText;
+    fluency_score: Schema.Attribute.Decimal;
+    grammar_score: Schema.Attribute.Decimal;
+    lexical_score: Schema.Attribute.Decimal;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::speaking-submission.speaking-submission'
+    > &
+      Schema.Attribute.Private;
+    overall_band_score: Schema.Attribute.Decimal;
+    pronunciation_score: Schema.Attribute.Decimal;
+    publishedAt: Schema.Attribute.DateTime;
+    question_index: Schema.Attribute.Integer & Schema.Attribute.Required;
+    speaking_topic: Schema.Attribute.Relation<
+      'manyToOne',
+      'api::speaking-topic.speaking-topic'
+    >;
+    test_attempt: Schema.Attribute.Relation<
+      'manyToOne',
+      'api::test-attempt.test-attempt'
+    >;
+    transcript: Schema.Attribute.Text;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
 export interface ApiSpeakingTopicSpeakingTopic
   extends Struct.CollectionTypeSchema {
   collectionName: 'speaking_topics';
@@ -766,11 +812,15 @@ export interface ApiTestAttemptTestAttempt extends Struct.CollectionTypeSchema {
     > &
       Schema.Attribute.Private;
     module_type: Schema.Attribute.Enumeration<
-      ['listening', 'reading', 'writing', 'full']
+      ['listening', 'reading', 'writing', 'speaking', 'full']
     > &
       Schema.Attribute.Required;
     publishedAt: Schema.Attribute.DateTime;
     raw_score: Schema.Attribute.Integer;
+    speaking_submissions: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::speaking-submission.speaking-submission'
+    >;
     started_at: Schema.Attribute.DateTime;
     status: Schema.Attribute.Enumeration<
       ['in_progress', 'completed', 'abandoned', 'evaluating']
@@ -1516,6 +1566,7 @@ declare module '@strapi/strapi' {
       'api::listening-section.listening-section': ApiListeningSectionListeningSection;
       'api::question.question': ApiQuestionQuestion;
       'api::reading-passage.reading-passage': ApiReadingPassageReadingPassage;
+      'api::speaking-submission.speaking-submission': ApiSpeakingSubmissionSpeakingSubmission;
       'api::speaking-topic.speaking-topic': ApiSpeakingTopicSpeakingTopic;
       'api::telegram-auth-code.telegram-auth-code': ApiTelegramAuthCodeTelegramAuthCode;
       'api::test-attempt.test-attempt': ApiTestAttemptTestAttempt;

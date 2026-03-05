@@ -1,6 +1,6 @@
 "use client";
 
-import { use, Suspense } from "react";
+import { use, Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,6 +15,7 @@ import { SubmitDialog } from "@/components/test/common/submit-dialog";
 import { TestOptionsMenu } from "@/components/test/common/test-options-menu";
 import { SplitView } from "@/components/test/common/split-view";
 import { PassageDisplay } from "@/components/test/reading/passage-display";
+import { NotesDrawer } from "@/components/test/reading/notes-drawer";
 import { MultipleChoice } from "@/components/test/questions/multiple-choice";
 import { MultipleAnswer } from "@/components/test/questions/multiple-answer";
 import { TrueFalseNotGiven } from "@/components/test/questions/true-false-not-given";
@@ -28,6 +29,7 @@ import { useFullscreen } from "@/hooks/use-fullscreen";
 import { useNavigationProtection } from "@/hooks/use-navigation-protection";
 import { useQuestionNavigation } from "@/hooks/use-question-navigation";
 import { useTestOptions } from "@/hooks/use-test-options";
+import { useNotes } from "@/hooks/use-notes";
 import { useSyncTestTheme } from "@/components/force-light-theme";
 import {
   Send,
@@ -38,6 +40,7 @@ import {
   Maximize2,
   Minimize2,
   Check,
+  StickyNote,
 } from "lucide-react";
 
 interface Question {
@@ -118,6 +121,12 @@ function ReadingTestContent({ testId }: { testId: string }) {
   } = useQuestionNavigation(passages, activePassageId);
 
   const testOptions = useTestOptions();
+  const { notes, addHighlight, removeHighlight, addNote, removeNote, getNoteByMarkId } = useNotes();
+  const [notesDrawerOpen, setNotesDrawerOpen] = useState(false);
+  const [pendingNoteText, setPendingNoteText] = useState<string | null>(null);
+  const [pendingNoteMarkId, setPendingNoteMarkId] = useState<string | null>(null);
+  const [activeNoteId, setActiveNoteId] = useState<string | null>(null);
+  const [cancelNoteMarkId, setCancelNoteMarkId] = useState<string | null>(null);
   useSyncTestTheme(testOptions.contrast);
   useNavigationProtection({ enabled: hasStarted && !isReviewMode });
 
@@ -356,6 +365,18 @@ function ReadingTestContent({ testId }: { testId: string }) {
             )}
           </button>
           <TestOptionsMenu {...testOptions} />
+          <button
+            onClick={() => setNotesDrawerOpen(true)}
+            className="p-1.5 md:p-2 transition-opacity opacity-70 hover:opacity-100 relative"
+            title="Notes"
+          >
+            <StickyNote className="h-5 w-5 md:h-6 md:w-6" />
+            {notes.length > 0 && (
+              <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                {notes.length}
+              </span>
+            )}
+          </button>
         </div>
       </header>
 
@@ -394,6 +415,23 @@ function ReadingTestContent({ testId }: { testId: string }) {
               title={currentPassage.title}
               content={currentPassage.content}
               highlight={theme.highlight}
+              noteHighlight={theme.noteHighlight}
+              onHighlight={(id, text) => addHighlight({ id, text })}
+              onRemoveHighlight={removeHighlight}
+              onNote={(markId, selectedText) => {
+                setPendingNoteMarkId(markId);
+                setPendingNoteText(selectedText);
+                setNotesDrawerOpen(true);
+              }}
+              onNoteMarkClick={(markId) => {
+                const note = getNoteByMarkId(markId);
+                if (note) {
+                  setActiveNoteId(note.id);
+                  setNotesDrawerOpen(true);
+                }
+              }}
+              cancelNoteMarkId={cancelNoteMarkId}
+              onCancelNoteMarkHandled={() => setCancelNoteMarkId(null)}
             />
           }
           rightPanel={
@@ -602,6 +640,36 @@ function ReadingTestContent({ testId }: { testId: string }) {
         totalQuestions={totalQuestions}
         isSubmitting={isSubmitting}
         timeUp={isTimeUp}
+      />
+
+      <NotesDrawer
+        open={notesDrawerOpen}
+        onOpenChange={setNotesDrawerOpen}
+        notes={notes}
+        pendingNoteText={pendingNoteText}
+        pendingNoteMarkId={pendingNoteMarkId}
+        activeNoteId={activeNoteId}
+        onSaveNote={addNote}
+        onDeleteNote={(noteId) => {
+          const note = notes.find((n) => n.id === noteId);
+          if (note) {
+            setCancelNoteMarkId(note.markId);
+          }
+          removeNote(noteId);
+        }}
+        onCancelPending={() => {
+          if (pendingNoteMarkId) {
+            setCancelNoteMarkId(pendingNoteMarkId);
+          }
+          setPendingNoteText(null);
+          setPendingNoteMarkId(null);
+        }}
+        onSaveComplete={() => {
+          setPendingNoteText(null);
+          setPendingNoteMarkId(null);
+        }}
+        onClearActive={() => setActiveNoteId(null)}
+        theme={theme}
       />
     </div>
   );
