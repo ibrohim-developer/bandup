@@ -39,6 +39,12 @@
       "relation": "oneToMany",
       "target": "api::question.question",
       "mappedBy": "reading_passage"
+    },
+    "question_groups": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::question-group.question-group",
+      "mappedBy": "reading_passage"
     }
   }
 }

@@ -576,6 +576,66 @@ export interface ApiListeningSectionListeningSection
   };
 }
 
+export interface ApiQuestionGroupQuestionGroup
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'question_groups';
+  info: {
+    displayName: 'Question Group';
+    pluralName: 'question-groups';
+    singularName: 'question-group';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    context: Schema.Attribute.RichText;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    group_number: Schema.Attribute.Integer & Schema.Attribute.Required;
+    instruction: Schema.Attribute.Text;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::question-group.question-group'
+    > &
+      Schema.Attribute.Private;
+    metadata: Schema.Attribute.JSON;
+    options: Schema.Attribute.JSON;
+    points: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<1>;
+    publishedAt: Schema.Attribute.DateTime;
+    question_type: Schema.Attribute.Enumeration<
+      [
+        'tfng',
+        'ynng',
+        'mcq_single',
+        'mcq_multiple',
+        'gap_fill',
+        'matching_headings',
+        'matching_info',
+        'summary_completion',
+        'short_answer',
+        'note_completion',
+        'table_completion',
+        'matching_names',
+        'matching_sentence_endings',
+        'summary_completion_drag_drop',
+        'sentence_completion',
+        'flow_chart_completion',
+      ]
+    > &
+      Schema.Attribute.Required;
+    questions: Schema.Attribute.Relation<'oneToMany', 'api::question.question'>;
+    reading_passage: Schema.Attribute.Relation<
+      'manyToOne',
+      'api::reading-passage.reading-passage'
+    >;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
 export interface ApiQuestionQuestion extends Struct.CollectionTypeSchema {
   collectionName: 'questions';
   info: {
@@ -587,7 +647,7 @@ export interface ApiQuestionQuestion extends Struct.CollectionTypeSchema {
     draftAndPublish: false;
   };
   attributes: {
-    correct_answer: Schema.Attribute.String & Schema.Attribute.Required;
+    correct_answer: Schema.Attribute.String;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -608,8 +668,12 @@ export interface ApiQuestionQuestion extends Struct.CollectionTypeSchema {
     options: Schema.Attribute.JSON;
     points: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<1>;
     publishedAt: Schema.Attribute.DateTime;
+    question_group: Schema.Attribute.Relation<
+      'manyToOne',
+      'api::question-group.question-group'
+    >;
     question_number: Schema.Attribute.Integer & Schema.Attribute.Required;
-    question_text: Schema.Attribute.Text & Schema.Attribute.Required;
+    question_text: Schema.Attribute.Text;
     question_type: Schema.Attribute.Enumeration<
       [
         'tfng',
@@ -621,6 +685,13 @@ export interface ApiQuestionQuestion extends Struct.CollectionTypeSchema {
         'matching_info',
         'summary_completion',
         'short_answer',
+        'note_completion',
+        'table_completion',
+        'matching_names',
+        'matching_sentence_endings',
+        'summary_completion_drag_drop',
+        'sentence_completion',
+        'flow_chart_completion',
       ]
     > &
       Schema.Attribute.Required;
@@ -658,6 +729,10 @@ export interface ApiReadingPassageReadingPassage
       Schema.Attribute.Private;
     passage_number: Schema.Attribute.Integer & Schema.Attribute.Required;
     publishedAt: Schema.Attribute.DateTime;
+    question_groups: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::question-group.question-group'
+    >;
     questions: Schema.Attribute.Relation<'oneToMany', 'api::question.question'>;
     test: Schema.Attribute.Relation<'manyToOne', 'api::test.test'>;
     time_limit: Schema.Attribute.Integer;
@@ -1564,6 +1639,7 @@ declare module '@strapi/strapi' {
       'api::feature-notification.feature-notification': ApiFeatureNotificationFeatureNotification;
       'api::full-mock-test-attempt.full-mock-test-attempt': ApiFullMockTestAttemptFullMockTestAttempt;
       'api::listening-section.listening-section': ApiListeningSectionListeningSection;
+      'api::question-group.question-group': ApiQuestionGroupQuestionGroup;
       'api::question.question': ApiQuestionQuestion;
       'api::reading-passage.reading-passage': ApiReadingPassageReadingPassage;
       'api::speaking-submission.speaking-submission': ApiSpeakingSubmissionSpeakingSubmission;

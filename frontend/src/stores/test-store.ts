@@ -17,10 +17,12 @@ interface TestState {
   timeRemaining: number
   isTimerRunning: boolean
   answers: Record<string, Answer>
+  flaggedQuestions: string[]
 
   // Actions
   initTest: (testId: string, moduleType: 'listening' | 'reading' | 'writing', totalTime: number, startTimer?: boolean) => void
   setAnswer: (questionId: string, answer: string) => void
+  toggleFlag: (questionId: string) => void
   goToQuestion: (section: number, question: number) => void
   tick: () => void
   pauseTimer: () => void
@@ -39,6 +41,7 @@ export const useTestStore = create<TestState>()(
       timeRemaining: 0,
       isTimerRunning: false,
       answers: {},
+      flaggedQuestions: [],
 
       initTest: (testId, moduleType, totalTime, startTimer = true) => set({
         testId,
@@ -48,6 +51,7 @@ export const useTestStore = create<TestState>()(
         timeRemaining: totalTime,
         isTimerRunning: startTimer,
         answers: {},
+        flaggedQuestions: [],
       }),
 
       setAnswer: (questionId, answer) => set((state) => ({
@@ -59,6 +63,12 @@ export const useTestStore = create<TestState>()(
             answeredAt: new Date(),
           },
         },
+      })),
+
+      toggleFlag: (questionId) => set((state) => ({
+        flaggedQuestions: state.flaggedQuestions.includes(questionId)
+          ? state.flaggedQuestions.filter((id) => id !== questionId)
+          : [...state.flaggedQuestions, questionId],
       })),
 
       goToQuestion: (section, question) => set({
@@ -83,6 +93,7 @@ export const useTestStore = create<TestState>()(
         timeRemaining: 0,
         isTimerRunning: false,
         answers: {},
+        flaggedQuestions: [],
       }),
     }),
     {
@@ -95,6 +106,7 @@ export const useTestStore = create<TestState>()(
         currentQuestion: state.currentQuestion,
         timeRemaining: state.timeRemaining,
         answers: state.answers,
+        flaggedQuestions: state.flaggedQuestions,
       }),
     }
   )

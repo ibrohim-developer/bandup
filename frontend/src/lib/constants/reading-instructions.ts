@@ -11,8 +11,22 @@ export const QUESTION_TYPE_INSTRUCTIONS: Record<string, string> = {
     "Which paragraph contains the following information?",
   summary_completion:
     "Complete the summary below. Choose NO MORE THAN TWO WORDS from the passage for each answer.",
+  summary_completion_drag_drop:
+    "Complete the summary below. Choose your answers from the list of words provided.",
   short_answer:
     "Answer the questions below. Choose NO MORE THAN THREE WORDS from the passage for each answer.",
+  note_completion:
+    "Complete the notes below. Choose NO MORE THAN TWO WORDS from the passage for each answer.",
+  table_completion:
+    "Complete the table below. Choose NO MORE THAN TWO WORDS from the passage for each answer.",
+  sentence_completion:
+    "Complete each sentence with the correct ending.",
+  flow_chart_completion:
+    "Complete the flow chart below. Choose NO MORE THAN TWO WORDS from the passage for each answer.",
+  matching_names:
+    "Look at the following statements and the list of people/names. Match each statement with the correct person/name.",
+  matching_sentence_endings:
+    "Complete each sentence with the correct ending, A-G, from the box below.",
 };
 
 export function getTypeInstruction(type: string): string {

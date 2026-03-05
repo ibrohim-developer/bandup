@@ -22,6 +22,10 @@ import { TrueFalseNotGiven } from "@/components/test/questions/true-false-not-gi
 import { FillInBlank } from "@/components/test/questions/fill-in-blank";
 import { ContextFillInBlank } from "@/components/test/questions/context-fill-in-blank";
 import { MatchingSelect } from "@/components/test/questions/matching-select";
+import { MatchingGrid } from "@/components/test/questions/matching-grid";
+import { MultipleAnswerGroup } from "@/components/test/questions/multiple-answer-group";
+import { FlowChart } from "@/components/test/questions/flow-chart";
+import { SentenceEndings } from "@/components/test/questions/sentence-endings";
 import { useTestStore } from "@/stores/test-store";
 import { getTypeInstruction } from "@/lib/constants/reading-instructions";
 import { useReadingTest } from "@/hooks/use-reading-test";
@@ -41,6 +45,7 @@ import {
   Minimize2,
   Check,
   StickyNote,
+  Bookmark,
 } from "lucide-react";
 
 interface Question {
@@ -50,6 +55,26 @@ interface Question {
   text: string;
   options: string[] | null;
   metadata: Record<string, unknown> | null;
+}
+
+function BookmarkButton({ questionId, flaggedQuestions, toggleFlag }: {
+  questionId: string;
+  flaggedQuestions: string[];
+  toggleFlag: (id: string) => void;
+}) {
+  const isFlagged = flaggedQuestions.includes(questionId);
+  return (
+    <button
+      type="button"
+      onClick={() => toggleFlag(questionId)}
+      className={`shrink-0 p-1 transition-all ${isFlagged ? "opacity-100" : "opacity-0 group-hover/q:opacity-100"}`}
+      title={isFlagged ? "Remove flag" : "Flag for review"}
+    >
+      <Bookmark
+        className={`h-4 w-4 ${isFlagged ? "fill-red-500 text-red-500" : "text-muted-foreground/40 hover:text-muted-foreground"}`}
+      />
+    </button>
+  );
 }
 
 export default function ReadingTestPage({
@@ -81,7 +106,7 @@ function ReadingTestContent({ testId }: { testId: string }) {
   const isReviewMode = searchParams.get("review") === "true";
   const reviewAttemptId = searchParams.get("attemptId");
 
-  const { resumeTimer, timeRemaining } = useTestStore();
+  const { resumeTimer, timeRemaining, flaggedQuestions, toggleFlag } = useTestStore();
   const { isFullscreen, toggleFullscreen } = useFullscreen();
 
   const {
@@ -173,6 +198,11 @@ function ReadingTestContent({ testId }: { testId: string }) {
       case "gap_fill":
       case "short_answer":
       case "summary_completion":
+      case "note_completion":
+      case "table_completion":
+      case "sentence_completion":
+      case "flow_chart_completion":
+      case "summary_completion_drag_drop":
         return <FillInBlank key={question.id} {...commonProps} />;
       case "matching_headings":
         return (
@@ -184,6 +214,7 @@ function ReadingTestContent({ testId }: { testId: string }) {
           />
         );
       case "matching_info":
+      case "matching_names":
         return (
           <MatchingSelect
             key={question.id}
@@ -192,8 +223,17 @@ function ReadingTestContent({ testId }: { testId: string }) {
             placeholder="Select a paragraph"
           />
         );
+      case "matching_sentence_endings":
+        return (
+          <MatchingSelect
+            key={question.id}
+            {...commonProps}
+            options={question.options ?? []}
+            placeholder="Select an ending"
+          />
+        );
       default:
-        return null;
+        return <FillInBlank key={question.id} {...commonProps} />;
     }
   };
 
@@ -441,16 +481,22 @@ function ReadingTestContent({ testId }: { testId: string }) {
             >
               {questionGroups.map((group, groupIndex) => {
                 const firstMeta = group.questions[0]?.metadata;
+                // Prefer group-level context (from API), fallback to question metadata
                 const contextHtml =
-                  firstMeta?.context as string | undefined;
+                  group.context || (firstMeta?.context as string | undefined);
+                // Prefer group-level instruction (from API), fallback to metadata
                 const instructionHtml =
-                  firstMeta?.instruction as string | undefined;
+                  group.instruction || (firstMeta?.instruction as string | undefined);
+
+                const isSingleQuestion = group.startNum === group.endNum;
 
                 return (
                   <div key={groupIndex}>
                     <div className="mb-4">
                       <h3 className="font-bold text-base mb-2">
-                        Questions {group.startNum}-{group.endNum}
+                        {isSingleQuestion
+                          ? `Question ${group.startNum}`
+                          : `Questions ${group.startNum}-${group.endNum}`}
                       </h3>
                       {instructionHtml ? (
                         <div
@@ -470,59 +516,212 @@ function ReadingTestContent({ testId }: { testId: string }) {
                       )}
                     </div>
 
-                    {contextHtml &&
-                    ["gap_fill", "summary_completion", "short_answer"].includes(
-                      group.type,
-                    ) ? (
-                      <div className="text-sm leading-relaxed rich-html">
-                        <ContextFillInBlank
-                          contextHtml={contextHtml}
-                          questions={group.questions.map((question) => {
-                            const globalIdx =
-                              currentPassage.questions.indexOf(question);
-                            const review = reviewData[question.id];
-                            const value = isReviewMode
-                              ? review?.userAnswer || ""
-                              : answers[question.id]?.answer || "";
-
-                            return {
-                              questionId: question.id,
-                              questionNumber: questionOffset + globalIdx + 1,
-                              value,
-                              onChange: (val: string) =>
-                                handleAnswer(question.id, val),
-                              disabled: isReviewMode,
-                              reviewMode: isReviewMode,
-                              correctAnswer: review?.correctAnswer,
-                              isCorrect: review?.isCorrect,
-                              isUnanswered: unansweredQuestions.has(
-                                question.id,
-                              ),
-                            };
-                          })}
-                        />
-                      </div>
-                    ) : (
-                      <div className="space-y-6">
-                        {contextHtml && (
-                          <div
-                            className="text-sm leading-relaxed rich-html"
-                            dangerouslySetInnerHTML={{
-                              __html: contextHtml,
-                            }}
-                          />
-                        )}
-                        {group.questions.map((question) => {
+                    {(() => {
+                      // Helper to build question data for group-level components
+                      const buildGroupQuestions = () =>
+                        group.questions.map((question) => {
                           const globalIdx =
-                            currentPassage.questions.indexOf(question);
-                          return (
-                            <div key={question.id}>
-                              {renderQuestion(question, globalIdx)}
+                            currentPassage.questions.findIndex((pq) => pq.id === question.id);
+                          const review = reviewData[question.id];
+                          const value = isReviewMode
+                            ? review?.userAnswer || ""
+                            : answers[question.id]?.answer || "";
+                          return {
+                            questionId: question.id,
+                            questionNumber: questionOffset + globalIdx + 1,
+                            questionText: question.text,
+                            value,
+                            onChange: (val: string) => handleAnswer(question.id, val),
+                            disabled: isReviewMode,
+                            reviewMode: isReviewMode,
+                            correctAnswer: review?.correctAnswer,
+                            isCorrect: review?.isCorrect,
+                            isUnanswered: unansweredQuestions.has(question.id),
+                          };
+                        });
+
+                      // Matching types with group-level options → radio grid
+                      const groupOptions = group.options ?? [];
+                      if (
+                        ["matching_info", "matching_headings", "matching_names"].includes(group.type) &&
+                        groupOptions.length > 0
+                      ) {
+                        return (
+                          <div className="group/q flex items-start gap-1">
+                            <div className="flex-1 space-y-4">
+                              {contextHtml && (
+                                <div
+                                  className="text-sm leading-relaxed rich-html"
+                                  dangerouslySetInnerHTML={{ __html: contextHtml }}
+                                />
+                              )}
+                              <MatchingGrid
+                                options={groupOptions}
+                                questions={buildGroupQuestions()}
+                              />
                             </div>
-                          );
-                        })}
-                      </div>
-                    )}
+                            {!isReviewMode && (
+                              <BookmarkButton questionId={group.questions[0].id} flaggedQuestions={flaggedQuestions} toggleFlag={toggleFlag} />
+                            )}
+                          </div>
+                        );
+                      }
+
+                      // Matching sentence endings → options box + compact dropdowns
+                      if (
+                        group.type === "matching_sentence_endings" &&
+                        groupOptions.length > 0
+                      ) {
+                        return (
+                          <SentenceEndings
+                            contextHtml={contextHtml || undefined}
+                            options={groupOptions}
+                            questions={buildGroupQuestions()}
+                            flaggedQuestions={!isReviewMode ? flaggedQuestions : undefined}
+                            onToggleFlag={!isReviewMode ? toggleFlag : undefined}
+                          />
+                        );
+                      }
+
+                      // MCQ single with group-level context and options
+                      if (
+                        group.type === "mcq_single" &&
+                        groupOptions.length > 0
+                      ) {
+                        return (
+                          <div className="space-y-6">
+                            {group.questions.map((question) => {
+                              const globalIdx =
+                                currentPassage.questions.findIndex((pq) => pq.id === question.id);
+                              const review = reviewData[question.id];
+                              const value = isReviewMode
+                                ? review?.userAnswer || ""
+                                : answers[question.id]?.answer || "";
+                              // Use question text, or strip HTML tags from context for question stem
+                              const qText = question.text ||
+                                (contextHtml ? contextHtml.replace(/<[^>]*>/g, "").trim() : "");
+                              return (
+                                <div key={question.id} className="group/q flex items-start gap-1">
+                                  <div className="flex-1">
+                                    <MultipleChoice
+                                      questionId={question.id}
+                                      questionNumber={questionOffset + globalIdx + 1}
+                                      questionText={qText}
+                                      options={groupOptions}
+                                      value={value}
+                                      onChange={(val: string) => handleAnswer(question.id, val)}
+                                      disabled={isReviewMode}
+                                      reviewMode={isReviewMode}
+                                      correctAnswer={review?.correctAnswer}
+                                      isCorrect={review?.isCorrect}
+                                      isUnanswered={unansweredQuestions.has(question.id)}
+                                    />
+                                  </div>
+                                  {!isReviewMode && (
+                                    <BookmarkButton questionId={question.id} flaggedQuestions={flaggedQuestions} toggleFlag={toggleFlag} />
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        );
+                      }
+
+                      // MCQ multiple with group-level context and options
+                      if (
+                        group.type === "mcq_multiple" &&
+                        groupOptions.length > 0
+                      ) {
+                        return (
+                          <div className="group/q flex items-start gap-1">
+                            <div className="flex-1 space-y-4">
+                              {contextHtml && (
+                                <div
+                                  className="text-sm leading-relaxed rich-html"
+                                  dangerouslySetInnerHTML={{ __html: contextHtml }}
+                                />
+                              )}
+                              <MultipleAnswerGroup
+                                options={groupOptions}
+                                questions={buildGroupQuestions()}
+                                disabled={isReviewMode}
+                                reviewMode={isReviewMode}
+                              />
+                            </div>
+                            {!isReviewMode && (
+                              <BookmarkButton questionId={group.questions[0].id} flaggedQuestions={flaggedQuestions} toggleFlag={toggleFlag} />
+                            )}
+                          </div>
+                        );
+                      }
+
+                      // Flow chart completion → boxes with arrows and embedded inputs
+                      if (
+                        group.type === "flow_chart_completion" &&
+                        groupOptions.length > 0
+                      ) {
+                        return (
+                          <div className="group/q flex items-start gap-1">
+                            <div className="flex-1">
+                              <FlowChart
+                                title={contextHtml || undefined}
+                                options={groupOptions as unknown as { optionKey?: string; optionText: string; orderIndex?: number }[]}
+                                questions={buildGroupQuestions()}
+                              />
+                            </div>
+                            {!isReviewMode && (
+                              <BookmarkButton questionId={group.questions[0].id} flaggedQuestions={flaggedQuestions} toggleFlag={toggleFlag} />
+                            )}
+                          </div>
+                        );
+                      }
+
+                      // Fill-in-blank types with context HTML → embedded inputs
+                      if (
+                        contextHtml &&
+                        ["gap_fill", "summary_completion", "summary_completion_drag_drop", "short_answer", "note_completion", "table_completion", "sentence_completion"].includes(group.type)
+                      ) {
+                        return (
+                          <div className="group/q flex items-start gap-1">
+                            <div className="flex-1 text-sm leading-relaxed rich-html">
+                              <ContextFillInBlank
+                                contextHtml={contextHtml}
+                                questions={buildGroupQuestions()}
+                              />
+                            </div>
+                            {!isReviewMode && (
+                              <BookmarkButton questionId={group.questions[0].id} flaggedQuestions={flaggedQuestions} toggleFlag={toggleFlag} />
+                            )}
+                          </div>
+                        );
+                      }
+
+                      // Default: render each question individually
+                      return (
+                        <div className="space-y-6">
+                          {contextHtml && (
+                            <div
+                              className="text-sm leading-relaxed rich-html"
+                              dangerouslySetInnerHTML={{ __html: contextHtml }}
+                            />
+                          )}
+                          {group.questions.map((question) => {
+                            const globalIdx =
+                              currentPassage.questions.findIndex((pq) => pq.id === question.id);
+                            return (
+                              <div key={question.id} className="group/q flex items-start gap-1">
+                                <div className="flex-1">
+                                  {renderQuestion(question, globalIdx)}
+                                </div>
+                                {!isReviewMode && (
+                                  <BookmarkButton questionId={question.id} flaggedQuestions={flaggedQuestions} toggleFlag={toggleFlag} />
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      );
+                    })()}
 
                     {groupIndex < questionGroups.length - 1 && (
                       <hr
@@ -582,7 +781,7 @@ function ReadingTestContent({ testId }: { testId: string }) {
                         <button
                           key={q.id}
                           onClick={() => goToQuestion(qNum)}
-                          className="cursor-pointer w-6 h-6 md:w-8 md:h-8 text-[10px] md:text-xs font-medium rounded-sm transition-colors"
+                          className="relative cursor-pointer w-6 h-6 md:w-8 md:h-8 text-[10px] md:text-xs font-medium rounded-sm transition-colors"
                           style={{
                             border: `1px solid ${isActiveQ ? theme.text : theme.border}`,
                             backgroundColor: isAnswered
@@ -593,6 +792,11 @@ function ReadingTestContent({ testId }: { testId: string }) {
                           }}
                         >
                           {qNum}
+                          {flaggedQuestions.includes(q.id) && (
+                            <span className="absolute -top-1 -right-1 w-2.5 h-2.5 md:w-3 md:h-3">
+                              <Bookmark className="w-full h-full fill-red-500 text-red-500" />
+                            </span>
+                          )}
                         </button>
                       );
                     })}

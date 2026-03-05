@@ -11,6 +11,18 @@ interface Question {
   metadata: Record<string, unknown> | null;
 }
 
+interface ApiQuestionGroup {
+  id: string;
+  groupNumber: number;
+  type: string;
+  instruction: string | null;
+  context: string | null;
+  points: number;
+  options: string[] | null;
+  metadata: Record<string, unknown> | null;
+  questions: Question[];
+}
+
 interface Passage {
   id: string;
   passageNumber: number;
@@ -18,12 +30,16 @@ interface Passage {
   content: string;
   wordCount: number | null;
   questions: Question[];
+  questionGroups?: ApiQuestionGroup[];
 }
 
 export interface QuestionGroup {
   type: string;
   startNum: number;
   endNum: number;
+  instruction?: string | null;
+  context?: string | null;
+  options?: string[] | null;
   questions: Question[];
 }
 
@@ -58,6 +74,29 @@ export function useQuestionNavigation(
 
   const questionGroups = useMemo((): QuestionGroup[] => {
     if (!currentPassage) return [];
+
+    // Use API-provided question groups if available
+    const apiGroups = currentPassage.questionGroups;
+    if (apiGroups && apiGroups.length > 0) {
+      return apiGroups.map((g) => {
+        const sortedQs = [...g.questions].sort((a, b) => a.questionNumber - b.questionNumber);
+        const qNums = sortedQs.map((q) => {
+          const idx = currentPassage.questions.findIndex((pq) => pq.id === q.id);
+          return questionOffset + idx + 1;
+        });
+        return {
+          type: g.type,
+          startNum: Math.min(...qNums),
+          endNum: Math.max(...qNums),
+          instruction: g.instruction,
+          context: g.context,
+          options: g.options,
+          questions: sortedQs,
+        };
+      });
+    }
+
+    // Fallback: auto-group by consecutive same type
     const groups: QuestionGroup[] = [];
     let currentType = "";
 

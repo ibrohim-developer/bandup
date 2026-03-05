@@ -1,0 +1,51 @@
+{
+  "kind": "collectionType",
+  "collectionName": "question_groups",
+  "info": {
+    "singularName": "question-group",
+    "pluralName": "question-groups",
+    "displayName": "Question Group"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "group_number": {
+      "type": "integer",
+      "required": true
+    },
+    "question_type": {
+      "type": "enumeration",
+      "enum": ["tfng", "ynng", "mcq_single", "mcq_multiple", "gap_fill", "matching_headings", "matching_info", "summary_completion", "short_answer", "note_completion", "table_completion", "matching_names", "matching_sentence_endings", "summary_completion_drag_drop", "sentence_completion", "flow_chart_completion"],
+      "required": true
+    },
+    "instruction": {
+      "type": "text"
+    },
+    "context": {
+      "type": "richtext"
+    },
+    "points": {
+      "type": "integer",
+      "default": 1
+    },
+    "reading_passage": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::reading-passage.reading-passage",
+      "inversedBy": "question_groups"
+    },
+    "questions": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::question.question",
+      "mappedBy": "question_group"
+    },
+    "options": {
+      "type": "json"
+    },
+    "metadata": {
+      "type": "json"
+    }
+  }
+}

@@ -33,19 +33,23 @@
     },
     "question_type": {
       "type": "enumeration",
-      "enum": ["tfng", "ynng", "mcq_single", "mcq_multiple", "gap_fill", "matching_headings", "matching_info", "summary_completion", "short_answer"],
+      "enum": ["tfng", "ynng", "mcq_single", "mcq_multiple", "gap_fill", "matching_headings", "matching_info", "summary_completion", "short_answer", "note_completion", "table_completion", "matching_names", "matching_sentence_endings", "summary_completion_drag_drop", "sentence_completion", "flow_chart_completion"],
       "required": true
     },
+    "question_group": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::question-group.question-group",
+      "inversedBy": "questions"
+    },
     "question_text": {
-      "type": "text",
-      "required": true
+      "type": "text"
     },
     "options": {
       "type": "json"
     },
     "correct_answer": {
-      "type": "string",
-      "required": true
+      "type": "string"
     },
     "explanation": {
       "type": "text"
