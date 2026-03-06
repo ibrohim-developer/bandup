@@ -1,0 +1,187 @@
+{
+  "attemptId": 43793,
+  "listeningId": 289,
+  "correctAnswers": 0,
+  "score": 0,
+  "totalQuestions": 10,
+  "percentage": 0,
+  "bandScore": 0,
+  "audioUrl": "https://api.otaboyev-prep.uz/uploads/files/file_20251127_190815_06b16eb5.m4a",
+  "transcript": null,
+  "transcript2": "Section 2. You will hear a manager talking to company employees about moving to a new office building. First, you have some time to look at questions 11 to 16 on page three. Now listen carefully and answer questions 11 to 16. \n\nSpeaker 2\nThank you for coming to today's meeting, everyone. I'd like to give you some information about moving to our new office building so that you know what the plans are. So first, let me explain why we're moving. Even though we've taken on quite a few new employees over the last year, we still have plenty of space here but the problem is where we are. But we've now found the perfect place in the city center. Originally, we chose this building in the suburbs because the rent was much cheaper but our clients aren't always keen on coming out here. I visited the new office last week and I'm pretty sure that you'll find the greatest advantage is the huge windows. I'm not sure we'll need desk lamps at all. Of course, we'll have everything checked out to make sure we can control the temperature of each office and we may have to put some room dividers in some offices so that you're not disturbed by your colleagues' conversations. We've just set a date for the move. The finance department wanted us to wait until after the end of the tax year, April, but we've decided to move earlier. As soon as the sales conference is over in January, we'll move. That'll give us plenty of time to organize everything before you start taking your annual holidays. We've already put quite a bit of information about the move on the company website, like restaurants and cafes around the new office, but we're still checking bus routes and things like that, so transport information will be up by next Monday. Another thing still to get confirmed is which car park we can use and how many people can use it. Okay, let's move on to some practical things you have to do now. Don't worry yet about taking home your photos and things like that. That can be sorted out much nearer the time, along with getting rid of any unwanted paperwork. We need to find out how many new desks and chairs to order, so could you make a list of any of the ones you use that are scratched or broken? Just one thing, all documents containing non-confidential information can go into the general packing boxes, but when it comes to documents containing confidential information, you'll need to put these in special bags. You'll be given gray plastic ones for this. So one thing to do now is go through your filing cabinets and identify which folders are confidential. \n\nSpeaker 1\nBefore you hear the rest of the talk, you have some time to look at questions 17 to 20 on page four. Now listen and answer questions 17 to 20. \n\nSpeaker 2\nNow, to help you prepare for the move, I'd like to talk about lifting heavy things. You shouldn't really have to do this because a removal company will be used but you might want to move a box out of your way or something. It's surprising how often people don't remember to use the handles on the boxes, although they all have them. You've all had the leaflet explaining that you should keep your back straight and your head up when lifting and it also tells you to stand with your feet firmly on the ground and a little bit apart, so I think that's clear. But the leaflet emphasizes the importance of not twisting to the left or right once you've picked something up. And if you're like me, that's easy to forget. I'd also like to talk about papers. If they've been stored for a long time, they can get mold on them, a sort of fungus, and as soon as you start moving them, the fungus gets disturbed. As you know, you can't open the windows in this building but I suggest you use the gloves that we'll provide. We'll also get some face masks but we've been advised that these shouldn't be necessary. What you should do is drink one or two liters of water a day. That's essential. Often the best time to do this sort of work is after your afternoon break so that you can leave the building soon afterwards. Now are there any questions? \n\nSpeaker 1\nThat is the end of Section 2. You now have half a minute to check your answers. Now turn to Section 3 on page five.",
+  "transcript3": null,
+  "transcript4": null,
+  "youtubeVideo": null,
+  "questionResults": [
+    {
+      "questionId": 546,
+      "questionNumber": 11,
+      "questionType": "MULTIPLE_CHOICE",
+      "questionText": "what reason does the manager give for moving to a new office building?",
+      "userAnswer": "",
+      "correctAnswer": "C",
+      "correctAnswers": [
+        "C"
+      ],
+      "isCorrect": false,
+      "points": 1,
+      "earnedPoints": 0,
+      "explanation": "He says the new office is better because it is more centrally located. He does not say they need more space or want to pay less rent.",
+      "fromPassage": "But we've now found the perfect place in the city center.",
+      "questionParts": []
+    },
+    {
+      "questionId": 548,
+      "questionNumber": 12,
+      "questionType": "MULTIPLE_CHOICE",
+      "questionText": "What is best about the new office building?",
+      "userAnswer": "",
+      "correctAnswer": "B",
+      "correctAnswers": [
+        "B"
+      ],
+      "isCorrect": false,
+      "points": 1,
+      "earnedPoints": 0,
+      "explanation": "He says the best thing about the new building is that it has lots of natural light.",
+      "fromPassage": "I visited the new office last week and I'm pretty sure that you'll find the greatest advantage is the huge windows.",
+      "questionParts": []
+    },
+    {
+      "questionId": 550,
+      "questionNumber": 13,
+      "questionType": "MULTIPLE_CHOICE",
+      "questionText": "When will the office move take place?",
+      "userAnswer": "",
+      "correctAnswer": "A",
+      "correctAnswers": [
+        "A"
+      ],
+      "isCorrect": false,
+      "points": 1,
+      "earnedPoints": 0,
+      "explanation": "He clearly states that they will move after the sales conference finishes.",
+      "fromPassage": "As soon as the sales conference is over in January, we'll move.",
+      "questionParts": []
+    },
+    {
+      "questionId": 552,
+      "questionNumber": 14,
+      "questionType": "MULTIPLE_CHOICE",
+      "questionText": "What information about the new location is already on the company website?",
+      "userAnswer": "",
+      "correctAnswer": "B",
+      "correctAnswers": [
+        "B"
+      ],
+      "isCorrect": false,
+      "points": 1,
+      "earnedPoints": 0,
+      "explanation": "He says the website already includes places to eat near the new office. He does NOT mention parking or public transport on the website.",
+      "fromPassage": "We've already put quite a bit of information about the move on the company website, like restaurants and cafes around the new office",
+      "questionParts": []
+    },
+    {
+      "questionId": 554,
+      "questionNumber": 15,
+      "questionType": "MULTIPLE_CHOICE",
+      "questionText": "What practical thing must staff do now?",
+      "userAnswer": "",
+      "correctAnswer": "A",
+      "correctAnswers": [
+        "A"
+      ],
+      "isCorrect": false,
+      "points": 1,
+      "earnedPoints": 0,
+      "explanation": "He says staff must report any damaged furniture before moving.",
+      "fromPassage": "We need to find out how many new desks and chairs to order, so could you make a list of any of the ones you use that are scratched or broken?",
+      "questionParts": []
+    },
+    {
+      "questionId": 556,
+      "questionNumber": 16,
+      "questionType": "MULTIPLE_CHOICE",
+      "questionText": "Staff will need to put folders containing confidential details",
+      "userAnswer": "",
+      "correctAnswer": "B",
+      "correctAnswers": [
+        "B"
+      ],
+      "isCorrect": false,
+      "points": 1,
+      "earnedPoints": 0,
+      "explanation": "He says confidential folders must be packed into grey plastic bags — not boxes, not cabinets.",
+      "fromPassage": "but when it comes to documents containing confidential information, you'll need to put these in special bags. You'll be given gray plastic ones for this. So one thing to do now is go through your filing cabinets and identify which folders are confidential. ",
+      "questionParts": []
+    },
+    {
+      "questionId": 558,
+      "questionNumber": 17,
+      "questionType": "MULTIPLE_ANSWER",
+      "questionText": "----",
+      "userAnswer": "",
+      "correctAnswer": "C,D",
+      "correctAnswers": [
+        "C,D"
+      ],
+      "isCorrect": false,
+      "points": 1,
+      "earnedPoints": 0,
+      "explanation": "One mistake people often make is leaning to one side when lifting.",
+      "fromPassage": "But the leaflet emphasizes the importance of not twisting to the left or right once you've picked something up.",
+      "questionParts": []
+    },
+    {
+      "questionId": 559,
+      "questionNumber": 18,
+      "questionType": "MULTIPLE_ANSWER",
+      "questionText": "----",
+      "userAnswer": "",
+      "correctAnswer": "C,D",
+      "correctAnswers": [
+        "C,D"
+      ],
+      "isCorrect": false,
+      "points": 1,
+      "earnedPoints": 0,
+      "explanation": "People forget to use the handles provided on boxes or equipment.\n\nFull sentence from transcript:",
+      "fromPassage": "It's surprising how often people don't remember to use the handles on the boxes, although they all have them.",
+      "questionParts": []
+    },
+    {
+      "questionId": 561,
+      "questionNumber": 19,
+      "questionType": "MULTIPLE_ANSWER",
+      "questionText": "----",
+      "userAnswer": "",
+      "correctAnswer": "C,E",
+      "correctAnswers": [
+        "C,E"
+      ],
+      "isCorrect": false,
+      "points": 1,
+      "earnedPoints": 0,
+      "explanation": "He says staff should wear gloves to avoid cuts from paper.",
+      "fromPassage": "As you know, you can't open the windows in this building but I suggest you use the gloves that we'll provide.",
+      "questionParts": []
+    },
+    {
+      "questionId": 562,
+      "questionNumber": 20,
+      "questionType": "MULTIPLE_ANSWER",
+      "questionText": "----",
+      "userAnswer": "",
+      "correctAnswer": "C,E",
+      "correctAnswers": [
+        "C,E"
+      ],
+      "isCorrect": false,
+      "points": 1,
+      "earnedPoints": 0,
+      "explanation": "He says staff should stay hydrated while doing the physical task.",
+      "fromPassage": "What you should do is drink one or two liters of water a day. That's essential.",
+      "questionParts": []
+    }
+  ]
+}

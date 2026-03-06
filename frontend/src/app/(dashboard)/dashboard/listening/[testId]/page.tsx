@@ -196,6 +196,8 @@ function ListeningTestContent({ testId }: { testId: string }) {
       case "short_answer":
       case "sentence_completion":
       case "summary_completion":
+      case "note_completion":
+      case "table_completion":
         return <FillInBlank key={question.id} {...commonProps} />;
       case "matching_headings":
         return (

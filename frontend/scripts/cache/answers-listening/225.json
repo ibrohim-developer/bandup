@@ -1,0 +1,187 @@
+{
+  "attemptId": 43794,
+  "listeningId": 225,
+  "correctAnswers": 0,
+  "score": 0,
+  "totalQuestions": 10,
+  "percentage": 0,
+  "bandScore": 0,
+  "audioUrl": "https://api.otaboyev-prep.uz/uploads/files/file_20251126_112902_ca0a6d83.mp3",
+  "transcript": "Speaker 1:\nThis is the IELTS listening test. You will hear a number of different recordings, and you will have to answer questions on what you hear. There will be time for you to read the instructions and questions, and you will have a chance to check your answers. All the recordings will be played once only.\nThe test is in four parts.\nAt the end of the test, you will be given 10 minutes to transfer your answers to the answer sheet.\n\nNow turn to Part 1.\nYou will hear a woman telephoning an eco farm.\nFirst, you have some time to look at questions 1–5.\n\nConversation Begins\n\nSpeaker 1 (Farm Staff):\nGood afternoon. Lakeside Eco Farm. Mark speaking.\n\nSpeaker 2 (Helen):\nOh, good afternoon. My name is Helen. I was listening to a program the other day. And it said that you are a member of the Northern Hotel Group.\n\nSpeaker 1:\nYes, that's correct. Are you a member of the group?\n\nSpeaker 2:\nYes, I am. And I would like to find out about staying with you for a week during the school holidays.\n\nSpeaker 1:\nNo problem, Helen. May I have your full name?\n\nSpeaker 2:\nPennington. That's P-E-double N-I-N-G-T-O-N.\n\nSpeaker 1:\nThank you, Helen. And your email address?\n\nSpeaker 2:\nHelen123 at email dot com. No dashes or underscores.\nOh sorry — actually, it's probably better if I give you my work email address, which is more convenient for me.\nThat is helen123 at greenfield dot com. And greenfield is one word.\n\nSpeaker 1:\nOkay. And your home address?\n\nSpeaker 2:\nIt is 66 Lake Road, Sheffield.\n\nSpeaker 1:\nMay I ask where you heard about us? You mentioned a program — is it on TV? Or…?\n\nSpeaker 2:\nActually, I heard about you on the radio. And I thought it might be a good place to take my children during the summer holidays. What kind of activities do you have?\n\nSpeaker 1:\nWell here we have lodges in the woods, a couple of lakes, lots of activities and great food. So I'm sure your whole family will love it. I can give you prices for all these.\nBut first, could I have your membership number?\n\nSpeaker 2:\nYes, I think it's UK756024G. But I will just check. It has been a while since I used it… just a moment.\nAh — actually it is UK765024EG.\n\nSpeaker 1:\nFine. Thank you.\nBefore you hear the rest of the conversation, you have some time to look at questions 6–10.\n\nQuestions 6–10 Begin\n\nSpeaker 1:\nNow listen carefully and answer questions 6–10.\nCan you see my information on your system?\n\nSpeaker 1:\nYes, I found you. So, regarding accommodation here at Island Eco Farm for families:\nI recommend our family chalets, as they are large and suitable for both adults and children.\n\nSpeaker 2:\nOkay, that sounds nice. But a large is probably too big for us. And I don't think we have much time and energy for cleaning. So we would like to stay in a flat, preferably near the farm.\n\nSpeaker 1:\nI'm afraid there is no accommodation near the farm. Would you want to be located near the lake? It's got a great view. Actually, my daughter would prefer to stay in the forest if possible.\n\nSpeaker 1:\nThat's fine. We have some lovely log cabins with room for four people which would suit your family.\n\nSpeaker 2:\nYes, that's the kind of thing we want. I hope you have a wide range of food available.\nMy husband is a meat eater. I like seafood and my children like organic food, including plenty of vegetables.\n\nSpeaker 1:\nYes, we cater for all different types of diet, so you can get all those preferences here. Don't worry.\n\nSpeaker 2:\nGreat.\nSo what is the transport situation? Can we get there by ferry or van, for instance?\n\nSpeaker 1:\nNo, the best way is by train. There's a regular service from Sheffield, or there is a bike trail all the way here.\nIt generally takes about six hours to ride here from Sheffield.\n\nSpeaker 2:\nSounds good, but it might be difficult with our luggage. It's a pity you don't have vans or ferry boats. But I think we will take the train.\nSo what activities do you have there?\n\nSpeaker 1:\nWe have a gardening course on planting flowers. Would that be suitable?\n\nSpeaker 2:\nI was hoping for something a little more energetic to give us more exercise — a dance course, for example.\n\nSpeaker 1:\nThat is something guests requested in the past. But it's not something we're doing at the moment. I will bear that in mind for the future though.\n\nSpeaker 2:\nOkay, that would be great. I need to get back to work. So can you email me through the prices and all the details?\n\nSpeaker 1:\nCertainly. I'll send all the details through to your work email address right now.\n\nSpeaker 2:\nGreat. Thank you.\n\nSpeaker 1:\nYou're welcome. And we hope to see you here at Lakeside Eco Farm soon. Thanks.\n\nSpeaker 2:\nGoodbye.\n\nSpeaker 1:\nThat is the end of Part 1. You now have one minute to check your answers to Part 1.",
+  "transcript2": null,
+  "transcript3": null,
+  "transcript4": null,
+  "youtubeVideo": null,
+  "questionResults": [
+    {
+      "questionId": 564,
+      "questionNumber": 1,
+      "questionType": "NOTE_COMPLETION",
+      "questionText": "----",
+      "userAnswer": "",
+      "correctAnswer": "Pennington",
+      "correctAnswers": [
+        "Pennington"
+      ],
+      "isCorrect": false,
+      "points": 1,
+      "earnedPoints": 0,
+      "explanation": "The woman states her first name (Helen) and then spells her surname (Pennington). The form asks for Name: so we combine first + last name → Helen Pennington.",
+      "fromPassage": "Speaker 2: My name is Helen.\nSpeaker 2: Pennington. That's P-E-double N-I-N-G-T-O-N.",
+      "questionParts": []
+    },
+    {
+      "questionId": 565,
+      "questionNumber": 2,
+      "questionType": "NOTE_COMPLETION",
+      "questionText": "----",
+      "userAnswer": "",
+      "correctAnswer": "greenfield",
+      "correctAnswers": [
+        "greenfield"
+      ],
+      "isCorrect": false,
+      "points": 1,
+      "earnedPoints": 0,
+      "explanation": "At first, Helen gives helen123@email.com, but she immediately changes it and says her work email is better. She clearly states the final, correct one: helen123@greenfield.com. IELTS accepts the final corrected answer, not the first one she said.",
+      "fromPassage": "Actually, it's probably better if I give you my work email address, which is more convenient for me. That is helen123@greenfield.com. And greenfield is one word.",
+      "questionParts": []
+    },
+    {
+      "questionId": 566,
+      "questionNumber": 3,
+      "questionType": "NOTE_COMPLETION",
+      "questionText": "----",
+      "userAnswer": "",
+      "correctAnswer": "66 Lake",
+      "correctAnswers": [
+        "66 Lake"
+      ],
+      "isCorrect": false,
+      "points": 1,
+      "earnedPoints": 0,
+      "explanation": "Since the question only needs to fill the street name before \"Road,\" the answer is Lake.",
+      "fromPassage": "It is 66 Lake Road, Sheffield.",
+      "questionParts": []
+    },
+    {
+      "questionId": 567,
+      "questionNumber": 4,
+      "questionType": "NOTE_COMPLETION",
+      "questionText": "----",
+      "userAnswer": "",
+      "correctAnswer": "radio",
+      "correctAnswers": [
+        "radio"
+      ],
+      "isCorrect": false,
+      "points": 1,
+      "earnedPoints": 0,
+      "explanation": "The farm staff asks whether she heard about them on TV, but she corrects him: She says she heard about the eco-farm on the radio.",
+      "fromPassage": "Speaker 1: You mentioned a program. Is it on TV Or…? \nSpeaker 2: Actually, I heard about you on the radio.",
+      "questionParts": []
+    },
+    {
+      "questionId": 568,
+      "questionNumber": 5,
+      "questionType": "NOTE_COMPLETION",
+      "questionText": "----",
+      "userAnswer": "",
+      "correctAnswer": "UK765024EG",
+      "correctAnswers": [
+        "UK765024EG"
+      ],
+      "isCorrect": false,
+      "points": 1,
+      "earnedPoints": 0,
+      "explanation": "Helen first gives the wrong membership number (G at the end). Then she checks again and corrects it to: UK765024EG",
+      "fromPassage": "Speaker 2:\nYes, I think it's UK756024G. But I will just check. It has been a while since I used it… just a moment.\nAh — actually it is UK765024EG.",
+      "questionParts": []
+    },
+    {
+      "questionId": 570,
+      "questionNumber": 6,
+      "questionType": "TABLE_COMPLETION",
+      "questionText": "-----",
+      "userAnswer": "",
+      "correctAnswer": "flat",
+      "correctAnswers": [
+        "flat"
+      ],
+      "isCorrect": false,
+      "points": 1,
+      "earnedPoints": 0,
+      "explanation": "The recommendation is lodges, but the customer preference is different. Helen says clearly that she prefers a flat because lodges are too big and require cleaning.\n",
+      "fromPassage": "Speaker 2:\nOkay, that sounds nice. But a large is probably too big for us. And I don't think we have much time and energy for cleaning. So we would like to stay in a flat, preferably near the farm.",
+      "questionParts": []
+    },
+    {
+      "questionId": 571,
+      "questionNumber": 7,
+      "questionType": "TABLE_COMPLETION",
+      "questionText": "-----",
+      "userAnswer": "",
+      "correctAnswer": "forest",
+      "correctAnswers": [
+        "forest"
+      ],
+      "isCorrect": false,
+      "points": 1,
+      "earnedPoints": 0,
+      "explanation": "The table asks for the customer preference, not what the farm recommends. Helen says her daughter prefers the forest.",
+      "fromPassage": "Speaker 1:\nI'm afraid there is no accommodation near the farm. Would you want to be located near the lake? It's got a great view. Actually, my daughter would prefer to stay in the forest if possible.",
+      "questionParts": []
+    },
+    {
+      "questionId": 572,
+      "questionNumber": 8,
+      "questionType": "TABLE_COMPLETION",
+      "questionText": "-----",
+      "userAnswer": "",
+      "correctAnswer": "organic",
+      "correctAnswers": [
+        "organic"
+      ],
+      "isCorrect": false,
+      "points": 1,
+      "earnedPoints": 0,
+      "explanation": "They want meat and seafood for adults, and organic food for the children.",
+      "fromPassage": "Speaker 2:\nYes, that's the kind of thing we want. I hope you have a wide range of food available.\nMy husband is a meat eater. I like seafood and my children like organic food, including plenty of vegetables.",
+      "questionParts": []
+    },
+    {
+      "questionId": 573,
+      "questionNumber": 9,
+      "questionType": "TABLE_COMPLETION",
+      "questionText": "-----",
+      "userAnswer": "",
+      "correctAnswer": "bike",
+      "correctAnswers": [
+        "bike"
+      ],
+      "isCorrect": false,
+      "points": 1,
+      "earnedPoints": 0,
+      "explanation": "The speaker mentions two possible ways: Train and Bike trail. So the second recommended option is bike.",
+      "fromPassage": "Speaker 1:\nNo, the best way is by train. There's a regular service from Sheffield, or there is a bike trail all the way here.\nIt generally takes about six hours to ride here from Sheffield.",
+      "questionParts": []
+    },
+    {
+      "questionId": 574,
+      "questionNumber": 10,
+      "questionType": "TABLE_COMPLETION",
+      "questionText": "-----",
+      "userAnswer": "",
+      "correctAnswer": "dance",
+      "correctAnswers": [
+        "dance"
+      ],
+      "isCorrect": false,
+      "points": 1,
+      "earnedPoints": 0,
+      "explanation": "The farm offers a gardening course, but Helen wants something more active. She gives dance course as an example of the active type of course she wants.",
+      "fromPassage": "Speaker 2:\nI was hoping for something a little more energetic to give us more exercise — a dance course, for example.",
+      "questionParts": []
+    }
+  ]
+}
