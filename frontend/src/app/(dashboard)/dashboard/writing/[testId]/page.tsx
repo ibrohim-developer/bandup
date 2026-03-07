@@ -338,44 +338,24 @@ function WritingTestContent({ testId }: { testId: string }) {
 
         {isReviewMode &&
           submission &&
-          submission.overallBandScore !== null && (
-            <div className="shrink-0 overflow-y-auto max-h-[40%] border-t" style={{ borderColor: theme.border }}>
+          submission.overallBandScore !== null &&
+          submission.feedback && (
+            <div className="shrink-0 overflow-y-auto max-h-[50%] border-t" style={{ borderColor: theme.border }}>
               <div className="p-3 md:p-6" style={{ backgroundColor: theme.bg }}>
-                <div className="flex items-center gap-2 mb-1">
+                <div className="flex items-center gap-2 mb-4">
                   <Sparkles className="h-5 w-5 text-purple-500" />
                   <h3 className="text-lg font-bold">
                     AI Evaluation - Task {activeTask.taskNumber}
                   </h3>
                 </div>
-                <p className="text-sm mb-4" style={{ color: theme.textMuted }}>
-                  Overall Band Score: {submission.overallBandScore}
-                </p>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                  <ScoreCard
-                    label="Task Achievement"
-                    score={submission.taskAchievementScore}
-                  />
-                  <ScoreCard
-                    label="Coherence & Cohesion"
-                    score={submission.coherenceScore}
-                  />
-                  <ScoreCard
-                    label="Lexical Resource"
-                    score={submission.lexicalScore}
-                  />
-                  <ScoreCard
-                    label="Grammar"
-                    score={submission.grammarScore}
-                  />
-                </div>
-                {submission.feedback && (
-                  <div>
-                    <h4 className="text-sm font-medium mb-2">
-                      Detailed Feedback
-                    </h4>
-                    <WritingFeedback feedback={submission.feedback} />
-                  </div>
-                )}
+                <WritingFeedback
+                  feedback={submission.feedback}
+                  overallBandScore={submission.overallBandScore}
+                  taskAchievementScore={submission.taskAchievementScore}
+                  coherenceScore={submission.coherenceScore}
+                  lexicalScore={submission.lexicalScore}
+                  grammarScore={submission.grammarScore}
+                />
               </div>
             </div>
           )}
@@ -457,30 +437,6 @@ function WritingTestContent({ testId }: { testId: string }) {
 
         </>
       )}
-    </div>
-  );
-}
-
-function ScoreCard({ label, score }: { label: string; score: number | null }) {
-  if (score === null) {
-    return (
-      <div className="text-center p-3 rounded-lg bg-muted">
-        <div className="text-2xl font-bold text-muted-foreground">-</div>
-        <div className="text-xs text-muted-foreground mt-1">{label}</div>
-      </div>
-    );
-  }
-
-  const getColor = (value: number) => {
-    if (value >= 7) return "text-green-600";
-    if (value >= 5) return "text-amber-600";
-    return "text-red-600";
-  };
-
-  return (
-    <div className="text-center p-3 rounded-lg bg-muted">
-      <div className={`text-2xl font-bold ${getColor(score)}`}>{score}</div>
-      <div className="text-xs text-muted-foreground mt-1">{label}</div>
     </div>
   );
 }

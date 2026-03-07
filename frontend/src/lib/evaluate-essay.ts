@@ -127,6 +127,16 @@ Return ONLY JSON with this exact schema:
       "fix": string
     }
   ],
+  "vocabulary_complexity": {
+    "cefr_level": "A1|A2|B1|B2|C1|C2",
+    "label": "Basic|Elementary|Intermediate|Upper-Intermediate|Advanced|Intricate",
+    "advice": string
+  },
+  "vocabulary_repetition": {
+    "has_repetition": boolean,
+    "message": string
+  },
+  "grammar_mistakes_count": number,
   "task_specific_notes": [string, string],
   "top_5_actions": [string, string, string, string, string]
 }
@@ -136,6 +146,9 @@ RULES:
 - overall_band = average of the four criterion scores, rounded to nearest 0.5.
 - evidence_quotes must be short exact phrases (max ~12 words each) taken from the candidate response.
 - grammar_corrections: provide 5–10 items (fewer if the writing is very clean).
+- vocabulary_complexity: assess the overall CEFR level of vocabulary used in the essay. label should match the cefr_level (A1=Basic, A2=Elementary, B1=Intermediate, B2=Upper-Intermediate, C1=Advanced, C2=Intricate). advice is a short one-sentence tip.
+- vocabulary_repetition: evaluate whether key vocabulary or phrases are overused. message is a one-sentence assessment (e.g. "No noticeable repetition! Great job!" or "The word 'important' appears 7 times...").
+- grammar_mistakes_count: total number of grammar issues found in the essay.
 - Be concise: avoid long paragraphs inside JSON strings.
 - If TASK_TYPE or MODULE is unclear, set "module":"unknown" but still grade using the closest match based on content (letter vs report vs essay).
 Return ONLY JSON.`;

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "@/components/no-prefetch-link";
-import { Clock } from "lucide-react";
+import { Clock, PenTool, ArrowRight } from "lucide-react";
 import { TestFilters } from "@/components/test/common/test-filters";
 import { WritingVirtualList } from "@/components/test/writing/writing-virtual-list";
 import { fetchWritingTests } from "./actions";
@@ -54,6 +54,24 @@ export default async function WritingTestsPage({
   return (
     <div className="space-y-6 md:space-y-8 pb-12">
       <TestFilters filters={writingFilters} />
+
+      <Link
+        href="/dashboard/writing/free"
+        className="block group rounded-xl border border-purple-200 dark:border-purple-800 bg-purple-50/50 dark:bg-purple-950/20 p-5 md:p-6 hover:border-purple-300 dark:hover:border-purple-700 transition-colors"
+      >
+        <div className="flex items-center gap-4">
+          <div className="w-11 h-11 rounded-full bg-purple-500 flex items-center justify-center shrink-0">
+            <PenTool className="h-5 w-5 text-white" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <h3 className="text-lg font-bold">Write Your Own Essay</h3>
+            <p className="text-sm text-muted-foreground mt-0.5">
+              Practice writing on any topic you choose and get instant AI feedback
+            </p>
+          </div>
+          <ArrowRight className="h-5 w-5 text-muted-foreground group-hover:text-foreground transition-colors shrink-0" />
+        </div>
+      </Link>
 
       <div className="flex items-start md:items-end justify-between gap-3">
         <div>

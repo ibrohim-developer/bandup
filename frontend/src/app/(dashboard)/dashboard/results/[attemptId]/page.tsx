@@ -277,16 +277,18 @@ function WritingResultsContent({ attempt, testTitle, tasks, submissions }: {
               <p className="text-sm text-muted-foreground mt-1">{submission.word_count} words written (minimum: {task.min_words}){submission.overall_band_score !== null && <span className="ml-2 font-medium">| Band Score: {submission.overall_band_score}</span>}</p>
             </div>
             <div className="p-8 space-y-6">
-              {submission.overall_band_score !== null && (
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                  {[["Task Achievement", submission.task_achievement_score], ["Coherence", submission.coherence_score], ["Lexical", submission.lexical_score], ["Grammar", submission.grammar_score]].map(([l, v]) => (
-                    <div key={l as string} className="text-center p-3 rounded-lg bg-muted"><div className={`text-xl font-bold ${getScoreColor(v as number | null)}`}>{(v as number | null) ?? "-"}</div><div className="text-xs text-muted-foreground">{l as string}</div></div>
-                  ))}
-                </div>
-              )}
               <div><h4 className="text-sm font-bold uppercase tracking-wider text-muted-foreground mb-2">Your Essay</h4><div className="p-4 rounded-lg bg-muted/50 border text-sm whitespace-pre-line max-h-60 overflow-y-auto">{submission.content}</div></div>
-              {submission.feedback && (<div><h4 className="text-sm font-bold uppercase tracking-wider text-muted-foreground mb-2 flex items-center gap-1"><Sparkles className="h-4 w-4 text-purple-500" />AI Feedback</h4><div className="p-4 rounded-lg border border-purple-200 dark:border-purple-800 bg-purple-50/50 dark:bg-purple-950/20"><WritingFeedback feedback={submission.feedback} /></div></div>)}
-              {submission.overall_band_score === null && (<div className="p-4 rounded-lg border border-amber-200 dark:border-amber-800 bg-amber-50/50 dark:bg-amber-950/20 text-sm text-amber-700 dark:text-amber-400">Evaluation pending - scores are not yet available for this task.</div>)}
+              {submission.feedback && (
+                <WritingFeedback
+                  feedback={submission.feedback}
+                  overallBandScore={submission.overall_band_score}
+                  taskAchievementScore={submission.task_achievement_score}
+                  coherenceScore={submission.coherence_score}
+                  lexicalScore={submission.lexical_score}
+                  grammarScore={submission.grammar_score}
+                />
+              )}
+              {submission.overall_band_score === null && !submission.feedback && (<div className="p-4 rounded-lg border border-amber-200 dark:border-amber-800 bg-amber-50/50 dark:bg-amber-950/20 text-sm text-amber-700 dark:text-amber-400">Evaluation pending - scores are not yet available for this task.</div>)}
             </div>
           </div>
         );
