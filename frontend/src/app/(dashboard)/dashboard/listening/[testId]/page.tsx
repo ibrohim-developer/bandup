@@ -19,6 +19,7 @@ import { FillInBlank } from "@/components/test/questions/fill-in-blank";
 import { TrueFalseNotGiven } from "@/components/test/questions/true-false-not-given";
 import { ContextFillInBlank } from "@/components/test/questions/context-fill-in-blank";
 import { MatchingSelect } from "@/components/test/questions/matching-select";
+import { FlowChart } from "@/components/test/questions/flow-chart";
 import { useListeningTest } from "@/hooks/use-listening-test";
 import { useFullscreen } from "@/hooks/use-fullscreen";
 import { useNavigationProtection } from "@/hooks/use-navigation-protection";
@@ -44,6 +45,19 @@ interface Question {
   metadata: Record<string, unknown> | null;
 }
 
+interface QuestionGroupData {
+  id: string;
+  groupNumber: number;
+  type: string;
+  instruction: string | null;
+  context: string | null;
+  points: number;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  options: any[] | null;
+  metadata: Record<string, unknown> | null;
+  questions: Question[];
+}
+
 interface Section {
   id: string;
   sectionNumber: number;
@@ -51,6 +65,7 @@ interface Section {
   audioDurationSeconds: number;
   transcript: string;
   questions: Question[];
+  questionGroups?: QuestionGroupData[];
 }
 
 export default function ListeningTestPage({
@@ -113,6 +128,7 @@ function ListeningTestContent({ testId }: { testId: string }) {
         content: section.transcript || "",
         wordCount: null,
         questions: section.questions,
+        questionGroups: section.questionGroups,
       })),
     [sections],
   );
@@ -146,6 +162,7 @@ function ListeningTestContent({ testId }: { testId: string }) {
       case "gap_fill":
       case "short_answer":
       case "sentence_completion":
+      case "flow_chart_completion":
         return "Write NO MORE THAN TWO WORDS AND/OR A NUMBER for each answer.";
       default:
         return "";
@@ -198,6 +215,7 @@ function ListeningTestContent({ testId }: { testId: string }) {
       case "summary_completion":
       case "note_completion":
       case "table_completion":
+      case "flow_chart_completion":
         return <FillInBlank key={question.id} {...commonProps} />;
       case "matching_headings":
         return (
@@ -390,9 +408,8 @@ function ListeningTestContent({ testId }: { testId: string }) {
             <AudioPlayer audioUrl={currentSection.audioUrl} examMode />
           )}
           {questionGroups.map((group, groupIndex) => {
-            const firstMeta = group.questions[0]?.metadata;
-            const contextHtml = firstMeta?.context as string | undefined;
-            const instructionHtml = firstMeta?.instruction as string | undefined;
+            const contextHtml = group.context as string | undefined;
+            const instructionHtml = group.instruction as string | undefined;
 
             return (
               <div key={groupIndex}>
@@ -416,46 +433,110 @@ function ListeningTestContent({ testId }: { testId: string }) {
                   )}
                 </div>
 
-                {contextHtml ? (
-                  <div className="text-sm leading-relaxed [&_h2]:text-base [&_h2]:font-bold [&_h2]:mb-2 [&_h3]:text-base [&_h3]:font-bold [&_h3]:mb-2 [&_strong]:font-semibold [&_ul]:list-disc [&_ul]:ml-5 [&_ol]:list-decimal [&_ol]:ml-5 [&_li]:mb-1 [&_p]:mb-1">
-                    <ContextFillInBlank
-                      contextHtml={contextHtml}
-                      questions={group.questions.map((question) => {
-                        const globalIdx =
-                          currentPassage.questions.indexOf(question);
-                        const review = reviewData[question.id];
-                        const value = isReviewMode
-                          ? review?.userAnswer || ""
-                          : answers[question.id]?.answer || "";
+                {(() => {
+                  const diagramMeta = group.metadata as { diagramQuestions?: { imageUrl?: string } } | null;
+                  const diagramImageUrl = diagramMeta?.diagramQuestions?.imageUrl;
+                  const isFlowChart = group.options && Array.isArray(group.options) && group.options.length > 0 && typeof group.options[0] === 'object' && (group.options[0] as { optionText?: string }).optionText;
 
-                        return {
-                          questionId: question.id,
-                          questionNumber: questionOffset + globalIdx + 1,
-                          value,
-                          onChange: (val: string) =>
-                            handleAnswer(question.id, val),
-                          disabled: isReviewMode,
-                          reviewMode: isReviewMode,
-                          correctAnswer: review?.correctAnswer,
-                          isCorrect: review?.isCorrect,
-                          isUnanswered: unansweredQuestions.has(question.id),
-                        };
-                      })}
-                    />
-                  </div>
-                ) : (
-                  <div className="space-y-6">
-                    {group.questions.map((question) => {
-                      const globalIdx =
-                        currentPassage.questions.indexOf(question);
-                      return (
-                        <div key={question.id}>
-                          {renderQuestion(question, globalIdx)}
+                  const buildGroupQuestions = () =>
+                    group.questions.map((question) => {
+                      const globalIdx = currentPassage.questions.findIndex((q) => q.id === question.id);
+                      const review = reviewData[question.id];
+                      const value = isReviewMode
+                        ? review?.userAnswer || ""
+                        : answers[question.id]?.answer || "";
+                      return {
+                        questionId: question.id,
+                        questionNumber: questionOffset + globalIdx + 1,
+                        value,
+                        onChange: (val: string) => handleAnswer(question.id, val),
+                        disabled: isReviewMode,
+                        reviewMode: isReviewMode,
+                        correctAnswer: review?.correctAnswer,
+                        isCorrect: review?.isCorrect,
+                        isUnanswered: unansweredQuestions.has(question.id),
+                      };
+                    });
+
+                  // Diagram/Map labeling — image + letter select dropdowns
+                  if (diagramImageUrl) {
+                    const letterOptions = (group.options as string[]) || [];
+                    return (
+                      <div className="space-y-4">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={diagramImageUrl}
+                          alt="Map diagram"
+                          className="w-full max-w-2xl rounded-lg border"
+                          style={{ borderColor: theme.border }}
+                        />
+                        <div className="space-y-4">
+                          {group.questions.map((question) => {
+                            const globalIdx = currentPassage.questions.findIndex((q) => q.id === question.id);
+                            const review = reviewData[question.id];
+                            const value = isReviewMode
+                              ? review?.userAnswer || ""
+                              : answers[question.id]?.answer || "";
+                            return (
+                              <MatchingSelect
+                                key={question.id}
+                                questionId={question.id}
+                                questionNumber={questionOffset + globalIdx + 1}
+                                questionText={question.text}
+                                options={letterOptions}
+                                value={value}
+                                onChange={(val: string) => handleAnswer(question.id, val)}
+                                disabled={isReviewMode}
+                                reviewMode={isReviewMode}
+                                correctAnswer={review?.correctAnswer}
+                                isCorrect={review?.isCorrect}
+                                isUnanswered={unansweredQuestions.has(question.id)}
+                                placeholder="Select a letter"
+                              />
+                            );
+                          })}
                         </div>
-                      );
-                    })}
-                  </div>
-                )}
+                      </div>
+                    );
+                  }
+
+                  // Flow chart — HTML boxes with arrows and embedded inputs
+                  if (isFlowChart) {
+                    return (
+                      <FlowChart
+                        title={contextHtml || undefined}
+                        options={group.options as unknown as { optionKey?: string; optionText: string; orderIndex?: number }[]}
+                        questions={buildGroupQuestions()}
+                      />
+                    );
+                  }
+
+                  // Context fill-in-blank — HTML with ______ placeholders
+                  if (contextHtml) {
+                    return (
+                      <div className="text-sm leading-relaxed [&_h2]:text-base [&_h2]:font-bold [&_h2]:mb-2 [&_h3]:text-base [&_h3]:font-bold [&_h3]:mb-2 [&_strong]:font-semibold [&_ul]:list-disc [&_ul]:ml-5 [&_ol]:list-decimal [&_ol]:ml-5 [&_li]:mb-1 [&_p]:mb-1">
+                        <ContextFillInBlank
+                          contextHtml={contextHtml}
+                          questions={buildGroupQuestions()}
+                        />
+                      </div>
+                    );
+                  }
+
+                  // Default — individual questions
+                  return (
+                    <div className="space-y-6">
+                      {group.questions.map((question) => {
+                        const globalIdx = currentPassage.questions.findIndex((q) => q.id === question.id);
+                        return (
+                          <div key={question.id}>
+                            {renderQuestion(question, globalIdx)}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  );
+                })()}
 
                 {groupIndex < questionGroups.length - 1 && (
                   <hr className="my-6" style={{ borderColor: theme.border }} />

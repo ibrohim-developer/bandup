@@ -99,11 +99,15 @@ export function MatchingSelect({
           <SelectContent>
             {options
               .filter((option) => option !== "")
-              .map((option, index) => (
-                <SelectItem key={`${index}-${option}`} value={option}>
-                  {option}
-                </SelectItem>
-              ))}
+              .map((option, index) => {
+                const letter = String.fromCharCode(65 + index);
+                const isSingleLetter = /^[A-Z]$/.test(option.trim());
+                return (
+                  <SelectItem key={`${index}-${option}`} value={isSingleLetter ? option.trim() : letter}>
+                    {isSingleLetter ? option.trim() : `${letter}. ${option}`}
+                  </SelectItem>
+                );
+              })}
           </SelectContent>
         </Select>
         {reviewMode && !isCorrect && correctAnswer && (

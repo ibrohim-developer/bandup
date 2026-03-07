@@ -38,7 +38,8 @@
       "Bash(for PAGE in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17)",
       "Bash(do)",
       "Bash(curl -s \"http://localhost:1337/api/questions?pagination%5BpageSize%5D=100&pagination%5Bpage%5D=$PAGE&fields%5B0%5D=question_type&filters%5Bmodule_type%5D%5B%24eq%5D=listening\" -H \"Authorization: Bearer 186b2b5e8f97e9326a785a983a311c2a6b196e93e4208124c22a7211f248e0a1eaf355e4c43f93f67cd8269354a3ccc588b2436a14eee2722f09cf54ae5b0446b76eab3ac9881adcaa612131ccea205d435824f5c2fda400afd4be07fc1b2b245f37003a274faea76d9d6a3fc97ce029ec5415b2870f56c4148056ddedb5d3cf\" --globoff)",
-      "Bash(done)"
+      "Bash(done)",
+      "Bash(npx tsc --noEmit --pretty)"
     ]
   }
 }

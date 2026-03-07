@@ -39,7 +39,9 @@ export interface QuestionGroup {
   endNum: number;
   instruction?: string | null;
   context?: string | null;
-  options?: string[] | null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  options?: string[] | any[] | null;
+  metadata?: Record<string, unknown> | null;
   questions: Question[];
 }
 
@@ -91,6 +93,7 @@ export function useQuestionNavigation(
           instruction: g.instruction,
           context: g.context,
           options: g.options,
+          metadata: g.metadata,
           questions: sortedQs,
         };
       });

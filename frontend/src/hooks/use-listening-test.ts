@@ -14,6 +14,18 @@ interface Question {
   metadata: Record<string, unknown> | null;
 }
 
+interface QuestionGroupData {
+  id: string;
+  groupNumber: number;
+  type: string;
+  instruction: string | null;
+  context: string | null;
+  points: number;
+  options: string[] | null;
+  metadata: Record<string, unknown> | null;
+  questions: Question[];
+}
+
 interface Section {
   id: string;
   sectionNumber: number;
@@ -22,6 +34,7 @@ interface Section {
   transcript: string;
   timeLimit: number;
   questions: Question[];
+  questionGroups?: QuestionGroupData[];
 }
 
 type ReviewMap = Record<
