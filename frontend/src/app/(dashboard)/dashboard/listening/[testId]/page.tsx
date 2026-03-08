@@ -15,6 +15,7 @@ import { TestOptionsMenu } from "@/components/test/common/test-options-menu";
 import { AudioPlayer } from "@/components/test/listening/audio-player";
 import { MultipleChoice } from "@/components/test/questions/multiple-choice";
 import { MultipleAnswer } from "@/components/test/questions/multiple-answer";
+import { MultipleAnswerGroup } from "@/components/test/questions/multiple-answer-group";
 import { FillInBlank } from "@/components/test/questions/fill-in-blank";
 import { TrueFalseNotGiven } from "@/components/test/questions/true-false-not-given";
 import { ContextFillInBlank } from "@/components/test/questions/context-fill-in-blank";
@@ -511,10 +512,31 @@ function ListeningTestContent({ testId }: { testId: string }) {
                     );
                   }
 
+                  // MCQ multiple with group-level context and options
+                  const groupOptions = (group.options as string[]) || [];
+                  if (group.type === "mcq_multiple" && groupOptions.length > 0) {
+                    return (
+                      <div className="space-y-4">
+                        {contextHtml && (
+                          <div
+                            className="text-sm leading-relaxed rich-html"
+                            dangerouslySetInnerHTML={{ __html: contextHtml }}
+                          />
+                        )}
+                        <MultipleAnswerGroup
+                          options={groupOptions}
+                          questions={buildGroupQuestions()}
+                          disabled={isReviewMode}
+                          reviewMode={isReviewMode}
+                        />
+                      </div>
+                    );
+                  }
+
                   // Context fill-in-blank — HTML with ______ placeholders
                   if (contextHtml) {
                     return (
-                      <div className="text-sm leading-relaxed [&_h2]:text-base [&_h2]:font-bold [&_h2]:mb-2 [&_h3]:text-base [&_h3]:font-bold [&_h3]:mb-2 [&_strong]:font-semibold [&_ul]:list-disc [&_ul]:ml-5 [&_ol]:list-decimal [&_ol]:ml-5 [&_li]:mb-1 [&_p]:mb-1">
+                      <div className="text-sm leading-relaxed [&_h2]:text-base [&_h2]:font-bold [&_h2]:mb-2 [&_h3]:text-base [&_h3]:font-bold [&_h3]:mb-2 [&_strong]:font-semibold [&_ul]:list-disc [&_ul]:ml-5 [&_ol]:list-decimal [&_ol]:ml-5 [&_li]:mb-1 [&_p]:mb-1 [&_table]:w-full [&_table]:border-collapse [&_th]:border [&_th]:border-gray-300 [&_th]:dark:border-gray-600 [&_th]:px-3 [&_th]:py-2 [&_th]:text-left [&_th]:font-bold [&_th]:bg-gray-100 [&_th]:dark:bg-gray-800 [&_td]:border [&_td]:border-gray-300 [&_td]:dark:border-gray-600 [&_td]:px-3 [&_td]:py-2 [&_td]:align-top">
                         <ContextFillInBlank
                           contextHtml={contextHtml}
                           questions={buildGroupQuestions()}

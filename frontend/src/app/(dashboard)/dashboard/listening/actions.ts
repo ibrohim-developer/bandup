@@ -4,7 +4,7 @@ import { unstable_cache } from "next/cache";
 import { find } from "@/lib/strapi/api";
 import { getToken, getCurrentUser } from "@/lib/strapi/server";
 
-const PAGE_SIZE = 20;
+const PAGE_SIZE = 100;
 
 interface ListeningTest {
   id: string;

@@ -108,8 +108,8 @@ function FlowChartBox({
   }, [getProcessedHtml, hasBlank]);
 
   return (
-    <div className="border rounded-lg px-4 py-3 w-full max-w-md bg-card text-center">
-      <div ref={containerRef} className="rich-html text-sm leading-relaxed" />
+    <div className="border rounded-lg px-4 py-3 w-full bg-card text-center">
+      <div ref={containerRef} className="rich-html text-sm leading-relaxed [&_ul]:list-none [&_ul]:pl-0 [&_ol]:list-none [&_ol]:pl-0" />
       {portalTargets.map((target, localIdx) => {
         const question = questions[questionOffset + localIdx];
         if (!question) return null;

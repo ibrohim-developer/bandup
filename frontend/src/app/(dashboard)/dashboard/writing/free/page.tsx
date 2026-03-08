@@ -15,8 +15,6 @@ import {
   Eye,
 } from "lucide-react";
 
-type TaskType = "essay" | "report";
-
 interface EvaluationResult {
   attemptId: string;
   evaluation: {
@@ -32,13 +30,12 @@ interface EvaluationResult {
 export default function FreeWritePage() {
   const router = useRouter();
   const [topic, setTopic] = useState("");
-  const [taskType, setTaskType] = useState<TaskType>("essay");
+  const taskType = "essay";
+  const minWords = 250;
   const [content, setContent] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [result, setResult] = useState<EvaluationResult | null>(null);
   const [error, setError] = useState<string | null>(null);
-
-  const minWords = taskType === "essay" ? 250 : 150;
   const wordCount = content
     .trim()
     .split(/\s+/)
@@ -208,34 +205,6 @@ export default function FreeWritePage() {
           />
         </div>
 
-        {/* Task Type Toggle */}
-        <div>
-          <label className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
-            Task Type
-          </label>
-          <div className="flex gap-2 mt-2">
-            <button
-              onClick={() => setTaskType("essay")}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                taskType === "essay"
-                  ? "bg-foreground text-background"
-                  : "bg-muted text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              Essay (Task 2) — min {250} words
-            </button>
-            <button
-              onClick={() => setTaskType("report")}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                taskType === "report"
-                  ? "bg-foreground text-background"
-                  : "bg-muted text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              Report (Task 1) — min {150} words
-            </button>
-          </div>
-        </div>
       </div>
 
       {/* Essay Editor */}

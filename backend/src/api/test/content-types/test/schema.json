@@ -26,6 +26,11 @@
       "type": "boolean",
       "default": false
     },
+    "module_type": {
+      "type": "enumeration",
+      "enum": ["listening", "reading", "writing"],
+      "required": false
+    },
     "reading_passages": {
       "type": "relation",
       "relation": "oneToMany",

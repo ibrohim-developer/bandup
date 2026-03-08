@@ -83,25 +83,32 @@ export function FillInBlank({
     );
   }
 
+  const isPlaceholderText = /^-{2,}$/.test(questionText.trim());
+
   return (
     <div id={`question-${questionId}`} className="space-y-3">
-      <p className="text-sm leading-relaxed text-gray-800">
-        {questionText}
-        {getQuestionBadge()}
-      </p>
-      <Input
-        value={displayValue}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={`${questionNumber} ...`}
-        autoComplete="off"
-        className={cn(
-          "max-w-md",
-          reviewMode && isCorrect && "border-green-500 bg-green-50 dark:bg-green-950/20",
-          reviewMode && !isCorrect && !isUnanswered && "border-red-500 bg-red-50 dark:bg-red-950/20",
-          reviewMode && isUnanswered && "border-red-400 bg-red-50 dark:bg-red-950/20 text-red-500",
-        )}
-        disabled={disabled}
-      />
+      {!isPlaceholderText && (
+        <p className="text-sm leading-relaxed text-gray-800">
+          {questionText}
+          {getQuestionBadge()}
+        </p>
+      )}
+      <div className="flex items-center gap-2">
+        <Input
+          value={displayValue}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={`${questionNumber} ...`}
+          autoComplete="off"
+          className={cn(
+            "max-w-md",
+            reviewMode && isCorrect && "border-green-500 bg-green-50 dark:bg-green-950/20",
+            reviewMode && !isCorrect && !isUnanswered && "border-red-500 bg-red-50 dark:bg-red-950/20",
+            reviewMode && isUnanswered && "border-red-400 bg-red-50 dark:bg-red-950/20 text-red-500",
+          )}
+          disabled={disabled}
+        />
+        {isPlaceholderText && getQuestionBadge()}
+      </div>
     </div>
   );
 }

@@ -117,6 +117,33 @@ function delay(ms: number): Promise<void> {
   return new Promise((r) => setTimeout(r, ms));
 }
 
+/** Convert external API tableData to HTML table string with ______ placeholders preserved */
+function tableDataToHtml(tableData: any): string | null {
+  if (!tableData || !tableData.columns || !tableData.rows) return null;
+  const cols = tableData.columns as { header: string; width?: number }[];
+  const rows = tableData.rows as { cells: string[] }[];
+
+  let html = '<table border="1" cellpadding="8" cellspacing="0" style="border-collapse:collapse;width:100%">';
+  // Header row
+  html += '<thead><tr>';
+  for (const col of cols) {
+    html += `<th style="text-align:left;font-weight:bold">${col.header || ''}</th>`;
+  }
+  html += '</tr></thead>';
+  // Body rows
+  html += '<tbody>';
+  for (const row of rows) {
+    html += '<tr>';
+    for (let i = 0; i < cols.length; i++) {
+      const cell = row.cells[i] || '';
+      html += `<td>${cell}</td>`;
+    }
+    html += '</tr>';
+  }
+  html += '</tbody></table>';
+  return html;
+}
+
 // ── External API calls ──────────────────────────────────────────────────────
 
 async function fetchTestList(token: string): Promise<{ id: number; title: string }[]> {
@@ -386,12 +413,20 @@ async function importTest(
       if (group.diagramQuestions) groupMetadata.diagramQuestions = group.diagramQuestions;
       if (group.imageUrl) groupMetadata.imageUrl = group.imageUrl;
 
+      // Build context: prefer tableData HTML, then fall back to questionText
+      let groupContext: string | null = null;
+      if (group.tableData) {
+        groupContext = tableDataToHtml(group.tableData);
+      } else if (group.questionText && !/^-{2,}$/.test(group.questionText.trim())) {
+        groupContext = group.questionText;
+      }
+
       // Create question group
       const strapiGroup = await strapiCreate("question-groups", {
         group_number: groupNumber,
         question_type: questionType,
         instruction: group.instruction || null,
-        context: group.questionText && group.questionText !== "----" ? group.questionText : null,
+        context: groupContext,
         options: groupOptions,
         metadata: Object.keys(groupMetadata).length > 0 ? groupMetadata : null,
       }, strapiToken);
