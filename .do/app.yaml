@@ -1,0 +1,17 @@
+name: bandup
+region: fra
+services:
+  - name: frontend
+    github:
+      repo: ibrohim-developer/bandup
+      branch: main
+      deploy_on_push: true
+    source_dir: /frontend
+    build_command: npx pnpm install && npx pnpm build
+    run_command: npx pnpm start
+    environment_slug: node-js
+    http_port: 3000
+    instance_count: 1
+    instance_size_slug: apps-s-1vcpu-0.5gb
+    routes:
+      - path: /
