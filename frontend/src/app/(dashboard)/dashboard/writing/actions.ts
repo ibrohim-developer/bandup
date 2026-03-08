@@ -18,35 +18,30 @@ interface WritingTest {
 /* eslint-disable @typescript-eslint/no-explicit-any */
 const getWritingTests = unstable_cache(
   async (): Promise<WritingTest[]> => {
-    const tasks = await find("writing-tasks", {
-      filters: { test: { is_published: { $eq: true } } },
+    const tests = await find("tests", {
+      filters: {
+        module_type: { $eq: "writing" },
+        is_published: { $eq: true },
+      },
+      fields: ["title", "description", "difficulty_level"],
       populate: {
-        test: { fields: ["title", "description", "difficulty_level", "is_published"] },
+        writing_tasks: { fields: ["task_number"] },
       },
     });
 
-    if (!tasks?.length) return [];
+    if (!tests?.length) return [];
 
-    const testMap = new Map<string, any>();
-    tasks.forEach((task: any) => {
-      const test = task.test;
-      if (!test) return;
-      const testDocId = test.documentId;
-      if (!testMap.has(testDocId)) {
-        testMap.set(testDocId, {
-          id: testDocId,
-          title: test.title,
-          description: test.description ?? "",
-          difficulty: test.difficulty_level ?? "medium",
-          duration: 60,
-          tasks: 0,
-        });
-      }
-      const testData = testMap.get(testDocId);
-      testData.tasks += 1;
+    return tests.map((test: any) => {
+      const tasks = test.writing_tasks ?? [];
+      return {
+        id: test.documentId,
+        title: test.title,
+        description: test.description ?? "",
+        difficulty: test.difficulty_level ?? "medium",
+        duration: 60,
+        tasks: tasks.length,
+      };
     });
-
-    return Array.from(testMap.values());
   },
   ["writing-tests"],
   { revalidate: 300 },

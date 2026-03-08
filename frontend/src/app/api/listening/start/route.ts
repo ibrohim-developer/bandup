@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAuthUser, find } from "@/lib/strapi/api";
+import { getAuthUser, find, findOne } from "@/lib/strapi/api";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -48,6 +48,13 @@ export async function POST(request: NextRequest) {
   if (!testId) {
     return NextResponse.json({ error: "testId is required" }, { status: 400 });
   }
+
+  // Fetch the test to get audio_url
+  const test = await findOne("tests", testId, {
+    fields: ["audio_url"],
+  });
+
+  const audioUrl = test?.audio_url || "";
 
   // Fetch listening sections with questions and their question groups
   const sections = await find("listening-sections", {
@@ -121,8 +128,6 @@ export async function POST(request: NextRequest) {
     return {
       id: section.documentId,
       sectionNumber: section.section_number,
-      audioUrl: section.audio_url,
-      audioDurationSeconds: section.audio_duration_seconds,
       transcript: section.transcript,
       timeLimit: section.time_limit,
       questionGroups,
@@ -136,6 +141,7 @@ export async function POST(request: NextRequest) {
   );
 
   return NextResponse.json({
+    audioUrl,
     totalTimeLimit,
     sections: sectionsWithQuestions,
   });

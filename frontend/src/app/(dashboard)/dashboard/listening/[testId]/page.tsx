@@ -62,8 +62,6 @@ interface QuestionGroupData {
 interface Section {
   id: string;
   sectionNumber: number;
-  audioUrl: string;
-  audioDurationSeconds: number;
   transcript: string;
   questions: Question[];
   questionGroups?: QuestionGroupData[];
@@ -102,6 +100,7 @@ function ListeningTestContent({ testId }: { testId: string }) {
 
   const {
     sections,
+    audioUrl,
     isLoading,
     error,
     hasStarted,
@@ -406,7 +405,7 @@ function ListeningTestContent({ testId }: { testId: string }) {
       <div className="flex-1 min-h-0 overflow-y-auto">
         <div className="max-w-4xl mx-auto p-3 md:p-6 space-y-4 md:space-y-6">
           {!isReviewMode && (
-            <AudioPlayer audioUrl={currentSection.audioUrl} examMode />
+            <AudioPlayer audioUrl={audioUrl} examMode />
           )}
           {questionGroups.map((group, groupIndex) => {
             const contextHtml = group.context as string | undefined;

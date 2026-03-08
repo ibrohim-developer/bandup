@@ -29,8 +29,6 @@ interface QuestionGroupData {
 interface Section {
   id: string;
   sectionNumber: number;
-  audioUrl: string;
-  audioDurationSeconds: number;
   transcript: string;
   timeLimit: number;
   questions: Question[];
@@ -59,6 +57,7 @@ export function useListeningTest(
     useTestStore();
 
   const [sections, setSections] = useState<Section[]>([]);
+  const [audioUrl, setAudioUrl] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [hasStarted, setHasStarted] = useState(false);
@@ -94,6 +93,7 @@ export function useListeningTest(
 
       const data = await res.json();
       setSections(data.sections);
+      setAudioUrl(data.audioUrl || "");
       setActiveSectionId(data.sections[0]?.id ?? "");
 
       const reviewMap: ReviewMap = {};
@@ -144,6 +144,7 @@ export function useListeningTest(
 
       const data = await res.json();
       setSections(data.sections);
+      setAudioUrl(data.audioUrl || "");
       setActiveSectionId(data.sections[0]?.id ?? "");
 
       // Use time limit from backend, fallback to config if not available
@@ -219,6 +220,7 @@ export function useListeningTest(
 
   return {
     sections,
+    audioUrl,
     isLoading,
     error,
     hasStarted,

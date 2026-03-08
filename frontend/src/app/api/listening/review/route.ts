@@ -60,7 +60,7 @@ export async function GET(request: NextRequest) {
       documentId: { $eq: attemptId },
       user: { id: { $eq: user.id } },
     },
-    populate: ["test"],
+    populate: { test: { fields: ["audio_url"] } },
   });
 
   const attempt = attempts?.[0];
@@ -72,6 +72,7 @@ export async function GET(request: NextRequest) {
   }
 
   const testDocId = attempt.test?.documentId;
+  const audioUrl = attempt.test?.audio_url || "";
 
   // Fetch sections with questions and question groups populated
   const sections = await find("listening-sections", {
@@ -157,8 +158,6 @@ export async function GET(request: NextRequest) {
     return {
       id: section.documentId,
       sectionNumber: section.section_number,
-      audioUrl: section.audio_url,
-      audioDurationSeconds: section.audio_duration_seconds,
       transcript: section.transcript,
       questionGroups,
       questions: cleanQuestions,
@@ -166,6 +165,7 @@ export async function GET(request: NextRequest) {
   });
 
   return NextResponse.json({
+    audioUrl,
     sections: sectionsWithQuestions,
     userAnswers: enrichedUserAnswers,
   });

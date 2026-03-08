@@ -4,7 +4,7 @@ import { unstable_cache } from "next/cache";
 import { find } from "@/lib/strapi/api";
 import { getToken, getCurrentUser } from "@/lib/strapi/server";
 
-const PAGE_SIZE = 100;
+const PAGE_SIZE = 20;
 
 interface ListeningTest {
   id: string;
@@ -19,38 +19,37 @@ interface ListeningTest {
 /* eslint-disable @typescript-eslint/no-explicit-any */
 const getListeningTests = unstable_cache(
   async (): Promise<ListeningTest[]> => {
-    const sections = await find("listening-sections", {
-      filters: { test: { is_published: { $eq: true } } },
+    const tests = await find("tests", {
+      filters: {
+        module_type: { $eq: "listening" },
+        is_published: { $eq: true },
+      },
+      fields: ["title", "description", "difficulty_level"],
       populate: {
-        test: { fields: ["title", "description", "difficulty_level", "is_published"] },
-        questions: { fields: ["question_number"] },
+        listening_sections: {
+          fields: ["section_number"],
+          populate: { questions: { fields: ["question_number"] } },
+        },
       },
     });
 
-    if (!sections?.length) return [];
+    if (!tests?.length) return [];
 
-    const testMap = new Map<string, any>();
-    sections.forEach((section: any) => {
-      const test = section.test;
-      if (!test) return;
-      const testDocId = test.documentId;
-      if (!testMap.has(testDocId)) {
-        testMap.set(testDocId, {
-          id: testDocId,
-          title: test.title,
-          description: test.description ?? "",
-          difficulty: test.difficulty_level ?? "medium",
-          duration: 30,
-          questions: 0,
-          sections: 0,
-        });
-      }
-      const testData = testMap.get(testDocId);
-      testData.sections += 1;
-      testData.questions += (section.questions ?? []).length;
+    return tests.map((test: any) => {
+      const sections = test.listening_sections ?? [];
+      return {
+        id: test.documentId,
+        title: test.title,
+        description: test.description ?? "",
+        difficulty: test.difficulty_level ?? "medium",
+        duration: 30,
+        questions: sections.reduce(
+          (sum: number, s: any) => sum + (s.questions?.length ?? 0),
+          0,
+        ),
+        sections: sections.length,
+      };
     });
-
-    return Array.from(testMap.values());
   },
   ["listening-tests"],
   { revalidate: 300 },

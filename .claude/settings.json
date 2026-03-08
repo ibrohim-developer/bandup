@@ -40,7 +40,10 @@
       "Bash(curl -s \"http://localhost:1337/api/questions?pagination%5BpageSize%5D=100&pagination%5Bpage%5D=$PAGE&fields%5B0%5D=question_type&filters%5Bmodule_type%5D%5B%24eq%5D=listening\" -H \"Authorization: Bearer 186b2b5e8f97e9326a785a983a311c2a6b196e93e4208124c22a7211f248e0a1eaf355e4c43f93f67cd8269354a3ccc588b2436a14eee2722f09cf54ae5b0446b76eab3ac9881adcaa612131ccea205d435824f5c2fda400afd4be07fc1b2b245f37003a274faea76d9d6a3fc97ce029ec5415b2870f56c4148056ddedb5d3cf\" --globoff)",
       "Bash(done)",
       "Bash(npx tsc --noEmit --pretty)",
-      "WebFetch(domain:engnovate.com)"
+      "WebFetch(domain:engnovate.com)",
+      "Bash(npx --yes better-sqlite3-cli \"c:/Users/User/web/bandup/backend/.tmp/data.db\" \".tables\")",
+      "Bash(pnpm add -D dotenv)",
+      "Bash(curl -s \"http://localhost:1337/api/tests?filters[module_type][$eq]=listening&pagination[pageSize]=2&fields[0]=title&fields[1]=module_type\" -H \"Authorization: Bearer 285233ea2f0c0de2e18ad9fe3cb335372c6d73e4c232eda058b7d5c45718fbc68ec47387be21676bba42f9f58cc1d03572229c5f877e9df83575fe93bfc1095b87bebc31438cf3c33ca7e423fd76929675a7769a2d28e56b8a4e81c72c5d33f1b408ae2bc9242075837f5569d7a9e853b99b41d4d53e729ad3e65593ed3e02d0\")"
     ]
   }
 }

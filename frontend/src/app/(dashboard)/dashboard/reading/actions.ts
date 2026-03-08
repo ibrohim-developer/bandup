@@ -21,40 +21,39 @@ interface ReadingTest {
 /* eslint-disable @typescript-eslint/no-explicit-any */
 const getReadingTests = unstable_cache(
   async (): Promise<ReadingTest[]> => {
-    const passages = await find("reading-passages", {
-      filters: { test: { is_published: { $eq: true } } },
+    const tests = await find("tests", {
+      filters: {
+        module_type: { $eq: "reading" },
+        is_published: { $eq: true },
+      },
+      fields: ["title", "description", "difficulty_level"],
       populate: {
-        test: { fields: ["title", "description", "difficulty_level", "is_published"] },
-        questions: { fields: ["question_number"] },
+        reading_passages: {
+          fields: ["passage_number"],
+          populate: { questions: { fields: ["question_number"] } },
+        },
       },
     });
 
-    if (!passages?.length) return [];
+    if (!tests?.length) return [];
 
-    const testMap = new Map<string, any>();
-    passages.forEach((passage: any) => {
-      const test = passage.test;
-      if (!test) return;
-      const testDocId = test.documentId;
-      if (!testMap.has(testDocId)) {
-        testMap.set(testDocId, {
-          id: testDocId,
-          title: test.title,
-          description: test.description ?? "",
-          difficulty: test.difficulty_level ?? "medium",
-          duration: 20,
-          questions: 0,
-          passages: 0,
-          part: passage.passage_number || 1,
-          type: "academic",
-        });
-      }
-      const testData = testMap.get(testDocId);
-      testData.passages += 1;
-      testData.questions += (passage.questions ?? []).length;
+    return tests.map((test: any) => {
+      const passages = test.reading_passages ?? [];
+      return {
+        id: test.documentId,
+        title: test.title,
+        description: test.description ?? "",
+        difficulty: test.difficulty_level ?? "medium",
+        duration: 20,
+        questions: passages.reduce(
+          (sum: number, p: any) => sum + (p.questions?.length ?? 0),
+          0,
+        ),
+        passages: passages.length,
+        part: passages[0]?.passage_number || 1,
+        type: "academic",
+      };
     });
-
-    return Array.from(testMap.values());
   },
   ["reading-tests"],
   { revalidate: 300 },

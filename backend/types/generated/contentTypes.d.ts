@@ -553,8 +553,6 @@ export interface ApiListeningSectionListeningSection
     draftAndPublish: false;
   };
   attributes: {
-    audio_duration_seconds: Schema.Attribute.Integer;
-    audio_url: Schema.Attribute.String & Schema.Attribute.Required;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -968,6 +966,7 @@ export interface ApiTestTest extends Struct.CollectionTypeSchema {
     draftAndPublish: false;
   };
   attributes: {
+    audio_url: Schema.Attribute.String;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;

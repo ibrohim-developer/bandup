@@ -25,6 +25,14 @@ export function VirtualTestList<T extends { id: string }>({
   const scrollElement = useScrollContainer();
   const sentinelRef = useRef<HTMLDivElement>(null);
 
+  // Keep latest values in refs so the observer callback never goes stale
+  const onLoadMoreRef = useRef(onLoadMore);
+  onLoadMoreRef.current = onLoadMore;
+  const hasMoreRef = useRef(hasMore);
+  hasMoreRef.current = hasMore;
+  const isLoadingRef = useRef(isLoading);
+  isLoadingRef.current = isLoading;
+
   const virtualizer = useVirtualizer({
     count: items.length,
     getScrollElement: () => scrollElement,
@@ -33,22 +41,40 @@ export function VirtualTestList<T extends { id: string }>({
     gap: 12,
   });
 
+  // Single stable observer — refs ensure the callback always sees latest state
   useEffect(() => {
-    if (!onLoadMore || !hasMore || isLoading || !sentinelRef.current || !scrollElement) return;
+    if (!sentinelRef.current || !scrollElement) return;
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) onLoadMore();
+        if (
+          entry.isIntersecting &&
+          hasMoreRef.current &&
+          !isLoadingRef.current
+        ) {
+          onLoadMoreRef.current?.();
+        }
       },
-      { root: scrollElement, rootMargin: "200px" },
+      { root: scrollElement, rootMargin: "400px" },
     );
     observer.observe(sentinelRef.current);
     return () => observer.disconnect();
-  }, [onLoadMore, hasMore, isLoading, scrollElement]);
+  }, [scrollElement]);
 
   if (items.length === 0 && !isLoading) {
     return (
       <div className="bg-card border border-border rounded-xl p-8 md:p-12 text-center">
         <p className="text-muted-foreground">{emptyMessage}</p>
+      </div>
+    );
+  }
+
+  // Render cards directly until scroll container is available to avoid empty flash
+  if (!scrollElement) {
+    return (
+      <div className="space-y-3">
+        {items.map((item, index) => (
+          <div key={item.id}>{renderCard(item, index)}</div>
+        ))}
       </div>
     );
   }
@@ -76,7 +102,7 @@ export function VirtualTestList<T extends { id: string }>({
           </div>
         ))}
       </div>
-      {hasMore && <div ref={sentinelRef} className="h-1" />}
+      <div ref={sentinelRef} className="h-1" />
       {isLoading && (
         <div className="flex justify-center py-4">
           <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />

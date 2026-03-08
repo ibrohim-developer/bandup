@@ -31,6 +31,9 @@
       "enum": ["listening", "reading", "writing"],
       "required": false
     },
+    "audio_url": {
+      "type": "string"
+    },
     "reading_passages": {
       "type": "relation",
       "relation": "oneToMany",
