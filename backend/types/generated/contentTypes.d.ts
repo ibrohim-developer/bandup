@@ -919,6 +919,40 @@ export interface ApiTestAttemptTestAttempt extends Struct.CollectionTypeSchema {
   };
 }
 
+export interface ApiTestFeedbackTestFeedback
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'test_feedbacks';
+  info: {
+    displayName: 'Test Feedback';
+    pluralName: 'test-feedbacks';
+    singularName: 'test-feedback';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::test-feedback.test-feedback'
+    > &
+      Schema.Attribute.Private;
+    message: Schema.Attribute.Text & Schema.Attribute.Required;
+    publishedAt: Schema.Attribute.DateTime;
+    test_attempt: Schema.Attribute.Relation<
+      'manyToOne',
+      'api::test-attempt.test-attempt'
+    >;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    user_id: Schema.Attribute.String;
+  };
+}
+
 export interface ApiTestProgressTestProgress
   extends Struct.CollectionTypeSchema {
   collectionName: 'test_progresses';
@@ -1648,6 +1682,7 @@ declare module '@strapi/strapi' {
       'api::speaking-topic.speaking-topic': ApiSpeakingTopicSpeakingTopic;
       'api::telegram-auth-code.telegram-auth-code': ApiTelegramAuthCodeTelegramAuthCode;
       'api::test-attempt.test-attempt': ApiTestAttemptTestAttempt;
+      'api::test-feedback.test-feedback': ApiTestFeedbackTestFeedback;
       'api::test-progress.test-progress': ApiTestProgressTestProgress;
       'api::test.test': ApiTestTest;
       'api::user-answer.user-answer': ApiUserAnswerUserAnswer;

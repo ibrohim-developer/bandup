@@ -43,7 +43,19 @@
       "WebFetch(domain:engnovate.com)",
       "Bash(npx --yes better-sqlite3-cli \"c:/Users/User/web/bandup/backend/.tmp/data.db\" \".tables\")",
       "Bash(pnpm add -D dotenv)",
-      "Bash(curl -s \"http://localhost:1337/api/tests?filters[module_type][$eq]=listening&pagination[pageSize]=2&fields[0]=title&fields[1]=module_type\" -H \"Authorization: Bearer 285233ea2f0c0de2e18ad9fe3cb335372c6d73e4c232eda058b7d5c45718fbc68ec47387be21676bba42f9f58cc1d03572229c5f877e9df83575fe93bfc1095b87bebc31438cf3c33ca7e423fd76929675a7769a2d28e56b8a4e81c72c5d33f1b408ae2bc9242075837f5569d7a9e853b99b41d4d53e729ad3e65593ed3e02d0\")"
+      "Bash(curl -s \"http://localhost:1337/api/tests?filters[module_type][$eq]=listening&pagination[pageSize]=2&fields[0]=title&fields[1]=module_type\" -H \"Authorization: Bearer 285233ea2f0c0de2e18ad9fe3cb335372c6d73e4c232eda058b7d5c45718fbc68ec47387be21676bba42f9f58cc1d03572229c5f877e9df83575fe93bfc1095b87bebc31438cf3c33ca7e423fd76929675a7769a2d28e56b8a4e81c72c5d33f1b408ae2bc9242075837f5569d7a9e853b99b41d4d53e729ad3e65593ed3e02d0\")",
+      "Bash(find \"c:\\\\Users\\\\User\\\\web\\\\bandup\\\\frontend\\\\src\\\\app\\\\\\(dashboard\\)\\\\dashboard\\\\results\" -type f)",
+      "Bash(find \"c:\\\\Users\\\\User\\\\web\\\\bandup\\\\frontend\\\\src\\\\app\\\\\\(dashboard\\)\\\\dashboard\" -maxdepth 1 -type d)",
+      "Bash(ls -1 \"c:\\\\Users\\\\User\\\\web\\\\bandup\\\\frontend\\\\src\\\\app\\\\\\(dashboard\\)\\\\dashboard\")",
+      "Bash(find \"c:\\\\Users\\\\User\\\\web\\\\bandup\\\\frontend\\\\src\\\\app\\\\\\(dashboard\\)\\\\dashboard\" -name \"[*]*\" -type d)",
+      "Bash(find \"c:\\\\Users\\\\User\\\\web\\\\bandup\\\\frontend\\\\src\\\\app\\\\\\(dashboard\\)\" -name \"page.tsx\")",
+      "Bash(xargs grep -l \"test\")",
+      "Bash(find \"c:\\\\Users\\\\User\\\\web\\\\bandup\\\\frontend\\\\src\\\\app\\\\\\(dashboard\\)\\\\dashboard\" -type f -name \"page.tsx\")",
+      "Bash(ls -la \"c:\\\\Users\\\\User\\\\web\\\\bandup\\\\frontend\\\\src\\\\app\\\\\\(dashboard\\)\\\\dashboard\")",
+      "Bash(find \"c:\\\\Users\\\\User\\\\web\\\\bandup\\\\frontend\\\\src\\\\app\\\\\\(dashboard\\)\" -type d -name \"*test*\")",
+      "Bash(ls -la \"c:\\\\Users\\\\User\\\\web\\\\bandup\\\\frontend\\\\src\\\\app\\\\\\(dashboard\\)\\\\dashboard\\\\tests\")",
+      "Bash(find \"c:\\\\Users\\\\User\\\\web\\\\bandup\\\\frontend\\\\src\\\\app\\\\\\(dashboard\\)\\\\dashboard\" -type d -name \"\\\\[testId\\\\]\" -o -type d -name \"\\\\[*\\\\]\")",
+      "Bash(xargs grep -l \"module_type\")"
     ]
   }
 }

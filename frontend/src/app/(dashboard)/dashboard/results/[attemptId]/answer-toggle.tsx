@@ -65,36 +65,45 @@ export function AnswerToggle({ answerResults }: { answerResults: AnswerResult[] 
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
-            {answerResults.map((result) => (
-              <tr key={result.id} className="hover:bg-muted/50 transition-colors">
-                <td className="px-8 py-5 font-bold text-lg">
-                  {result.questionNumber}
-                </td>
-                <td
-                  className={cn(
-                    'px-8 py-5 font-bold text-lg',
-                    result.isCorrect ? 'text-green-500' : 'text-red-500'
-                  )}
-                >
-                  {result.userAnswer}
-                </td>
-                <td
-                  className={cn(
-                    'px-8 py-5 font-bold text-lg transition-all duration-300',
-                    !showAnswers && 'opacity-20 blur-sm select-none'
-                  )}
-                >
-                  {result.correctAnswer}
-                </td>
-                <td className="px-8 py-5 text-right">
-                  {result.isCorrect ? (
-                    <CheckCircle className="h-7 w-7 text-green-500 inline-block" />
-                  ) : (
-                    <XCircle className="h-7 w-7 text-red-500 inline-block" />
-                  )}
-                </td>
-              </tr>
-            ))}
+            {answerResults.map((result) => {
+              const isUnanswered = result.userAnswer === 'N/A'
+              return (
+                <tr key={result.id} className="hover:bg-muted/50 transition-colors">
+                  <td className="px-8 py-5 font-bold text-lg">
+                    {result.questionNumber}
+                  </td>
+                  <td
+                    className={cn(
+                      'px-8 py-5 font-bold text-lg',
+                      isUnanswered
+                        ? 'text-muted-foreground'
+                        : result.isCorrect
+                          ? 'text-green-500'
+                          : 'text-red-500'
+                    )}
+                  >
+                    {result.userAnswer}
+                  </td>
+                  <td
+                    className={cn(
+                      'px-8 py-5 font-bold text-lg transition-all duration-300 text-green-500',
+                      !showAnswers && 'opacity-20 blur-sm select-none'
+                    )}
+                  >
+                    {result.correctAnswer}
+                  </td>
+                  <td className="px-8 py-5 text-right">
+                    {isUnanswered ? (
+                      <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">N/A</span>
+                    ) : result.isCorrect ? (
+                      <CheckCircle className="h-7 w-7 text-green-500 inline-block" />
+                    ) : (
+                      <XCircle className="h-7 w-7 text-red-500 inline-block" />
+                    )}
+                  </td>
+                </tr>
+              )
+            })}
           </tbody>
         </table>
       </div>

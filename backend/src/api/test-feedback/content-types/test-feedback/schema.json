@@ -1,0 +1,26 @@
+{
+  "kind": "collectionType",
+  "collectionName": "test_feedbacks",
+  "info": {
+    "singularName": "test-feedback",
+    "pluralName": "test-feedbacks",
+    "displayName": "Test Feedback"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "message": {
+      "type": "text",
+      "required": true
+    },
+    "test_attempt": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::test-attempt.test-attempt"
+    },
+    "user_id": {
+      "type": "string"
+    }
+  }
+}

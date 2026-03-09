@@ -9,13 +9,13 @@ import {
   ArrowLeft,
   Sparkles,
   Heart,
-  Eye,
   List,
   RotateCcw,
 } from "lucide-react";
 import { WritingFeedback } from "@/components/test/writing/writing-feedback";
 import { AnswerToggle } from "./answer-toggle";
 import { EvaluatingBanner } from "./evaluating-banner";
+import { FeedbackForm } from "./feedback-form";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 interface ResultsPageProps {
@@ -63,16 +63,58 @@ export default async function ResultsPage({ params }: ResultsPageProps) {
     populate: ["question"],
   });
 
-  const answerResults: AnswerResult[] = (userAnswers ?? [])
-    .map((ua: any) => {
-      const question = ua.question;
+  // Build a map of answered questions by documentId
+  const answeredMap = new Map<string, any>();
+  for (const ua of userAnswers ?? []) {
+    if (ua.question?.documentId) {
+      answeredMap.set(ua.question.documentId, ua);
+    }
+  }
+
+  // Fetch all questions for this test (via passages or sections)
+  let allQuestions: any[] = [];
+  if (attempt.module_type === "reading") {
+    const passages = await find("reading-passages", {
+      filters: { test: { documentId: { $eq: testDocId } } },
+      populate: {
+        question_groups: { populate: { questions: { sort: ["question_number"] } } },
+        questions: { sort: ["question_number"] },
+      },
+    });
+    for (const p of passages ?? []) {
+      const grouped = (p.question_groups ?? []).flatMap((g: any) => g.questions ?? []);
+      const ungrouped = p.questions ?? [];
+      allQuestions.push(...grouped, ...ungrouped);
+    }
+  } else if (attempt.module_type === "listening") {
+    const sections = await find("listening-sections", {
+      filters: { test: { documentId: { $eq: testDocId } } },
+      populate: { questions: { sort: ["question_number"] } },
+    });
+    for (const s of sections ?? []) {
+      allQuestions.push(...(s.questions ?? []));
+    }
+  }
+
+  // Deduplicate by documentId
+  const seen = new Set<string>();
+  allQuestions = allQuestions.filter((q: any) => {
+    if (seen.has(q.documentId)) return false;
+    seen.add(q.documentId);
+    return true;
+  });
+
+  // Merge: show all questions, with user answer or "N/A"
+  const answerResults: AnswerResult[] = allQuestions
+    .map((q: any) => {
+      const ua = answeredMap.get(q.documentId);
       return {
-        id: ua.documentId,
-        questionNumber: question?.question_number ?? 0,
-        questionText: question?.question_text ?? "",
-        userAnswer: ua.user_answer ?? "",
-        correctAnswer: question?.correct_answer ?? "",
-        isCorrect: ua.is_correct ?? false,
+        id: ua?.documentId ?? q.documentId,
+        questionNumber: q.question_number ?? 0,
+        questionText: q.question_text ?? "",
+        userAnswer: ua ? (ua.user_answer ?? "") : "N/A",
+        correctAnswer: q.correct_answer ?? "",
+        isCorrect: ua?.is_correct ?? false,
       };
     })
     .sort((a: AnswerResult, b: AnswerResult) => a.questionNumber - b.questionNumber);
@@ -153,6 +195,10 @@ function ResultsContent({ attempt, testTitle, answerResults }: {
           </div>
           <p className="text-xl font-bold text-muted-foreground mt-2 uppercase">{testTitle}</p>
         </div>
+        <div className="flex flex-wrap items-center justify-center gap-4 mb-12">
+          <Link href={`/dashboard/${attempt.module_type}`}><Button variant="outline" className="gap-2 px-8 h-12 rounded-xl font-bold text-md uppercase flex items-center"><List className="h-4 w-4" />View All Tests</Button></Link>
+          <Link href={`/dashboard/${attempt.module_type}/${attempt.test_id}`}><Button className="gap-2 px-8 h-12 rounded-xl font-bold text-md uppercase flex items-center"><RotateCcw className="h-4 w-4" />Try Again</Button></Link>
+        </div>
       </div>
       <div className="border-1 border-border rounded-xl p-12 mb-12">
         <div className="max-w-2xl mx-auto flex flex-col items-center text-center">
@@ -177,21 +223,9 @@ function ResultsContent({ attempt, testTitle, answerResults }: {
           </div>
         </div>
       </div>
-      {answerResults.length > 0 && (
-        <div id="review" className="border-1 border-border rounded-xl overflow-hidden mb-12"><AnswerToggle answerResults={answerResults} /></div>
-      )}
-      <div className="flex flex-wrap items-center justify-center gap-4 mb-12">
-        <Link href={`/dashboard/results/${attempt.id}#review`}><Button variant="outline" className="gap-2 px-8 py-3 rounded-xl font-bold text-sm uppercase tracking-widest"><Eye className="h-4 w-4" />Review Test</Button></Link>
-        <Link href="/dashboard/reading"><Button variant="outline" className="gap-2 px-8 py-3 rounded-xl font-bold text-sm uppercase tracking-widest"><List className="h-4 w-4" />View All Tests</Button></Link>
-        <Link href={`/dashboard/test/${attempt.test_id}`}><Button className="gap-2 px-8 py-3 rounded-xl font-bold text-sm uppercase tracking-widest"><RotateCcw className="h-4 w-4" />Try Again</Button></Link>
-      </div>
-      <section className="border-1 border-border rounded-xl p-8 mb-16">
-        <h3 className="text-2xl font-bold uppercase mb-6 tracking-tight">Your Feedback</h3>
-        <div className="space-y-6">
-          <textarea className="w-full rounded-xl border-1 border-border focus:border-foreground focus:ring-0 text-lg p-6 font-medium placeholder:text-muted-foreground/40 transition-all bg-background" placeholder="Share your thoughts or report an issue with this test..." rows={6} />
-          <div className="flex justify-end"><Button className="px-10 py-6 rounded-xl font-bold text-sm tracking-widest uppercase">Submit Feedback</Button></div>
-        </div>
-      </section>
+
+      <div id="review" className="border-1 border-border rounded-xl overflow-hidden mb-12"><AnswerToggle answerResults={answerResults} /></div>
+      <FeedbackForm attemptId={attempt.id} />
       <div className="flex flex-col items-center justify-center gap-6 pb-20 pt-4 text-center">
         <p className="text-xl font-bold text-muted-foreground uppercase tracking-tight">Support our mission to keep IELTS practice free for everyone.</p>
         <Button size="lg" className="flex items-center gap-3 px-12 py-6 rounded-xl font-bold text-sm tracking-widest uppercase"><Heart className="h-5 w-5" />Donate to Support</Button>
@@ -244,11 +278,10 @@ function WritingResultsContent({ attempt, testTitle, tasks, submissions }: {
         </div>
       </div>
       <div className="flex flex-wrap gap-4 mb-10">
-        <Link href={`/dashboard/results/${attempt.id}#review`}><Button variant="outline" className="gap-2 px-6 py-5 rounded-xl font-bold text-sm uppercase tracking-widest"><Eye className="h-4 w-4" />Review Test</Button></Link>
-        <Link href="/dashboard/tests"><Button variant="outline" className="gap-2 px-6 py-5 rounded-xl font-bold text-sm uppercase tracking-widest"><List className="h-4 w-4" />View All Tests</Button></Link>
-        <Link href={`/dashboard/test/${attempt.test_id}`}><Button className="gap-2 px-6 py-5 rounded-xl font-bold text-sm uppercase tracking-widest"><RotateCcw className="h-4 w-4" />Try Again</Button></Link>
+        <Link href="/dashboard/writing"><Button variant="outline" className="gap-2 px-6 py-5 rounded-xl font-bold text-sm uppercase tracking-widest"><List className="h-4 w-4" />View All Tests</Button></Link>
+        <Link href={`/dashboard/writing/${attempt.test_id}`}><Button className="gap-2 px-6 py-5 rounded-xl font-bold text-sm uppercase tracking-widest"><RotateCcw className="h-4 w-4" />Try Again</Button></Link>
       </div>
-      <div className="border-1 border-border rounded-xl overflow-hidden mb-10">
+      <div id="review" className="border-1 border-border rounded-xl overflow-hidden mb-10">
         <div className="p-8 border-b border-border">
           <h3 className="text-2xl font-bold uppercase tracking-tight flex items-center gap-2"><Sparkles className="h-5 w-5 text-purple-500" />AI Evaluation Summary</h3>
           <p className="text-sm text-muted-foreground mt-1">Average scores across all tasks</p>
@@ -293,13 +326,7 @@ function WritingResultsContent({ attempt, testTitle, tasks, submissions }: {
           </div>
         );
       })}
-      <section className="border-1 border-border rounded-xl p-8 mb-16">
-        <h3 className="text-2xl font-bold uppercase mb-6 tracking-tight">Your Feedback</h3>
-        <div className="space-y-6">
-          <textarea className="w-full rounded-xl 1 border-border focus:border-foreground focus:ring-0 text-lg p-6 font-medium placeholder:text-muted-foreground/40 transition-all bg-background" placeholder="Share your thoughts or report an issue with this test..." rows={6} />
-          <div className="flex justify-end"><Button className="px-10 py-6 rounded-xl font-bold text-sm tracking-widest uppercase">Submit Feedback</Button></div>
-        </div>
-      </section>
+      <FeedbackForm attemptId={attempt.id} />
       <div className="flex flex-col items-center justify-center gap-6 pb-20 pt-4 text-center">
         <p className="text-xl font-bold text-muted-foreground uppercase tracking-tight">Support our mission to keep IELTS practice free for everyone.</p>
         <Button size="lg" className="flex items-center gap-3 px-12 py-6 rounded-xl font-bold text-sm tracking-widest uppercase"><Heart className="h-5 w-5" />Donate to Support</Button>
