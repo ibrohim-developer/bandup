@@ -34,6 +34,10 @@
     "audio_url": {
       "type": "string"
     },
+    "is_full_mock_test": {
+      "type": "boolean",
+      "default": false
+    },
     "reading_passages": {
       "type": "relation",
       "relation": "oneToMany",
