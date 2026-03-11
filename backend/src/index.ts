@@ -1,7 +1,9 @@
 import type { Core } from '@strapi/strapi';
 
 export default {
-  register(/* { strapi }: { strapi: Core.Strapi } */) {},
+  register({ strapi }: { strapi: Core.Strapi }) {
+      strapi.server.app.proxy = true;
+  },
 
   async bootstrap({ strapi }: { strapi: Core.Strapi }) {
     // Configure permissions on first run
