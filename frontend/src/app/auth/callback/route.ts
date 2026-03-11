@@ -1,7 +1,8 @@
 import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
 
-const STRAPI_URL = process.env.NEXT_PUBLIC_STRAPI_URL || 'http://localhost:1337'
+const STRAPI_URL = process.env.STRAPI_INTERNAL_URL || process.env.NEXT_PUBLIC_STRAPI_URL || 'http://localhost:1337'
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
 const COOKIE_NAME = 'strapi_jwt'
 
 export async function GET(request: Request) {
@@ -35,7 +36,7 @@ export async function GET(request: Request) {
             path: '/',
             maxAge: 30 * 24 * 60 * 60,
           })
-          return NextResponse.redirect(`${origin}/dashboard`)
+          return NextResponse.redirect(`${SITE_URL}/dashboard`)
         }
       }
 
@@ -48,6 +49,6 @@ export async function GET(request: Request) {
 
   // Include debug info in error redirect
   return NextResponse.redirect(
-    `${origin}/sign-in?error=auth_callback_error&has_token=${!!accessToken}`
+    `${SITE_URL}/sign-in?error=auth_callback_error&has_token=${!!accessToken}`
   )
 }
