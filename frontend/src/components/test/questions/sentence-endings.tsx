@@ -100,14 +100,14 @@ export function SentenceEndings({
                   type="button"
                   onClick={() => onToggleFlag(q.questionId)}
                   className={cn(
-                    "shrink-0 p-1 transition-all",
+                    "shrink-0 p-0.5 transition-all",
                     flaggedQuestions?.includes(q.questionId) ? "opacity-100" : "opacity-0 group-hover/q:opacity-100",
                   )}
                   title={flaggedQuestions?.includes(q.questionId) ? "Remove flag" : "Flag for review"}
                 >
                   <Bookmark
                     className={cn(
-                      "h-4 w-4",
+                      "h-5 w-5",
                       flaggedQuestions?.includes(q.questionId)
                         ? "fill-red-500 text-red-500"
                         : "text-muted-foreground/40 hover:text-muted-foreground",

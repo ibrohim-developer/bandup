@@ -3,7 +3,7 @@
 import { useRef, useState, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { Input } from "@/components/ui/input";
-import { CheckCircle, XCircle } from "lucide-react";
+import { CheckCircle, XCircle, Bookmark } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface QuestionData {
@@ -21,11 +21,18 @@ interface QuestionData {
 interface ContextFillInBlankProps {
   contextHtml: string;
   questions: QuestionData[];
+  /** Background color for the input fields (from the active contrast theme) */
+  inputBg?: string;
+  /** Pass flaggedQuestions + onToggleFlag to enable per-question bookmarks */
+  flaggedQuestions?: string[];
+  onToggleFlag?: (questionId: string) => void;
 }
 
 export function ContextFillInBlank({
   contextHtml,
   questions,
+  flaggedQuestions,
+  onToggleFlag,
 }: ContextFillInBlankProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [portalTargets, setPortalTargets] = useState<HTMLElement[]>([]);
@@ -54,6 +61,8 @@ export function ContextFillInBlank({
     setPortalTargets(targets);
   }, [getProcessedHtml]);
 
+  const showBookmarks = !!(flaggedQuestions && onToggleFlag);
+
   return (
     <>
       <div ref={containerRef} className="space-y-1 rich-html" />
@@ -61,8 +70,10 @@ export function ContextFillInBlank({
         const question = questions[index];
         if (!question) return null;
 
+        const isFlagged = showBookmarks && flaggedQuestions!.includes(question.questionId);
+
         return createPortal(
-          <span className="inline-flex items-center gap-1 mx-1 align-middle">
+          <span className="inline-flex items-center gap-0.5 mx-1 align-middle group/blank">
             <Input
               id={`question-${question.questionId}`}
               value={
@@ -74,15 +85,15 @@ export function ContextFillInBlank({
               className={cn(
                 "inline-block w-36 h-7 text-center text-sm",
                 question.reviewMode &&
-                  question.isCorrect &&
-                  "border-green-500 bg-green-50 dark:bg-green-950/20",
+                question.isCorrect &&
+                "border-green-500 bg-green-50 dark:bg-green-950/20",
                 question.reviewMode &&
-                  !question.isCorrect &&
-                  !question.isUnanswered &&
-                  "border-red-500 bg-red-50 dark:bg-red-950/20",
+                !question.isCorrect &&
+                !question.isUnanswered &&
+                "border-red-500 bg-red-50 dark:bg-red-950/20",
                 question.reviewMode &&
-                  question.isUnanswered &&
-                  "border-red-400 bg-red-50 dark:bg-red-950/20 text-red-500",
+                question.isUnanswered &&
+                "border-red-400 bg-red-50 dark:bg-red-950/20 text-red-500",
               )}
               placeholder={`${question.questionNumber}`}
               disabled={question.disabled}
@@ -105,6 +116,29 @@ export function ContextFillInBlank({
                   </>
                 )}
               </>
+            )}
+            {/* Per-question bookmark button */}
+            {showBookmarks && (
+              <button
+                type="button"
+                onClick={() => onToggleFlag!(question.questionId)}
+                className={cn(
+                  "shrink-0 p-0.5 pr-0 transition-all cursor-pointer",
+                  isFlagged
+                    ? "opacity-100"
+                    : "opacity-0 group-hover/blank:opacity-100",
+                )}
+                title={isFlagged ? "Remove flag" : "Flag for review"}
+              >
+                <Bookmark
+                  className={cn(
+                    "h-5 w-5",
+                    isFlagged
+                      ? "fill-red-500 text-red-500"
+                      : "text-muted-foreground/40 hover:text-muted-foreground",
+                  )}
+                />
+              </button>
             )}
           </span>,
           target,

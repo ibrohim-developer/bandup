@@ -67,11 +67,11 @@ function BookmarkButton({ questionId, flaggedQuestions, toggleFlag }: {
     <button
       type="button"
       onClick={() => toggleFlag(questionId)}
-      className={`shrink-0 p-1 transition-all ${isFlagged ? "opacity-100" : "opacity-0 group-hover/q:opacity-100"}`}
+      className={`shrink-0 p-0.5 pr-0 transition-all cursor-pointer ${isFlagged ? "opacity-100" : "opacity-0 group-hover/q:opacity-100"}`}
       title={isFlagged ? "Remove flag" : "Flag for review"}
     >
       <Bookmark
-        className={`h-4 w-4 ${isFlagged ? "fill-red-500 text-red-500" : "text-muted-foreground/40 hover:text-muted-foreground"}`}
+        className={`h-5 w-5 ${isFlagged ? "fill-red-500 text-red-500" : "text-muted-foreground/40 hover:text-muted-foreground"}`}
       />
     </button>
   );
@@ -700,16 +700,13 @@ function ReadingTestContent({ testId }: { testId: string }) {
                         ["gap_fill", "summary_completion", "summary_completion_drag_drop", "short_answer", "note_completion", "table_completion", "sentence_completion"].includes(group.type)
                       ) {
                         return (
-                          <div className="group/q flex items-start gap-1">
-                            <div className="flex-1 text-sm leading-relaxed rich-html">
-                              <ContextFillInBlank
-                                contextHtml={contextHtml}
-                                questions={buildGroupQuestions()}
-                              />
-                            </div>
-                            {!isReviewMode && (
-                              <BookmarkButton questionId={group.questions[0].id} flaggedQuestions={flaggedQuestions} toggleFlag={toggleFlag} />
-                            )}
+                          <div className="text-sm leading-relaxed rich-html">
+                            <ContextFillInBlank
+                              contextHtml={contextHtml}
+                              questions={buildGroupQuestions()}
+                              flaggedQuestions={!isReviewMode ? flaggedQuestions : undefined}
+                              onToggleFlag={!isReviewMode ? toggleFlag : undefined}
+                            />
                           </div>
                         );
                       }
