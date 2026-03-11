@@ -54,7 +54,7 @@ export default async function WritingTestsPage({
   return (
     <div className="space-y-6 md:space-y-8 pb-12">
       <TestFilters filters={writingFilters} />
-
+{/* 
       <Link
         href="/dashboard/writing/free"
         className="block group rounded-xl border border-purple-200 dark:border-purple-800 bg-purple-50/50 dark:bg-purple-950/20 p-5 md:p-6 hover:border-purple-300 dark:hover:border-purple-700 transition-colors"
@@ -71,7 +71,7 @@ export default async function WritingTestsPage({
           </div>
           <ArrowRight className="h-5 w-5 text-muted-foreground group-hover:text-foreground transition-colors shrink-0" />
         </div>
-      </Link>
+      </Link> */}
 
       <div className="flex items-start md:items-end justify-between gap-3">
         <div>

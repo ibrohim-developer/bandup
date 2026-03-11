@@ -23,7 +23,7 @@ import { FillInBlank } from "@/components/test/questions/fill-in-blank";
 import { ContextFillInBlank } from "@/components/test/questions/context-fill-in-blank";
 import { MatchingSelect } from "@/components/test/questions/matching-select";
 import { MatchingGrid } from "@/components/test/questions/matching-grid";
-import { MultipleAnswerGroup } from "@/components/test/questions/multiple-answer-group";
+
 import { FlowChart } from "@/components/test/questions/flow-chart";
 import { SentenceEndings } from "@/components/test/questions/sentence-endings";
 import { useTestStore } from "@/stores/test-store";
@@ -634,19 +634,37 @@ function ReadingTestContent({ testId }: { testId: string }) {
                       ) {
                         return (
                           <div className="group/q flex items-start gap-1">
-                            <div className="flex-1 space-y-4">
+                            <div className="flex-1 space-y-6">
                               {contextHtml && (
                                 <div
                                   className="text-sm leading-relaxed rich-html"
                                   dangerouslySetInnerHTML={{ __html: contextHtml }}
                                 />
                               )}
-                              <MultipleAnswerGroup
-                                options={groupOptions}
-                                questions={buildGroupQuestions()}
-                                disabled={isReviewMode}
-                                reviewMode={isReviewMode}
-                              />
+                              {group.questions.map((question) => {
+                                const globalIdx =
+                                  currentPassage.questions.findIndex((pq) => pq.id === question.id);
+                                const review = reviewData[question.id];
+                                const value = isReviewMode
+                                  ? review?.userAnswer || ""
+                                  : answers[question.id]?.answer || "";
+                                return (
+                                  <MultipleAnswer
+                                    key={question.id}
+                                    questionId={question.id}
+                                    questionNumber={questionOffset + globalIdx + 1}
+                                    questionText={question.text}
+                                    options={groupOptions}
+                                    value={value}
+                                    onChange={(val: string) => handleAnswer(question.id, val)}
+                                    disabled={isReviewMode}
+                                    reviewMode={isReviewMode}
+                                    correctAnswer={review?.correctAnswer}
+                                    isCorrect={review?.isCorrect}
+                                    isUnanswered={unansweredQuestions.has(question.id)}
+                                  />
+                                );
+                              })}
                             </div>
                             {!isReviewMode && (
                               <BookmarkButton questionId={group.questions[0].id} flaggedQuestions={flaggedQuestions} toggleFlag={toggleFlag} />
