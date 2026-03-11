@@ -56,7 +56,7 @@ const menuItems = [
     href: '/dashboard/speaking',
     icon: Mic,
   },
-    {
+  {
     title: 'Full Mock Test',
     href: '/dashboard/full-mock-test',
     icon: ClipboardList,
@@ -88,9 +88,9 @@ export function Sidebar({ user }: SidebarProps) {
       <aside className="hidden md:flex fixed left-0 top-0 z-40 h-screen w-64 bg-card border-r border-border flex-col shrink-0">
         {/* Logo */}
         <div className="p-8 pointer-events-none">
-            <span className="text-2xl font-black tracking-tighter text-foreground">
-              band<span className="text-primary">.</span>up
-            </span>
+          <span className="text-2xl font-black tracking-tighter text-foreground">
+            band<span className="text-primary">.</span>up
+          </span>
         </div>
 
         {/* Navigation */}
@@ -102,28 +102,30 @@ export function Sidebar({ user }: SidebarProps) {
 
             return (
               <div key={item.href}>
-                <Link
-                  href={item.href}
-                  className={cn(
-                    'flex items-center gap-3 px-4 py-3 text-sm font-bold transition-all rounded-lg',
-                    isActive
-                      ? 'bg-primary text-primary-foreground'
-                      : 'text-muted-foreground hover:bg-muted'
-                  )}
-                >
-                  <item.icon className="h-5 w-5 shrink-0" />
-                  <span>{item.title}</span>
-                  {item.soon && (
-                    <span className={cn(
-                      'ml-auto text-[10px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded',
-                      isActive
-                        ? 'bg-primary-foreground/20 text-primary-foreground'
-                        : 'bg-primary/10 text-primary'
-                    )}>
+                {item.soon ? (
+                  <span
+                    className="flex items-center gap-3 px-4 py-3 text-sm font-bold transition-all rounded-lg text-muted-foreground opacity-60 cursor-not-allowed"
+                  >
+                    <item.icon className="h-5 w-5 shrink-0" />
+                    <span>{item.title}</span>
+                    <span className="ml-auto text-[10px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded bg-primary/10 text-primary">
                       Soon
                     </span>
-                  )}
-                </Link>
+                  </span>
+                ) : (
+                  <Link
+                    href={item.href}
+                    className={cn(
+                      'flex items-center gap-3 px-4 py-3 text-sm font-bold transition-all rounded-lg',
+                      isActive
+                        ? 'bg-primary text-primary-foreground'
+                        : 'text-muted-foreground hover:bg-muted'
+                    )}
+                  >
+                    <item.icon className="h-5 w-5 shrink-0" />
+                    <span>{item.title}</span>
+                  </Link>
+                )}
               </div>
             )
           })}
@@ -275,7 +277,18 @@ export function Sidebar({ user }: SidebarProps) {
               ? pathname === '/dashboard'
               : pathname.startsWith(item.href)
 
-            return (
+            return item.soon ? (
+              <span
+                key={item.href}
+                className="relative flex flex-col items-center gap-1 px-3 py-1.5 text-[11px] font-bold transition-all rounded-lg min-w-0 text-muted-foreground opacity-60 cursor-not-allowed"
+              >
+                <item.icon className="h-5 w-5 shrink-0" />
+                <span className="truncate">{item.title}</span>
+                <span className="absolute -top-0.5 -right-1 text-[8px] font-black uppercase text-primary">
+                  Soon
+                </span>
+              </span>
+            ) : (
               <Link
                 key={item.href}
                 href={item.href}
@@ -288,11 +301,6 @@ export function Sidebar({ user }: SidebarProps) {
               >
                 <item.icon className="h-5 w-5 shrink-0" />
                 <span className="truncate">{item.title}</span>
-                {item.soon && (
-                  <span className="absolute -top-0.5 -right-1 text-[8px] font-black uppercase text-primary">
-                    Soon
-                  </span>
-                )}
               </Link>
             )
           })}
