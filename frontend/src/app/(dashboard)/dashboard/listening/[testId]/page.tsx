@@ -15,7 +15,7 @@ import { TestOptionsMenu } from "@/components/test/common/test-options-menu";
 import { AudioPlayer } from "@/components/test/listening/audio-player";
 import { MultipleChoice } from "@/components/test/questions/multiple-choice";
 import { MultipleAnswer } from "@/components/test/questions/multiple-answer";
-import { MultipleAnswerGroup } from "@/components/test/questions/multiple-answer-group";
+
 import { FillInBlank } from "@/components/test/questions/fill-in-blank";
 import { TrueFalseNotGiven } from "@/components/test/questions/true-false-not-given";
 import { ContextFillInBlank } from "@/components/test/questions/context-fill-in-blank";
@@ -515,19 +515,36 @@ function ListeningTestContent({ testId }: { testId: string }) {
                   const groupOptions = (group.options as string[]) || [];
                   if (group.type === "mcq_multiple" && groupOptions.length > 0) {
                     return (
-                      <div className="space-y-4">
+                      <div className="space-y-6">
                         {contextHtml && (
                           <div
                             className="text-sm leading-relaxed rich-html"
                             dangerouslySetInnerHTML={{ __html: contextHtml }}
                           />
                         )}
-                        <MultipleAnswerGroup
-                          options={groupOptions}
-                          questions={buildGroupQuestions()}
-                          disabled={isReviewMode}
-                          reviewMode={isReviewMode}
-                        />
+                        {group.questions.map((question) => {
+                          const globalIdx = currentPassage.questions.findIndex((q) => q.id === question.id);
+                          const review = reviewData[question.id];
+                          const value = isReviewMode
+                            ? review?.userAnswer || ""
+                            : answers[question.id]?.answer || "";
+                          return (
+                            <MultipleAnswer
+                              key={question.id}
+                              questionId={question.id}
+                              questionNumber={questionOffset + globalIdx + 1}
+                              questionText={question.text}
+                              options={groupOptions}
+                              value={value}
+                              onChange={(val: string) => handleAnswer(question.id, val)}
+                              disabled={isReviewMode}
+                              reviewMode={isReviewMode}
+                              correctAnswer={review?.correctAnswer}
+                              isCorrect={review?.isCorrect}
+                              isUnanswered={unansweredQuestions.has(question.id)}
+                            />
+                          );
+                        })}
                       </div>
                     );
                   }

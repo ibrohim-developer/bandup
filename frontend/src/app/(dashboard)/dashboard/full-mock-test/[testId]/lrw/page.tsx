@@ -20,7 +20,7 @@ import { AudioPlayer } from "@/components/test/listening/audio-player";
 import { WritingEditor } from "@/components/test/writing/writing-editor";
 import { MultipleChoice } from "@/components/test/questions/multiple-choice";
 import { MultipleAnswer } from "@/components/test/questions/multiple-answer";
-import { MultipleAnswerGroup } from "@/components/test/questions/multiple-answer-group";
+
 import { TrueFalseNotGiven } from "@/components/test/questions/true-false-not-given";
 import { FillInBlank } from "@/components/test/questions/fill-in-blank";
 import { ContextFillInBlank } from "@/components/test/questions/context-fill-in-blank";
@@ -661,16 +661,29 @@ function LRWExamContent({ testId }: { testId: string }) {
 
                                                 if (group.type === "mcq_multiple" && groupOptions.length > 0) {
                                                     return (
-                                                        <div className="space-y-4">
+                                                        <div className="space-y-6">
                                                             {contextHtml && (
                                                                 <div className="text-sm leading-relaxed rich-html" dangerouslySetInnerHTML={{ __html: contextHtml }} />
                                                             )}
-                                                            <MultipleAnswerGroup
-                                                                options={groupOptions}
-                                                                questions={buildGroupQuestions()}
-                                                                disabled={false}
-                                                                reviewMode={false}
-                                                            />
+                                                            {group.questions.map((question) => {
+                                                                const globalIdx = currentPassage.questions.findIndex(
+                                                                    (pq) => pq.id === question.id,
+                                                                );
+                                                                const value = answers[question.id]?.answer || "";
+                                                                return (
+                                                                    <MultipleAnswer
+                                                                        key={question.id}
+                                                                        questionId={question.id}
+                                                                        questionNumber={questionOffset + globalIdx + 1}
+                                                                        questionText={question.text}
+                                                                        options={groupOptions}
+                                                                        value={value}
+                                                                        onChange={(val: string) => handleAnswer(question.id, val)}
+                                                                        disabled={false}
+                                                                        reviewMode={false}
+                                                                    />
+                                                                );
+                                                            })}
                                                         </div>
                                                     );
                                                 }

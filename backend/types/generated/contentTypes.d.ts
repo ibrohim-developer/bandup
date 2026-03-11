@@ -1007,6 +1007,8 @@ export interface ApiTestTest extends Struct.CollectionTypeSchema {
     description: Schema.Attribute.Text;
     difficulty_level: Schema.Attribute.Enumeration<['easy', 'medium', 'hard']> &
       Schema.Attribute.DefaultTo<'medium'>;
+    is_full_mock_test: Schema.Attribute.Boolean &
+      Schema.Attribute.DefaultTo<false>;
     is_published: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
     listening_sections: Schema.Attribute.Relation<
       'oneToMany',

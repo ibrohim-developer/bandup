@@ -170,7 +170,7 @@ export function WritingFeedback({
         <div className="text-center py-6">
           <h3 className="text-lg font-bold mb-2">Overall Band Score</h3>
           <p
-            className={`text-6xl font-bold ${getScoreColor(overallBandScore)}`}
+            className={`text-5xl md:text-6xl font-bold ${getScoreColor(overallBandScore)}`}
           >
             {overallBandScore}
           </p>
@@ -179,44 +179,48 @@ export function WritingFeedback({
       )}
 
       {/* Stat Bars */}
-      <div className="space-y-3">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3">
         {/* Vocabulary Complexity */}
         {parsed.vocabulary_complexity && (
-          <div className="rounded-xl bg-green-100 dark:bg-green-950/30 border border-green-200 dark:border-green-800 p-4">
-            <p className="text-xs font-bold uppercase tracking-widest text-green-700 dark:text-green-400 text-center mb-1">
-              Vocabulary Complexity:
+          <div className="flex flex-col items-center rounded-xl bg-green-100 dark:bg-green-950/30 border border-green-200 dark:border-green-800 p-3 sm:p-4">
+            <p className="text-[10px] sm:text-xs font-bold uppercase tracking-wider sm:tracking-widest text-green-700 dark:text-green-400 mb-2 text-center">
+              Vocabulary
             </p>
-            <p className="text-center font-bold text-green-800 dark:text-green-300">
-              {parsed.vocabulary_complexity.cefr_level} -{" "}
-              {parsed.vocabulary_complexity.label}
+            <p className="text-2xl sm:text-3xl font-bold text-green-800 dark:text-green-300">
+              {parsed.vocabulary_complexity.cefr_level}
             </p>
-            {parsed.vocabulary_complexity.advice && (
-              <p className="text-center text-xs text-green-700 dark:text-green-400 mt-1">
-                {parsed.vocabulary_complexity.advice}
+            {parsed.vocabulary_complexity.label && (
+              <p className="text-[10px] sm:text-xs text-green-700 dark:text-green-400 mt-1">
+                {parsed.vocabulary_complexity.label}
               </p>
             )}
           </div>
         )}
 
         {/* Grammar Mistakes */}
-        <div className="rounded-xl bg-yellow-100 dark:bg-yellow-950/30 border border-yellow-200 dark:border-yellow-800 p-4">
-          <p className="text-xs font-bold uppercase tracking-widest text-yellow-700 dark:text-yellow-400 text-center mb-1">
-            Grammar Mistakes:
+        <div className="flex flex-col items-center rounded-xl bg-yellow-100 dark:bg-yellow-950/30 border border-yellow-200 dark:border-yellow-800 p-3 sm:p-4">
+          <p className="text-[10px] sm:text-xs font-bold uppercase tracking-wider sm:tracking-widest text-yellow-700 dark:text-yellow-400 mb-2 text-center">
+            Grammar
           </p>
-          <p className="text-center font-bold text-yellow-800 dark:text-yellow-300">
+          <p className="text-2xl sm:text-3xl font-bold text-yellow-800 dark:text-yellow-300">
             {grammarMistakesCount}
           </p>
         </div>
 
         {/* Vocabulary Repetition */}
         {parsed.vocabulary_repetition && (
-          <div className="rounded-xl bg-purple-100 dark:bg-purple-950/30 border border-purple-200 dark:border-purple-800 p-4">
-            <p className="text-xs font-bold uppercase tracking-widest text-purple-700 dark:text-purple-400 text-center mb-1">
-              Vocabulary Repetition:
+          <div className="flex flex-col items-center rounded-xl bg-purple-100 dark:bg-purple-950/30 border border-purple-200 dark:border-purple-800 p-3 sm:p-4">
+            <p className="text-[10px] sm:text-xs font-bold uppercase tracking-wider sm:tracking-widest text-purple-700 dark:text-purple-400 mb-2 text-center">
+              Repetition
             </p>
-            <p className="text-center font-bold text-purple-800 dark:text-purple-300">
-              {parsed.vocabulary_repetition.message}
+            <p className="text-2xl sm:text-3xl font-bold text-purple-800 dark:text-purple-300">
+              {parsed.vocabulary_repetition.has_repetition ? "Found" : "None"}
             </p>
+            {parsed.vocabulary_repetition.message && (
+              <p className="text-[10px] sm:text-xs text-purple-700 dark:text-purple-400 mt-2 text-center line-clamp-2">
+                {parsed.vocabulary_repetition.message}
+              </p>
+            )}
           </div>
         )}
       </div>
@@ -243,14 +247,14 @@ export function WritingFeedback({
                     {cf.feedback.map((f, i) => (
                       <p
                         key={i}
-                        className="text-sm text-muted-foreground text-center max-w-2xl mx-auto"
+                        className="text-sm text-muted-foreground text-center max-w-5xl mx-auto"
                       >
                         {f}
                       </p>
                     ))}
                   </div>
                 )}
-                {cf.evidence_quotes && cf.evidence_quotes.length > 0 && (
+                {/* {cf.evidence_quotes && cf.evidence_quotes.length > 0 && (
                   <div className="mt-3 flex flex-wrap justify-center gap-2">
                     {cf.evidence_quotes.map((q, i) => (
                       <span
@@ -261,7 +265,7 @@ export function WritingFeedback({
                       </span>
                     ))}
                   </div>
-                )}
+                )} */}
               </div>
             );
           })}
