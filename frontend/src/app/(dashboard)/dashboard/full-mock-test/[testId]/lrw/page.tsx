@@ -398,10 +398,10 @@ function LRWExamContent({ testId }: { testId: string }) {
                                     )}
                                     <div
                                         className={`flex items-center gap-1 px-2 py-1 rounded text-xs font-bold transition-colors ${isActive
-                                                ? "bg-primary/10 text-primary"
-                                                : isCompleted
-                                                    ? "text-green-500"
-                                                    : "text-muted-foreground opacity-50"
+                                            ? "bg-primary/10 text-primary"
+                                            : isCompleted
+                                                ? "text-green-500"
+                                                : "text-muted-foreground opacity-50"
                                             }`}
                                     >
                                         {isCompleted ? (
@@ -579,7 +579,7 @@ function LRWExamContent({ testId }: { testId: string }) {
                             />
                         }
                         rightPanel={
-                            <div className="p-3 md:p-6 space-y-6" style={{ backgroundColor: theme.bg }}>
+                            <div className="h-full p-3 md:p-6 space-y-6" style={{ backgroundColor: theme.bg }}>
                                 {questionGroups.map((group, groupIndex) => {
                                     const contextHtml = group.context as string | undefined;
                                     const instructionHtml = group.instruction as string | undefined;

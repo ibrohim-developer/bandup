@@ -111,10 +111,10 @@ export function SplitView({
         >
           {/* Top Panel */}
           <div
-            className="overflow-y-auto border-b border-gray-200"
+            className="flex flex-col overflow-y-auto border-b border-gray-200"
             style={{ height: `${ratio}%` }}
           >
-            {leftPanel}
+            <div className="flex-1">{leftPanel}</div>
           </div>
 
           {/* Horizontal Resizer */}
@@ -132,10 +132,10 @@ export function SplitView({
 
           {/* Bottom Panel */}
           <div
-            className="overflow-y-auto bg-white"
+            className="flex flex-col overflow-y-auto bg-white"
             style={{ height: `${100 - ratio}%` }}
           >
-            {rightPanel}
+            <div className="flex-1">{rightPanel}</div>
           </div>
         </div>
       </div>
@@ -153,10 +153,10 @@ export function SplitView({
       >
         {/* Left Panel - Passage */}
         <div
-          className={cn("overflow-y-auto border-r border-gray-200")}
+          className={cn("flex flex-col overflow-y-auto border-r border-gray-200")}
           style={{ width: `${ratio}%` }}
         >
-          {leftPanel}
+          <div className="flex-1">{leftPanel}</div>
         </div>
 
         {/* Resizer */}
@@ -174,10 +174,10 @@ export function SplitView({
 
         {/* Right Panel - Questions */}
         <div
-          className={cn("overflow-y-auto bg-white")}
+          className={cn("flex flex-col overflow-y-auto")}
           style={{ width: `${100 - ratio}%` }}
         >
-          {rightPanel}
+          <div className="flex-1">{rightPanel}</div>
         </div>
       </div>
     </div>

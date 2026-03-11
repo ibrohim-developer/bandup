@@ -476,7 +476,7 @@ function ReadingTestContent({ testId }: { testId: string }) {
           }
           rightPanel={
             <div
-              className="p-3 md:p-6 space-y-6"
+              className="h-full p-3 md:p-6 space-y-6"
               style={{ backgroundColor: theme.bg }}
             >
               {questionGroups.map((group, groupIndex) => {
