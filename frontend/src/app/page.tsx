@@ -50,9 +50,9 @@ export default function HomePage() {
       <main className="flex-1">
         <JsonLd data={courseSchema} />
         {/* Hero Section */}
-        <header className="relative pt-24 pb-20 lg:pt-32 lg:pb-32 overflow-hidden border-b border-black">
+        <header className="relative pt-20 pb-20 lg:pt-32 lg:pb-32 overflow-hidden border-b border-black">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-primary text-white text-[10px] font-black uppercase tracking-[0.2em] mb-10 rounded-full">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-primary text-white text-[11px] font-black uppercase tracking-[0.2em] mb-6 rounded-full">
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-white"></span>
@@ -60,7 +60,7 @@ export default function HomePage() {
               AI-Powered Band Scoring Live
             </div>
 
-            <h1 className="text-5xl md:text-[140px] font-black text-black mb-8 md:md-12 leading-[0.9] tracking-tighter uppercase font-bold">
+            <h1 className="text-6xl md:text-[140px] font-black text-black mb-6 md:md-12 leading-[0.9] tracking-tighter uppercase font-bold">
               Get Your <br />
               <span className="text-primary">IELTS</span> Band <br className="hidden md:block" /> Score <br className="md:hidden" /><RotatingText />
             </h1>
@@ -72,7 +72,7 @@ export default function HomePage() {
               </p>
               <Link
                 href="/dashboard/reading"
-                className="md:hidden inline-block bg-primary text-[13px] text-white px-6 py-3.5 font-black hover:bg-primary/90 transition-all uppercase tracking-widest rounded-lg text-center mt-6"
+                className="md:hidden inline-block bg-primary text-[14px] text-white px-6 py-4 font-black hover:bg-primary/90 transition-all uppercase tracking-widest rounded-lg text-center mt-6"
               >
                 Free Mock Test
               </Link>
@@ -89,9 +89,9 @@ export default function HomePage() {
         </header>
 
         {/* Methodology / How it Works */}
-        <section className="py-32 bg-white border-b border-black" id="how-it-works">
+        <section className="py-15 md:py-32bg-white border-b border-black" id="how-it-works">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="mb-24">
+            <div className="mb-15 md:mb-24">
               <h2 className="text-5xl md:text-8xl font-black text-black mb-4 uppercase tracking-tighter font-bold">Methodology</h2>
               <div className="h-3 w-32 bg-primary"></div>
             </div>
@@ -123,11 +123,11 @@ export default function HomePage() {
         </section>
 
         {/* Features Section */}
-        <section className="py-32 border-b border-black" id="features">
+        <section className="py-15 md:py-32 border-b border-black" id="features">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid lg:grid-cols-2 gap-20 items-start">
               <div>
-                <h2 className="text-4xl md:text-8xl font-black text-black mb-10 md:mb-16 leading-[0.85] uppercase tracking-tighter font-bold">
+                <h2 className="text-4xl md:text-8xl font-black text-black mb-10 md:mb-16 leading-[0.9] uppercase tracking-tighter font-bold">
                   Superior <br />Mock Tech.
                 </h2>
 
@@ -206,7 +206,7 @@ export default function HomePage() {
         </section>
 
         {/* Live Analysis Section */}
-        <section className="py-32 bg-black text-white">
+        <section className="py-15 md:py-32 bg-black text-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-left mb-20 border-b border-white/20 pb-12">
               <h2 className="text-4xl md:text-8xl font-black mb-4 uppercase tracking-tighter font-bold">Live Analysis</h2>
@@ -234,19 +234,19 @@ export default function HomePage() {
                 </p>
                 <div className="mt-20 grid md:grid-cols-3 gap-12">
                   <div>
-                    <p className="text-[10px] font-black uppercase tracking-[0.2em] mb-4 text-primary">Grammar</p>
+                    <p className="text-[14px] font-black uppercase tracking-[0.2em] mb-2 text-primary">Grammar</p>
                     <p className="text-sm text-neutral-300 leading-snug font-normal">
                       Strong usage of complex structures. Minor subject-verb agreement correction identified.
                     </p>
                   </div>
                   <div>
-                    <p className="text-[10px] font-black uppercase tracking-[0.2em] mb-4 text-primary">Lexical Resource</p>
+                    <p className="text-[14px] font-black uppercase tracking-[0.2em] mb-2 text-primary">Lexical Resource</p>
                     <p className="text-sm text-neutral-300 leading-snug font-normal">
                       Exceptional range. Suggested academic collocations for higher precision.
                     </p>
                   </div>
                   <div>
-                    <p className="text-[10px] font-black uppercase tracking-[0.2em] mb-4 text-primary">Task Response</p>
+                    <p className="text-[14px] font-black uppercase tracking-[0.2em] mb-2 text-primary">Task Response</p>
                     <p className="text-sm text-neutral-300 leading-snug font-normal">
                       Fully addressed all prompts with clear logical positioning and structure.
                     </p>
@@ -385,10 +385,10 @@ export default function HomePage() {
         </section> */}
 
         {/* CTA Section */}
-        <section className="py-32">
+        <section className="py-15 md:py-32">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="border-[8px] md:border-[16px] border-primary p-8 md:p-20 text-center bg-white rounded-3xl">
-              <h2 className="text-5xl md:text-9xl font-black mb-10 tracking-tighter uppercase leading-[0.8] font-bold">
+              <h2 className="text-5xl md:text-9xl font-black mb-8 md:mb-10 tracking-tighter uppercase leading-[0.9] font-bold">
                 Join the <br />
                 <span className="text-primary">Standard.</span>
               </h2>
@@ -397,7 +397,7 @@ export default function HomePage() {
               </p>
               <Link
                 href="/dashboard/reading"
-                className="inline-block bg-primary text-white px-10 md:px-20 py-6 md:py-8 text-sm md:text-base font-black uppercase tracking-[0.2em] md:tracking-[0.3em] hover:bg-primary/90 transition-all rounded-xl"
+                className="inline-block bg-primary text-white px-10 md:px-20 py-5 md:py-8 text-sm md:text-base font-black uppercase tracking-[0.2em] md:tracking-[0.3em] hover:bg-primary/90 transition-all rounded-xl"
               >
                 Start for free
               </Link>
@@ -405,7 +405,6 @@ export default function HomePage() {
           </div>
         </section>
       </main>
-
       <Footer />
     </div>
   )

@@ -98,13 +98,13 @@ export function Header({ isLoggedIn = false, userEmail, userAvatar, userName }: 
                   <div className="flex flex-col gap-3">
                     <Link
                       href="/sign-in"
-                      className="border border-black text-black hover:bg-neutral-50 px-6 py-3 font-black text-[11px] tracking-widest transition-all uppercase text-center rounded-lg"
+                      className="border border-black text-black hover:bg-neutral-50 px-6 py-3 font-black text-[12px] tracking-widest transition-all uppercase text-center rounded-lg"
                     >
                       Sign In
                     </Link>
                     <Link
                       href="/dashboard/reading"
-                      className="bg-primary text-white px-6 py-3 font-black hover:bg-primary/90 transition-all uppercase text-[11px] tracking-widest rounded-lg text-center"
+                      className="bg-primary text-white px-6 py-3 font-black hover:bg-primary/90 transition-all text-[12px] uppercase tracking-widest rounded-lg text-center"
                     >
                       Free Mock Test
                     </Link>
