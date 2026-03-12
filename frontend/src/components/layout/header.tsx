@@ -73,7 +73,6 @@ export function Header({ isLoggedIn = false, userEmail, userAvatar, userName }: 
             <nav className="flex flex-col gap-6">
               <a className="text-xs font-bold uppercase tracking-widest hover:text-primary" href="#features">Features</a>
               <a className="text-xs font-bold uppercase tracking-widest hover:text-primary" href="#how-it-works">How it Works</a>
-              <a className="text-xs font-bold uppercase tracking-widest hover:text-primary" href="#pricing">Pricing</a>
               <Link className="text-xs font-bold uppercase tracking-widest hover:text-primary" href="/for-business">For Business</Link>
               <div className="pt-4 border-t border-black">
                 {isLoggedIn ? (

@@ -226,10 +226,10 @@ function ResultsContent({ attempt, testTitle, answerResults }: {
 
       <div id="review" className="border-1 border-border rounded-xl overflow-hidden mb-12"><AnswerToggle answerResults={answerResults} /></div>
       <FeedbackForm attemptId={attempt.id} />
-      <div className="flex flex-col items-center justify-center gap-6 pb-20 pt-4 text-center">
+      {/* <div className="flex flex-col items-center justify-center gap-6 pb-20 pt-4 text-center">
         <p className="text-base md:text-xl font-bold text-muted-foreground uppercase tracking-tight">Support our mission to keep IELTS practice free for everyone.</p>
         <Button size="lg" className="flex items-center gap-3 px-8 md:px-12 py-6 rounded-xl font-bold text-sm tracking-widest uppercase"><Heart className="h-5 w-5" />Donate to Support</Button>
-      </div>
+      </div> */}
     </div>
   );
 }
@@ -325,10 +325,10 @@ function WritingResultsContent({ attempt, testTitle, tasks, submissions }: {
       })}
 
       <FeedbackForm attemptId={attempt.id} />
-      <div className="flex flex-col items-center justify-center gap-6 pb-20 pt-4 text-center">
+      {/* <div className="flex flex-col items-center justify-center gap-6 pb-20 pt-4 text-center">
         <p className="text-base md:text-xl font-bold text-muted-foreground uppercase tracking-tight">Support our mission to keep IELTS practice free for everyone.</p>
         <Button size="lg" className="flex items-center gap-3 px-8 md:px-12 py-6 rounded-xl font-bold text-sm tracking-widest uppercase"><Heart className="h-5 w-5" />Donate to Support</Button>
-      </div>
+      </div> */}
     </div>
   );
 }

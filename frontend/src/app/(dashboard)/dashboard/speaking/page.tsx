@@ -23,15 +23,13 @@ export default function SpeakingPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="bg-card border border-border p-6 md:p-8 rounded-xl flex flex-col items-center text-center gap-4 relative opacity-75">
-          <span className="absolute top-3 right-3 bg-yellow-500 text-black text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full">
+          <span className="absolute top-3 right-3 bg-primary/10 text-primary text-[10px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded">
             Soon
           </span>
           <div className="bg-primary/10 p-4 rounded-full">
             <Users className="h-8 w-8 text-primary" />
           </div>
-          <h3 className="text-lg md:text-xl font-bold">
-            Mock Exam with Human
-          </h3>
+          <h3 className="text-lg md:text-xl font-bold">Mock Exam with Human</h3>
           <p className="text-sm text-muted-foreground">
             Practice with a real examiner and get personalized feedback on your
             speaking skills.

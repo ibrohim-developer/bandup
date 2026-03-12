@@ -1,8 +1,8 @@
-'use client'
+"use client";
 
-import Link from '@/components/no-prefetch-link'
-import { usePathname } from 'next/navigation'
-import { cn } from '@/lib/utils'
+import Link from "@/components/no-prefetch-link";
+import { usePathname } from "next/navigation";
+import { cn } from "@/lib/utils";
 import {
   BookOpenCheck,
   Headphones,
@@ -11,76 +11,80 @@ import {
   ClipboardList,
   LogOut,
   Sun,
-  Moon
-} from 'lucide-react'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+  Moon,
+} from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
-import { signOut } from '@/actions/auth'
-import { useTheme } from 'next-themes'
+} from "@/components/ui/dropdown-menu";
+import { signOut } from "@/actions/auth";
+import { useTheme } from "next-themes";
 
 interface SidebarProps {
   user?: {
-    id: string
-    email?: string
+    id: string;
+    email?: string;
     user_metadata?: {
-      full_name?: string
-      avatar_url?: string
-    }
-  } | null
+      full_name?: string;
+      avatar_url?: string;
+    };
+  } | null;
 }
 
 const menuItems = [
   {
-    title: 'Reading',
-    href: '/dashboard/reading',
+    title: "Reading",
+    href: "/dashboard/reading",
     icon: BookOpenCheck,
   },
   {
-    title: 'Listening',
-    href: '/dashboard/listening',
+    title: "Listening",
+    href: "/dashboard/listening",
     icon: Headphones,
   },
   {
-    title: 'Writing',
-    href: '/dashboard/writing',
+    title: "Writing",
+    href: "/dashboard/writing",
     icon: PenTool,
   },
   {
-    title: 'Speaking',
-    href: '/dashboard/speaking',
+    title: "Speaking",
+    href: "/dashboard/speaking",
     icon: Mic,
   },
   {
-    title: 'Full Mock Test',
-    href: '/dashboard/full-mock-test',
+    title: "Full Mock Test",
+    href: "/dashboard/full-mock-test",
     icon: ClipboardList,
     soon: true,
-  }
-]
+  },
+];
 
-const testRoutePattern = /^\/dashboard\/((reading|listening|writing)\/[^/]+|speaking\/mock-exam\/[^/]+|(full-mock-test)\/[^/]+|results\/[^/]+)$/
+const testRoutePattern =
+  /^\/dashboard\/((reading|listening|writing)\/[^/]+|speaking\/mock-exam\/[^/]+|(full-mock-test)\/[^/]+|results\/[^/]+)$/;
 
 export function Sidebar({ user }: SidebarProps) {
-  const pathname = usePathname()
-  const { theme, setTheme } = useTheme()
+  const pathname = usePathname();
+  const { theme, setTheme } = useTheme();
 
   // Hide sidebar on test pages
   if (testRoutePattern.test(pathname)) {
-    return null
+    return null;
   }
 
-  const userInitials = user?.user_metadata?.full_name
-    ?.split(' ')
-    .map(n => n[0])
-    .join('')
-    .toUpperCase()
-    .slice(0, 2) || user?.email?.[0]?.toUpperCase() || 'U'
+  const userInitials =
+    user?.user_metadata?.full_name
+      ?.split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2) ||
+    user?.email?.[0]?.toUpperCase() ||
+    "U";
 
   return (
     <>
@@ -96,16 +100,15 @@ export function Sidebar({ user }: SidebarProps) {
         {/* Navigation */}
         <nav className="flex-1 px-4 space-y-1">
           {menuItems.map((item) => {
-            const isActive = item.href === '/dashboard'
-              ? pathname === '/dashboard'
-              : pathname.startsWith(item.href)
+            const isActive =
+              item.href === "/dashboard"
+                ? pathname === "/dashboard"
+                : pathname.startsWith(item.href);
 
             return (
               <div key={item.href}>
                 {item.soon ? (
-                  <span
-                    className="flex items-center gap-3 px-4 py-3 text-sm font-bold transition-all rounded-lg text-muted-foreground opacity-60 cursor-not-allowed"
-                  >
+                  <span className="flex items-center gap-3 px-4 py-3 text-sm font-bold transition-all rounded-lg text-muted-foreground opacity-60 cursor-not-allowed">
                     <item.icon className="h-5 w-5 shrink-0" />
                     <span>{item.title}</span>
                     <span className="ml-auto text-[10px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded bg-primary/10 text-primary">
@@ -116,10 +119,10 @@ export function Sidebar({ user }: SidebarProps) {
                   <Link
                     href={item.href}
                     className={cn(
-                      'flex items-center gap-3 px-4 py-3 text-sm font-bold transition-all rounded-lg',
+                      "flex items-center gap-3 px-4 py-3 text-sm font-bold transition-all rounded-lg",
                       isActive
-                        ? 'bg-primary text-primary-foreground'
-                        : 'text-muted-foreground hover:bg-muted'
+                        ? "bg-primary text-primary-foreground"
+                        : "text-muted-foreground hover:bg-muted",
                     )}
                   >
                     <item.icon className="h-5 w-5 shrink-0" />
@@ -127,14 +130,14 @@ export function Sidebar({ user }: SidebarProps) {
                   </Link>
                 )}
               </div>
-            )
+            );
           })}
         </nav>
 
         {/* Theme Toggle */}
         <div className="px-4 pb-2">
           <button
-            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
             className="flex items-center gap-3 px-4 py-3 text-sm font-bold transition-all rounded-lg w-full text-muted-foreground hover:bg-muted"
           >
             <Sun className="h-5 w-5 shrink-0 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
@@ -150,29 +153,39 @@ export function Sidebar({ user }: SidebarProps) {
               <DropdownMenuTrigger asChild>
                 <button className="flex items-center gap-3 w-full text-left px-2 py-1 rounded-lg hover:bg-muted transition-colors">
                   <Avatar className="h-10 w-10">
-                    <AvatarImage src={user?.user_metadata?.avatar_url} alt={user?.user_metadata?.full_name || 'User'} />
+                    <AvatarImage
+                      src={user?.user_metadata?.avatar_url}
+                      alt={user?.user_metadata?.full_name || "User"}
+                    />
                     <AvatarFallback className="bg-muted text-muted-foreground font-bold">
                       {userInitials}
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex flex-col flex-1 min-w-0">
                     <span className="text-xs font-bold truncate">
-                      {user?.user_metadata?.full_name || 'User'}
+                      {user?.user_metadata?.full_name || "User"}
                     </span>
                   </div>
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" side="top" className="w-64 p-4">
+              <DropdownMenuContent
+                align="start"
+                side="top"
+                className="w-64 p-4"
+              >
                 <div className="flex flex-col items-center gap-3">
                   <Avatar className="h-16 w-16">
-                    <AvatarImage src={user?.user_metadata?.avatar_url} alt={user?.user_metadata?.full_name || 'User'} />
+                    <AvatarImage
+                      src={user?.user_metadata?.avatar_url}
+                      alt={user?.user_metadata?.full_name || "User"}
+                    />
                     <AvatarFallback className="bg-muted text-muted-foreground font-bold text-lg">
                       {userInitials}
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex flex-col items-center text-center">
                     <span className="text-sm font-bold">
-                      {user?.user_metadata?.full_name || 'User'}
+                      {user?.user_metadata?.full_name || "User"}
                     </span>
                     {user?.email && (
                       <span className="text-xs text-muted-foreground truncate max-w-full">
@@ -214,24 +227,34 @@ export function Sidebar({ user }: SidebarProps) {
               <DropdownMenuTrigger asChild>
                 <button className="rounded-full focus:outline-none focus:ring-2 focus:ring-primary">
                   <Avatar className="h-8 w-8">
-                    <AvatarImage src={user?.user_metadata?.avatar_url} alt={user?.user_metadata?.full_name || 'User'} />
+                    <AvatarImage
+                      src={user?.user_metadata?.avatar_url}
+                      alt={user?.user_metadata?.full_name || "User"}
+                    />
                     <AvatarFallback className="bg-muted text-muted-foreground font-bold text-xs">
                       {userInitials}
                     </AvatarFallback>
                   </Avatar>
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" side="bottom" className="w-64 p-4">
+              <DropdownMenuContent
+                align="end"
+                side="bottom"
+                className="w-64 p-4"
+              >
                 <div className="flex flex-col items-center gap-3">
                   <Avatar className="h-16 w-16">
-                    <AvatarImage src={user?.user_metadata?.avatar_url} alt={user?.user_metadata?.full_name || 'User'} />
+                    <AvatarImage
+                      src={user?.user_metadata?.avatar_url}
+                      alt={user?.user_metadata?.full_name || "User"}
+                    />
                     <AvatarFallback className="bg-muted text-muted-foreground font-bold text-lg">
                       {userInitials}
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex flex-col items-center text-center">
                     <span className="text-sm font-bold">
-                      {user?.user_metadata?.full_name || 'User'}
+                      {user?.user_metadata?.full_name || "User"}
                     </span>
                     {user?.email && (
                       <span className="text-xs text-muted-foreground truncate max-w-full">
@@ -242,7 +265,9 @@ export function Sidebar({ user }: SidebarProps) {
                   <DropdownMenuSeparator className="w-full" />
                   <DropdownMenuItem
                     className="cursor-pointer w-full justify-center"
-                    onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                    onClick={() =>
+                      setTheme(theme === "dark" ? "light" : "dark")
+                    }
                   >
                     <Sun className="mr-2 h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
                     <Moon className="absolute -ml-2 h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
@@ -273,9 +298,10 @@ export function Sidebar({ user }: SidebarProps) {
       <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-card border-t border-border">
         <div className="flex items-center justify-around px-2 py-2 safe-bottom">
           {menuItems.map((item) => {
-            const isActive = item.href === '/dashboard'
-              ? pathname === '/dashboard'
-              : pathname.startsWith(item.href)
+            const isActive =
+              item.href === "/dashboard"
+                ? pathname === "/dashboard"
+                : pathname.startsWith(item.href);
 
             return item.soon ? (
               <span
@@ -293,19 +319,17 @@ export function Sidebar({ user }: SidebarProps) {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  'relative flex flex-col items-center gap-1 px-3 py-1.5 text-[11px] font-bold transition-all rounded-lg min-w-0',
-                  isActive
-                    ? 'text-primary'
-                    : 'text-muted-foreground'
+                  "relative flex flex-col items-center gap-1 px-3 py-1.5 text-[11px] font-bold transition-all rounded-lg min-w-0",
+                  isActive ? "text-primary" : "text-muted-foreground",
                 )}
               >
                 <item.icon className="h-5 w-5 shrink-0" />
                 <span className="truncate">{item.title}</span>
               </Link>
-            )
+            );
           })}
         </div>
       </nav>
     </>
-  )
+  );
 }
