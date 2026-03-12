@@ -25,6 +25,24 @@ interface PassageDisplayProps {
   onCancelNoteMarkHandled?: () => void;
 }
 
+function getTextNodesInRange(range: Range): Text[] {
+  const textNodes: Text[] = [];
+  const walker = document.createTreeWalker(
+    range.commonAncestorContainer.nodeType === Node.TEXT_NODE
+      ? range.commonAncestorContainer.parentElement!
+      : range.commonAncestorContainer,
+    NodeFilter.SHOW_TEXT
+  );
+
+  let node: Text | null;
+  while ((node = walker.nextNode() as Text | null)) {
+    if (range.intersectsNode(node) && node.textContent?.trim()) {
+      textNodes.push(node);
+    }
+  }
+  return textNodes;
+}
+
 function wrapRangeWithMark(
   range: Range,
   bgColor: string,
@@ -32,21 +50,55 @@ function wrapRangeWithMark(
   markType: MarkType
 ): string {
   const id = crypto.randomUUID();
-  const mark = document.createElement("mark");
-  mark.dataset.highlightId = id;
-  mark.dataset.markType = markType;
-  mark.style.backgroundColor = bgColor;
-  mark.style.color = textColor;
-  mark.style.borderRadius = "2px";
-  mark.style.padding = "0 1px";
-  mark.style.cursor = "pointer";
 
+  const createMark = () => {
+    const mark = document.createElement("mark");
+    mark.dataset.highlightId = id;
+    mark.dataset.markType = markType;
+    mark.style.backgroundColor = bgColor;
+    mark.style.color = textColor;
+    mark.style.borderRadius = "2px";
+    mark.style.padding = "0 1px";
+    mark.style.cursor = "pointer";
+    return mark;
+  };
+
+  // Simple case: selection within a single text node
   try {
+    const mark = createMark();
     range.surroundContents(mark);
+    return id;
   } catch {
-    const fragment = range.extractContents();
-    mark.appendChild(fragment);
-    range.insertNode(mark);
+    // Cross-element selection — wrap each text node individually
+  }
+
+  const textNodes = getTextNodesInRange(range);
+
+  for (const textNode of textNodes) {
+    const mark = createMark();
+    let targetNode: Text = textNode;
+
+    // Split start text node if it's the range start container
+    if (textNode === range.startContainer && range.startOffset > 0) {
+      targetNode = textNode.splitText(range.startOffset);
+    }
+
+    // Split end text node if it's the range end container
+    if (
+      textNode === range.endContainer ||
+      targetNode === range.endContainer
+    ) {
+      const offset =
+        targetNode === range.endContainer
+          ? range.endOffset
+          : range.endOffset - (textNode.length - targetNode.length);
+      if (offset > 0 && offset < targetNode.length) {
+        targetNode.splitText(offset);
+      }
+    }
+
+    targetNode.parentNode?.insertBefore(mark, targetNode);
+    mark.appendChild(targetNode);
   }
 
   return id;

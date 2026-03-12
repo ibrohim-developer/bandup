@@ -18,6 +18,10 @@ export default (plugin) => {
 
     const googleProvider = providersRegistry.get('google');
 
+    // Store the last fetched Google profile so we can reuse it for existing user updates
+    // without making a second API call (the access token may be single-use).
+    let lastGoogleProfile: Record<string, string> | null = null;
+
     if (googleProvider) {
       googleProvider.authCallback = async ({ accessToken, purest }) => {
         try {
@@ -27,14 +31,20 @@ export default (plugin) => {
             .auth(accessToken)
             .request();
 
-          return {
+          strapi.log.info(`Google userinfo response: ${JSON.stringify({ name: body.name, email: body.email, picture: body.picture ? '(present)' : '(missing)' })}`);
+
+          lastGoogleProfile = {
             username: body.email ? body.email.split('@')[0] : body.id,
             email: body.email,
-            full_name: body.name || '',
+            full_name: body.name || body.given_name || '',
             avatar_url: body.picture || '',
           };
+
+          return { ...lastGoogleProfile };
         } catch (error) {
           strapi.log.warn('Google userinfo failed, falling back to tokeninfo:', error);
+          lastGoogleProfile = null;
+
           const google = purest({ provider: 'google' });
           const { body } = await google
             .query('oauth')
@@ -58,38 +68,31 @@ export default (plugin) => {
     const originalConnect = providersService.connect.bind(providersService);
 
     providersService.connect = async (provider, query) => {
+      // Reset the cached profile before each connect call
+      lastGoogleProfile = null;
+
       const user = await originalConnect(provider, query);
 
-      // If user exists but is missing full_name or avatar_url, update from the profile
-      if (user && provider === 'google' && (!user.full_name || !user.avatar_url)) {
-        try {
-          const accessToken = query.access_token || query.code || query.oauth_token;
-          const profile = await providersRegistry.run({
-            provider,
-            query,
-            accessToken,
-            providers: await strapi
-              .store({ type: 'plugin', name: 'users-permissions', key: 'grant' })
-              .get(),
-          });
+      // For existing Google users missing profile data, use the cached profile
+      // from the authCallback that was already called inside originalConnect
+      if (user && provider === 'google' && lastGoogleProfile) {
+        const updateData: Record<string, string> = {};
 
-          const updateData: Record<string, string> = {};
-          if (!user.full_name && profile.full_name) {
-            updateData.full_name = profile.full_name;
-          }
-          if (!user.avatar_url && profile.avatar_url) {
-            updateData.avatar_url = profile.avatar_url;
-          }
+        if (!user.full_name && lastGoogleProfile.full_name) {
+          updateData.full_name = lastGoogleProfile.full_name;
+        }
+        if (!user.avatar_url && lastGoogleProfile.avatar_url) {
+          updateData.avatar_url = lastGoogleProfile.avatar_url;
+        }
 
-          if (Object.keys(updateData).length > 0) {
-            await strapi.db
-              .query('plugin::users-permissions.user')
-              .update({ where: { id: user.id }, data: updateData });
+        if (Object.keys(updateData).length > 0) {
+          strapi.log.info(`Updating Google user ${user.id} with: ${JSON.stringify(updateData)}`);
 
-            Object.assign(user, updateData);
-          }
-        } catch (error) {
-          strapi.log.warn('Failed to update Google user profile data:', error);
+          await strapi.db
+            .query('plugin::users-permissions.user')
+            .update({ where: { id: user.id }, data: updateData });
+
+          Object.assign(user, updateData);
         }
       }
 
