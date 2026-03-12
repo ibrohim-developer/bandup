@@ -13,10 +13,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const test = await getTest(testId);
   if (!test) return { title: "Test Not Found" };
 
-  const title = test.title || "IELTS Listening Practice Test";
+  const title = `Free IELTS Listening Practice Test: ${test.title || "Practice Exam"} with Audio & Answers (${new Date().getFullYear()}) – BandUp`;
   const description =
-    test.description ||
-    `Practice IELTS Listening with this free mock test on BandUp. Improve your band score with real exam-style questions.`;
+    `Practice IELTS Listening for free with our '${test.title || "Practice Exam"}' mock test. Includes high-quality audio, full transcript answers, and instant band scoring.`;
 
   return {
     title,

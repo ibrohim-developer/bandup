@@ -202,6 +202,10 @@ export default function FreeWritePage() {
             placeholder="Enter a topic or question, or leave blank for general practice..."
             rows={2}
             className="w-full mt-2 rounded-lg border border-border bg-background p-3 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-ring resize-none"
+            autoCorrect="off"
+            autoCapitalize="none"
+            spellCheck={false}
+            data-form-type="other"
           />
         </div>
 

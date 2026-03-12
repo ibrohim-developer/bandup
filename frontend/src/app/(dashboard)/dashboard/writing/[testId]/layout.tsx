@@ -13,10 +13,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const test = await getTest(testId);
   if (!test) return { title: "Test Not Found" };
 
-  const title = test.title || "IELTS Writing Practice Test";
+  const title = `Free IELTS Writing Practice Test: ${test.title || "Practice Exam"} with AI Evaluation (${new Date().getFullYear()}) – BandUp`;
   const description =
-    test.description ||
-    `Practice IELTS Writing with this free mock test on BandUp. Get AI-powered feedback and improve your band score.`;
+    `Practice IELTS Writing Task 1 and Task 2 for free. Try '${test.title || "Practice Exam"}' and get instant AI-powered band score predictions and detailed grammar feedback.`;
 
   return {
     title,

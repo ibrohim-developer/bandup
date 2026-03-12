@@ -55,6 +55,10 @@ export function FeedbackForm({ attemptId }: { attemptId: string }) {
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           disabled={isSubmitting}
+          autoCorrect="off"
+          autoCapitalize="none"
+          spellCheck={false}
+          data-form-type="other"
         />
         <div className="flex justify-end">
           <Button

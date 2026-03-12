@@ -6,6 +6,12 @@ import { JsonLd } from "@/components/json-ld";
 import { getUser } from "@/actions/auth";
 import { Suspense } from "react";
 import { Target, Zap, Globe, Users } from "lucide-react";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "About BandUp",
+  description: "Learn more about our mission to make high-quality test practice accessible to every student.",
+};
 
 const breadcrumbSchema = {
   "@context": "https://schema.org",

@@ -13,6 +13,20 @@ import { RotatingText } from '@/components/rotating-text'
 import { ForceLightTheme } from '@/components/force-light-theme'
 import { Suspense } from 'react'
 
+import { JsonLd } from '@/components/json-ld'
+
+const courseSchema = {
+  "@context": "https://schema.org",
+  "@type": "Course",
+  name: "Free IELTS Mock Exams & Practice Tests",
+  description: "Prepare for IELTS with free mock exams and get instant AI-powered band score predictions. Take a free reading test with answers, free listening test with answers, and try free writing and speaking practice with instant band score evaluation.",
+  provider: {
+    "@type": "Organization",
+    name: "BandUp",
+    sameAs: "https://bandup.uz"
+  }
+};
+
 async function AuthHeader() {
   const user = await getUser()
   return (
@@ -34,6 +48,7 @@ export default function HomePage() {
       </Suspense>
 
       <main className="flex-1">
+        <JsonLd data={courseSchema} />
         {/* Hero Section */}
         <header className="relative pt-24 pb-20 lg:pt-32 lg:pb-32 overflow-hidden border-b border-black">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -278,7 +293,7 @@ export default function HomePage() {
         </section> */}
 
         {/* Pricing Section */}
-         {/* <section className="py-32 bg-white" id="pricing">
+        {/* <section className="py-32 bg-white" id="pricing">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="mb-24">
               <h2 className="text-6xl md:text-8xl font-black mb-4 tracking-tighter uppercase">Plans</h2>

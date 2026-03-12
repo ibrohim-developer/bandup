@@ -98,6 +98,10 @@ export function ContextFillInBlank({
               placeholder={`${question.questionNumber}`}
               disabled={question.disabled}
               autoComplete="off"
+              autoCorrect="off"
+              autoCapitalize="none"
+              spellCheck={false}
+              data-form-type="other"
             />
             {question.reviewMode && (
               <>

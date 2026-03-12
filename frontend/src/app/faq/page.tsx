@@ -6,6 +6,12 @@ import { JsonLd } from "@/components/json-ld";
 import { ChevronDown } from "lucide-react";
 import { getUser } from "@/actions/auth";
 import { Suspense } from "react";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "FAQ - IELTS & BandUp",
+  description: "Frequently asked questions about IELTS and BandUp.",
+};
 
 const faqs = [
   {

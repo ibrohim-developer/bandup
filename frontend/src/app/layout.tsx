@@ -27,7 +27,7 @@ export const metadata: Metadata = {
     template: "%s | BandUp IELTS",
   },
   description:
-    "Prepare for IELTS with free mock exams, practice tests, and detailed AI-powered score analysis. Listening, Reading, Writing, and Speaking modules.",
+    "Prepare for IELTS with free mock exams, practice tests, and detailed AI-powered score analysis. Take a free reading test with answers, free listening test with answers, and try free writing and speaking practice with instant band score evaluation.",
   keywords: [
     "IELTS mock exam",
     "IELTS practice test",
@@ -37,6 +37,10 @@ export const metadata: Metadata = {
     "IELTS tayyorgarlik",
     "IELTS mock test free",
     "IELTS band score",
+    "Free Reading test with answers",
+    "Free Listening test with answers",
+    "Free Writing with instant band score",
+    "Free Speaking with instant band score",
   ],
   authors: [{ name: "BandUp Team", url: "https://bandup.uz" }],
   robots: {
@@ -57,7 +61,7 @@ export const metadata: Metadata = {
     siteName: "BandUp IELTS",
     title: "BandUp — Free IELTS Mock Exams & Practice Tests",
     description:
-      "Prepare for IELTS with free mock exams and detailed AI-powered score analysis.",
+      "Prepare for IELTS with free mock exams and detailed AI-powered score analysis. Access free reading/listening tests with answers and free writing/speaking evaluation.",
     images: [
       {
         url: "/opengraph-image",
@@ -89,8 +93,8 @@ const organizationSchema = {
   url: "https://bandup.uz",
   // logo: "https://bandup.uz/logo.png", // TODO: add logo.png to /public and uncomment
   description:
-    "Free IELTS mock exams and practice tests with detailed AI-powered score analysis.",
-  sameAs: ["https://t.me/bandupuz", "https://instagram.com/bandupuz"],
+    "Free IELTS mock exams and practice tests with detailed AI-powered score analysis. Free reading and listening tests with answers included.",
+  sameAs: ["https://t.me/bandup_ielts", "https://instagram.com/bandupuz"],
 };
 
 const websiteSchema = {
@@ -98,6 +102,33 @@ const websiteSchema = {
   "@type": "WebSite",
   name: "BandUp IELTS",
   url: "https://bandup.uz",
+};
+
+const softwareSchema = {
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  name: "BandUp IELTS Mock Test App",
+  url: "https://bandup.uz",
+  applicationCategory: "EducationalApplication",
+  operatingSystem: "Any",
+  offers: {
+    "@type": "Offer",
+    price: "0",
+    priceCurrency: "USD",
+  },
+  description: "AI-powered web application for taking IELTS mock exams. Take free reading and listening practice tests with answers, plus free writing and speaking evaluation.",
+  featureList: [
+    "AI Writing Evaluation",
+    "AI Speaking Evaluation",
+    "Real Exam Format Simulation",
+    "Free IELTS Mock Exams",
+    "Free reading test with answers",
+    "Free listening test with answers",
+    "Listening, Reading, Writing, Speaking Modules",
+    "Instant Band Scoring",
+    "Free Writing with instant band score",
+    "Free Speaking with instant band score",
+  ]
 };
 
 export default function RootLayout({
@@ -115,6 +146,7 @@ export default function RootLayout({
       >
         <JsonLd data={organizationSchema} />
         <JsonLd data={websiteSchema} />
+        <JsonLd data={softwareSchema} />
         <GoogleAnalytics />
         <Suspense fallback={null}>
           <TelegramProvider>

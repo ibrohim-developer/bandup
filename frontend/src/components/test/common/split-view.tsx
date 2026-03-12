@@ -117,17 +117,19 @@ export function SplitView({
             <div className="flex-1">{leftPanel}</div>
           </div>
 
-          {/* Horizontal Resizer */}
+          {/* Horizontal Resizer — thin visual bar with large touch target via padding */}
           <div
             className={cn(
-              "flex h-1.5 bg-gray-200 cursor-row-resize hover:bg-gray-400 transition-colors items-center justify-center shrink-0",
-              isDragging && "bg-gray-300",
+              "relative flex cursor-row-resize items-center justify-center shrink-0 py-3 -my-3 z-10",
+              "before:absolute before:inset-x-0 before:top-1/2 before:-translate-y-1/2 before:h-1.5 before:bg-gray-200 before:transition-colors",
+              isDragging && "before:bg-gray-400",
+              !isDragging && "hover:before:bg-gray-300",
             )}
             onMouseDown={handleMouseDown}
             onTouchStart={handleTouchStart}
           >
-            <GripHorizontal className="w-5 h-3 text-gray-400" />
-            <GripHorizontal className="w-5 h-3 text-gray-400 -ml-2.5" />
+            <GripHorizontal className="relative w-5 h-3 text-gray-400" />
+            <GripHorizontal className="relative w-5 h-3 text-gray-400 -ml-2.5" />
           </div>
 
           {/* Bottom Panel */}

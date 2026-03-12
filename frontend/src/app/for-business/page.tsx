@@ -9,7 +9,15 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { CheckCircle } from 'lucide-react'
+import type { Metadata } from 'next'
 
+const metadata: Metadata = {
+  title: "For Learning Centres - BandUp",
+  description: "Bring AI-powered IELTS preparation to your learning centre.",
+}
+
+// Since this is a client component, Next.js requires metadata to be exported from a layout or server component.
+// We'll create a layout.tsx for this in the next step.
 export default function ForBusinessPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [success, setSuccess] = useState(false)
