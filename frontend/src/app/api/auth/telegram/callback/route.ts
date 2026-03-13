@@ -4,7 +4,7 @@ import crypto from 'crypto'
 
 const STRAPI_URL = process.env.NEXT_PUBLIC_STRAPI_URL || 'http://localhost:1337'
 const STRAPI_API_TOKEN = process.env.STRAPI_API_TOKEN!
-const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN!
+const TELEGRAM_CLIENT_SECRET = process.env.TELEGRAM_CLIENT_SECRET!
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
 const BOT_ID = process.env.NEXT_PUBLIC_TELEGRAM_BOT_ID || ''
 
@@ -37,9 +37,7 @@ export async function GET(request: Request) {
   try {
     // Exchange code for tokens
     const redirectUri = `${SITE_URL}/api/auth/telegram/callback`
-    // Bot token is already in "client_id:client_secret" format (e.g. "8074599105:AAF6l...")
-    // so encode it directly — don't prepend BOT_ID again
-    const credentials = Buffer.from(TELEGRAM_BOT_TOKEN).toString('base64')
+    const credentials = Buffer.from(`${BOT_ID}:${TELEGRAM_CLIENT_SECRET}`).toString('base64')
 
     const tokenRes = await fetch('https://oauth.telegram.org/token', {
       method: 'POST',
@@ -68,7 +66,7 @@ export async function GET(request: Request) {
 
     if (!accessToken) {
       console.error('Telegram token response missing access_token:', tokenData)
-      return NextResponse.redirect(`${SITE_URL}/sign-in?error=tg_no_access_token&tgerr=${encodeURIComponent(tokenData.error || '')}&botid=${encodeURIComponent(BOT_ID)}&tokset=${!!TELEGRAM_BOT_TOKEN}`)
+      return NextResponse.redirect(`${SITE_URL}/sign-in?error=tg_no_access_token&tgerr=${encodeURIComponent(tokenData.error || '')}&botid=${encodeURIComponent(BOT_ID)}&tokset=${!!TELEGRAM_CLIENT_SECRET}`)
     }
 
     // Fetch user info from Telegram
