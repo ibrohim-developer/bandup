@@ -5,7 +5,8 @@
       "Bash(find /c/Users/User/web/bandup -type f \\\\\\(-name *oauth* -o -name *google* \\\\\\))",
       "WebSearch",
       "WebFetch(domain:core.telegram.org)",
-      "Bash(pnpm add:*)"
+      "Bash(pnpm add:*)",
+      "Bash(cat \"c:/Users/User/web/bandup/frontend/src/app/api/auth/telegram/authorize/\"*)"
     ]
   }
 }

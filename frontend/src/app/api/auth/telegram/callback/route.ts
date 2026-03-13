@@ -33,7 +33,8 @@ export async function GET(request: Request) {
 
   // Validate state
   if (!code || !state || !savedState || state !== savedState || !codeVerifier) {
-    return NextResponse.redirect(`${SITE_URL}/sign-in?error=telegram_auth_error`)
+    console.error('Telegram state validation failed', { code: !!code, state, savedState, codeVerifier: !!codeVerifier })
+    return NextResponse.redirect(`${SITE_URL}/sign-in?error=tg_state_invalid`)
   }
 
   try {
@@ -57,8 +58,9 @@ export async function GET(request: Request) {
     })
 
     if (!tokenRes.ok) {
-      console.error('Telegram token exchange failed:', await tokenRes.text())
-      return NextResponse.redirect(`${SITE_URL}/sign-in?error=telegram_auth_error`)
+      const errText = await tokenRes.text()
+      console.error('Telegram token exchange failed:', errText)
+      return NextResponse.redirect(`${SITE_URL}/sign-in?error=tg_token_failed`)
     }
 
     const tokenData = await tokenRes.json()
@@ -112,7 +114,8 @@ export async function GET(request: Request) {
       })
 
       if (!loginRes.ok) {
-        return NextResponse.redirect(`${SITE_URL}/sign-in?error=telegram_auth_error`)
+        console.error('Strapi login failed:', await loginRes.text())
+        return NextResponse.redirect(`${SITE_URL}/sign-in?error=tg_login_failed`)
       }
 
       const loginData = await loginRes.json()
@@ -131,7 +134,7 @@ export async function GET(request: Request) {
 
       if (!registerRes.ok) {
         console.error('Telegram user registration failed:', await registerRes.text())
-        return NextResponse.redirect(`${SITE_URL}/sign-in?error=telegram_auth_error`)
+        return NextResponse.redirect(`${SITE_URL}/sign-in?error=tg_register_failed`)
       }
 
       const registerData = await registerRes.json()
@@ -164,6 +167,6 @@ export async function GET(request: Request) {
     return NextResponse.redirect(`${SITE_URL}/dashboard/reading`)
   } catch (error) {
     console.error('Telegram auth error:', error)
-    return NextResponse.redirect(`${SITE_URL}/sign-in?error=telegram_auth_error`)
+    return NextResponse.redirect(`${SITE_URL}/sign-in?error=tg_exception`)
   }
 }
