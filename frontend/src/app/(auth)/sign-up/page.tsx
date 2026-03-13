@@ -7,7 +7,6 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { BookOpen, Loader2, CheckCircle, Eye, EyeOff, ArrowLeft } from 'lucide-react'
 import { TelegramLoginWidget } from '@/components/auth/telegram-login-widget'
-import { TelegramCodeInput } from '@/components/auth/telegram-code-input'
 
 const TELEGRAM_BOT_NAME = process.env.NEXT_PUBLIC_TELEGRAM_BOT_NAME || 'YourBotName'
 
@@ -104,8 +103,7 @@ export default function SignUpPage() {
         </button>
 
         {/* Telegram */}
-        {/* <TelegramLoginWidget botName={TELEGRAM_BOT_NAME} /> */}
-        {/* <TelegramCodeInput botName={TELEGRAM_BOT_NAME} /> */}
+        <TelegramLoginWidget botName={TELEGRAM_BOT_NAME} />
 
         {/* Divider */}
         <div className="relative py-4">
