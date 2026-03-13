@@ -76,17 +76,22 @@ export async function GET(request: Request) {
       return NextResponse.redirect(`${SITE_URL}/sign-in?error=tg_no_access_token&tgerr=${encodeURIComponent(tokenData.error || '')}&keys=${encodeURIComponent(Object.keys(tokenData).join(','))}`)
     }
 
-    // Extract user info from the token response directly
-    // (oauth.telegram.org/userinfo is a web page, not an API)
-    const telegramId = String(tokenData.id || tokenData.sub || '')
-    const firstName = tokenData.first_name || ''
-    const lastName = tokenData.last_name || ''
-    const fullName = (tokenData.name || `${firstName} ${lastName}`.trim()) || ''
-    const avatarUrl = tokenData.photo_url || tokenData.picture || ''
+    // Decode id_token JWT payload (trusted — came directly from Telegram over HTTPS)
+    const idToken = tokenData.id_token
+    if (!idToken) {
+      return NextResponse.redirect(`${SITE_URL}/sign-in?error=tg_no_id_token`)
+    }
+    const payloadB64 = idToken.split('.')[1]
+    const payload = JSON.parse(Buffer.from(payloadB64, 'base64url').toString('utf-8'))
+    console.log('Telegram id_token payload keys:', Object.keys(payload))
+
+    const telegramId = String(payload.sub || payload.id || '')
+    const fullName = (payload.name || `${payload.first_name || ''} ${payload.last_name || ''}`.trim()) || ''
+    const avatarUrl = payload.photo_url || payload.picture || ''
 
     if (!telegramId || telegramId === 'undefined') {
-      console.error('No telegramId in token response, keys:', Object.keys(tokenData))
-      return NextResponse.redirect(`${SITE_URL}/sign-in?error=tg_no_user_id&keys=${encodeURIComponent(Object.keys(tokenData).join(','))}`)
+      console.error('No telegramId in id_token payload:', payload)
+      return NextResponse.redirect(`${SITE_URL}/sign-in?error=tg_no_user_id`)
     }
     const syntheticEmail = `tg_${telegramId}@telegram.bandup.uz`
     const password = getDeterministicPassword(telegramId)
