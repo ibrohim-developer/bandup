@@ -73,32 +73,21 @@ export async function GET(request: Request) {
 
     if (!accessToken) {
       console.error('Telegram token response missing access_token:', tokenData)
-      return NextResponse.redirect(`${SITE_URL}/sign-in?error=tg_no_access_token&tgerr=${encodeURIComponent(tokenData.error || '')}`)
+      return NextResponse.redirect(`${SITE_URL}/sign-in?error=tg_no_access_token&tgerr=${encodeURIComponent(tokenData.error || '')}&keys=${encodeURIComponent(Object.keys(tokenData).join(','))}`)
     }
 
-    // Fetch user info from Telegram
-    const userInfoRes = await fetch('https://oauth.telegram.org/userinfo', {
-      headers: { Authorization: `Bearer ${accessToken}` },
-    })
+    // Extract user info from the token response directly
+    // (oauth.telegram.org/userinfo is a web page, not an API)
+    const telegramId = String(tokenData.id || tokenData.sub || '')
+    const firstName = tokenData.first_name || ''
+    const lastName = tokenData.last_name || ''
+    const fullName = (tokenData.name || `${firstName} ${lastName}`.trim()) || ''
+    const avatarUrl = tokenData.photo_url || tokenData.picture || ''
 
-    const userInfoText = await userInfoRes.text()
-    console.log('Telegram userinfo response:', userInfoText.slice(0, 200))
-    if (!userInfoRes.ok) {
-      console.error('Telegram userinfo failed:', userInfoText)
-      return NextResponse.redirect(`${SITE_URL}/sign-in?error=tg_userinfo_failed`)
+    if (!telegramId || telegramId === 'undefined') {
+      console.error('No telegramId in token response, keys:', Object.keys(tokenData))
+      return NextResponse.redirect(`${SITE_URL}/sign-in?error=tg_no_user_id&keys=${encodeURIComponent(Object.keys(tokenData).join(','))}`)
     }
-
-    let userInfo: Record<string, unknown>
-    try {
-      userInfo = JSON.parse(userInfoText)
-    } catch {
-      console.error('Telegram userinfo not JSON:', userInfoText.slice(0, 500))
-      return NextResponse.redirect(`${SITE_URL}/sign-in?error=tg_userinfo_not_json`)
-    }
-
-    const telegramId = String(userInfo.sub || userInfo.id)
-    const fullName = (userInfo.name || `${String(userInfo.first_name || '')} ${String(userInfo.last_name || '')}`.trim()) || ''
-    const avatarUrl = String(userInfo.picture || userInfo.photo_url || '')
     const syntheticEmail = `tg_${telegramId}@telegram.bandup.uz`
     const password = getDeterministicPassword(telegramId)
 
