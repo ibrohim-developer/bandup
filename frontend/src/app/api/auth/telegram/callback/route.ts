@@ -1,15 +1,12 @@
 import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
 import crypto from 'crypto'
-import { createRemoteJWKSet, jwtVerify } from 'jose'
 
 const STRAPI_URL = process.env.NEXT_PUBLIC_STRAPI_URL || 'http://localhost:1337'
 const STRAPI_API_TOKEN = process.env.STRAPI_API_TOKEN!
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN!
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
 const BOT_ID = process.env.NEXT_PUBLIC_TELEGRAM_BOT_ID || ''
-
-const JWKS = createRemoteJWKSet(new URL('https://oauth.telegram.org/.well-known/jwks.json'))
 
 function getDeterministicPassword(telegramId: string): string {
   return crypto
@@ -64,17 +61,28 @@ export async function GET(request: Request) {
     }
 
     const tokenData = await tokenRes.json()
-    const idToken = tokenData.id_token
+    const accessToken = tokenData.access_token
 
-    // Verify and decode the ID token
-    const { payload } = await jwtVerify(idToken, JWKS, {
-      issuer: 'https://oauth.telegram.org',
-      audience: BOT_ID,
+    if (!accessToken) {
+      console.error('Telegram token response missing access_token:', tokenData)
+      return NextResponse.redirect(`${SITE_URL}/sign-in?error=tg_no_access_token`)
+    }
+
+    // Fetch user info from Telegram
+    const userInfoRes = await fetch('https://oauth.telegram.org/userinfo', {
+      headers: { Authorization: `Bearer ${accessToken}` },
     })
 
-    const telegramId = payload.sub!
-    const fullName = (payload.name as string) || ''
-    const avatarUrl = (payload.picture as string) || ''
+    if (!userInfoRes.ok) {
+      console.error('Telegram userinfo failed:', await userInfoRes.text())
+      return NextResponse.redirect(`${SITE_URL}/sign-in?error=tg_userinfo_failed`)
+    }
+
+    const userInfo = await userInfoRes.json()
+
+    const telegramId = String(userInfo.sub || userInfo.id)
+    const fullName = (userInfo.name || `${userInfo.first_name || ''} ${userInfo.last_name || ''}`.trim()) || ''
+    const avatarUrl = (userInfo.picture || userInfo.photo_url) || ''
     const syntheticEmail = `tg_${telegramId}@telegram.bandup.uz`
     const password = getDeterministicPassword(telegramId)
 
@@ -166,7 +174,8 @@ export async function GET(request: Request) {
 
     return NextResponse.redirect(`${SITE_URL}/dashboard/reading`)
   } catch (error) {
+    const msg = error instanceof Error ? error.message : String(error)
     console.error('Telegram auth error:', error)
-    return NextResponse.redirect(`${SITE_URL}/sign-in?error=tg_exception`)
+    return NextResponse.redirect(`${SITE_URL}/sign-in?error=tg_exception&detail=${encodeURIComponent(msg)}`)
   }
 }
