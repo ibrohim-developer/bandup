@@ -10,10 +10,6 @@ export async function GET(request: Request) {
   const { searchParams, origin } = url
   const accessToken = searchParams.get('access_token')
 
-  // Debug
-  console.log('[auth/callback] access_token prefix:', accessToken?.substring(0, 20))
-  console.log('[auth/callback] All params:', [...searchParams.keys()])
-
   if (accessToken) {
     try {
       // Exchange Google's access_token for a Strapi JWT
