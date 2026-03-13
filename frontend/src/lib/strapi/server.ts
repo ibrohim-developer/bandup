@@ -58,7 +58,7 @@ export async function authPut<T>(endpoint: string, data: unknown) {
   return strapiPut<T>(endpoint, data, token);
 }
 
-// Admin-level fetcher using API token (replaces Supabase service role)
+// Admin-level fetcher using API token
 export async function adminFetch<T>(endpoint: string, options: RequestInit = {}) {
   const apiToken = process.env.STRAPI_API_TOKEN;
   return strapiFetch<T>(endpoint, options, apiToken);

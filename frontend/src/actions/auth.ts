@@ -151,15 +151,6 @@ export async function getUser() {
   }
 }
 
-// Telegram auth stubs — to be implemented later
-export async function signInWithTelegramCode(_code: string) {
-  return { error: 'Telegram auth not yet migrated to Strapi' }
-}
-
-export async function signInWithTelegramWidget(_widgetData: Record<string, string | number>) {
-  return { error: 'Telegram auth not yet migrated to Strapi' }
-}
-
 export async function signInWithGoogle() {
   // Strapi Google OAuth — redirect URL is configured in Strapi admin
   // (Settings → Providers → Google → Redirect URL = http://localhost:3000/auth/callback)

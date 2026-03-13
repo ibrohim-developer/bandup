@@ -1,4 +1,19 @@
 import { NextResponse } from 'next/server'
+
+// Telegram auth is disabled — Supabase has been removed.
+// The findOrCreateTelegramUser function and code verification logic
+// have been commented out. Re-enable when Telegram auth is implemented with Strapi.
+
+export async function POST() {
+  return NextResponse.json(
+    { error: 'Telegram auth is disabled' },
+    { status: 404 }
+  )
+}
+
+/*
+// Original implementation (used Supabase):
+
 import { createServiceClient } from '@/lib/supabase/service'
 import crypto from 'crypto'
 
@@ -11,7 +26,6 @@ export async function POST(request: Request) {
 
   const supabase = createServiceClient()
 
-  // Look up the code
   const { data: authCode, error: lookupError } = await supabase
     .from('telegram_auth_codes')
     .select('*')
@@ -27,13 +41,11 @@ export async function POST(request: Request) {
     )
   }
 
-  // Mark code as used
   await supabase
     .from('telegram_auth_codes')
     .update({ used: true })
     .eq('id', authCode.id)
 
-  // Find or create user
   const { token_hash, error: authError } = await findOrCreateTelegramUser(supabase, {
     telegram_id: authCode.telegram_id,
     first_name: authCode.first_name,
@@ -66,7 +78,6 @@ export async function findOrCreateTelegramUser(
   const fullName = [userData.first_name, userData.last_name].filter(Boolean).join(' ') || 'Telegram User'
   const email = `tg_${userData.telegram_id}@telegram.placeholder`
 
-  // Check if user already exists by telegram_id in profiles
   const { data: existingProfile } = await supabase
     .from('profiles')
     .select('id')
@@ -77,8 +88,6 @@ export async function findOrCreateTelegramUser(
 
   if (existingProfile) {
     userId = existingProfile.id
-
-    // Update profile with latest info
     await supabase
       .from('profiles')
       .update({
@@ -88,7 +97,6 @@ export async function findOrCreateTelegramUser(
       })
       .eq('id', userId)
   } else {
-    // Create new user
     const password = crypto.randomBytes(32).toString('hex')
     const { data: newUser, error: createError } = await supabase.auth.admin.createUser({
       email,
@@ -106,8 +114,6 @@ export async function findOrCreateTelegramUser(
     }
 
     userId = newUser.user.id
-
-    // Update profile with telegram-specific fields
     await supabase
       .from('profiles')
       .update({
@@ -119,7 +125,6 @@ export async function findOrCreateTelegramUser(
       .eq('id', userId)
   }
 
-  // Generate a magic link to create a session
   const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
     type: 'magiclink',
     email,
@@ -131,3 +136,4 @@ export async function findOrCreateTelegramUser(
 
   return { token_hash: linkData.properties.hashed_token }
 }
+*/

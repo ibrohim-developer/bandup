@@ -1,4 +1,17 @@
 import { NextResponse } from 'next/server'
+
+// Telegram Widget auth is disabled — Supabase has been removed.
+
+export async function POST() {
+  return NextResponse.json(
+    { error: 'Telegram auth is disabled' },
+    { status: 404 }
+  )
+}
+
+/*
+// Original implementation (used Supabase):
+
 import { createServiceClient } from '@/lib/supabase/service'
 import { findOrCreateTelegramUser } from '@/app/api/auth/telegram/verify-code/route'
 import crypto from 'crypto'
@@ -17,7 +30,6 @@ function verifyTelegramWidget(data: TelegramWidgetData): boolean {
   const botToken = process.env.TELEGRAM_BOT_TOKEN!
   const secret = crypto.createHash('sha256').update(botToken).digest()
 
-  // Build the check string from all fields except hash
   const checkFields: string[] = []
   const entries = Object.entries(data) as [string, string | number][]
   for (const [key, value] of entries) {
@@ -35,12 +47,10 @@ function verifyTelegramWidget(data: TelegramWidgetData): boolean {
 export async function POST(request: Request) {
   const widgetData: TelegramWidgetData = await request.json()
 
-  // Verify the data is from Telegram
   if (!verifyTelegramWidget(widgetData)) {
     return NextResponse.json({ error: 'Invalid Telegram data' }, { status: 401 })
   }
 
-  // Check auth_date is recent (within 1 hour)
   const now = Math.floor(Date.now() / 1000)
   if (now - widgetData.auth_date > 3600) {
     return NextResponse.json({ error: 'Authentication data expired' }, { status: 401 })
@@ -63,3 +73,4 @@ export async function POST(request: Request) {
 
   return NextResponse.json({ token_hash })
 }
+*/

@@ -298,7 +298,7 @@ async function main() {
       const audioPath = resolve(audioDir, audioFileName);
       await downloadAudio(testData.audioUrl, audioPath);
 
-      // 4. Generate SQL (use the external API audio URL for now, can be replaced with Supabase URL later)
+      // 4. Generate SQL
       const audioUrl = testData.audioUrl;
       const sql = generateSQL(testData, part, partKey, answers, audioUrl);
 

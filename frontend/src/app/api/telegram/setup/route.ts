@@ -7,7 +7,7 @@ export async function GET(request: Request) {
   const secret = searchParams.get('secret')
 
   // Simple protection — require a secret to set up the webhook
-  if (secret !== process.env.SUPABASE_SERVICE_ROLE_KEY?.slice(0, 16)) {
+  if (secret !== process.env.STRAPI_API_TOKEN?.slice(0, 16)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 

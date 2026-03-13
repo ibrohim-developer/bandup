@@ -1,6 +1,6 @@
 /**
  * Server-side Strapi API helpers for route handlers.
- * Uses API token for full access (equivalent to Supabase service role).
+ * Uses API token for full access.
  */
 
 const STRAPI_URL = process.env.NEXT_PUBLIC_STRAPI_URL || 'http://localhost:1337'

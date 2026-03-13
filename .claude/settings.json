@@ -55,7 +55,13 @@
       "Bash(find \"c:\\\\Users\\\\User\\\\web\\\\bandup\\\\frontend\\\\src\\\\app\\\\\\(dashboard\\)\" -type d -name \"*test*\")",
       "Bash(ls -la \"c:\\\\Users\\\\User\\\\web\\\\bandup\\\\frontend\\\\src\\\\app\\\\\\(dashboard\\)\\\\dashboard\\\\tests\")",
       "Bash(find \"c:\\\\Users\\\\User\\\\web\\\\bandup\\\\frontend\\\\src\\\\app\\\\\\(dashboard\\)\\\\dashboard\" -type d -name \"\\\\[testId\\\\]\" -o -type d -name \"\\\\[*\\\\]\")",
-      "Bash(xargs grep -l \"module_type\")"
+      "Bash(xargs grep -l \"module_type\")",
+      "Bash(find /c/web/bandup/frontend/src -type f \\\\\\(-name *.ts -o -name *.tsx \\\\\\) ! -path */node_modules/*)",
+      "Bash(grep -r supabase /c/web/bandup/backend --include=*.ts --include=*.js --include=*.json -l)",
+      "Bash(find /c/web/bandup -maxdepth 2 -type f -name .env* -o -name *.env*)",
+      "Bash(grep -r from.*supabase /c/web/bandup/frontend/src --include=*.ts --include=*.tsx -h)",
+      "Bash(xargs grep:*)",
+      "Bash(grep -r \"SUPABASE\\\\|supabase\" c:webbandup --include=*.json --include=*.ts --include=*.tsx --include=*.md)"
     ]
   }
 }

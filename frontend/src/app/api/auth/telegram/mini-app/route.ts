@@ -1,4 +1,17 @@
 import { NextResponse } from 'next/server'
+
+// Telegram Mini App auth is disabled — Supabase has been removed.
+
+export async function POST() {
+  return NextResponse.json(
+    { error: 'Telegram auth is disabled' },
+    { status: 404 }
+  )
+}
+
+/*
+// Original implementation (used Supabase):
+
 import { createServiceClient } from '@/lib/supabase/service'
 import { findOrCreateTelegramUser } from '@/app/api/auth/telegram/verify-code/route'
 import crypto from 'crypto'
@@ -67,3 +80,4 @@ export async function POST(request: Request) {
 
   return NextResponse.json({ token_hash })
 }
+*/

@@ -15,9 +15,8 @@ Monorepo with two apps managed from root `package.json` using `concurrently`:
 | UI components | shadcn/ui (new-york style) + Radix UI + Tailwind CSS v4 |
 | State management | Zustand (persisted to sessionStorage) |
 | Data fetching | React Query (@tanstack/react-query) |
-| Auth | Supabase Auth + Telegram auth (Mini App, Widget, code-based) |
-| Database | Supabase (PostgreSQL) — types in `frontend/src/types/database.ts` |
-| CMS | Strapi 5 (content management, API token auth) |
+| Auth | Strapi users-permissions (JWT in `strapi_jwt` cookie) |
+| Database | Strapi 5 (SQLite via better-sqlite3) |
 | AI evaluation | Google Gemini (`@google/generative-ai`) + OpenAI for writing/speaking scoring |
 | Package manager | pnpm (root), npm (backend) |
 | Icons | Lucide React |
@@ -58,7 +57,7 @@ bandup/
 │   │   │   │   ├── reading/        # start, submit, review, tests
 │   │   │   │   ├── writing/        # start, submit, evaluate, review
 │   │   │   │   ├── speaking/       # start, submit, evaluate, review, upload
-│   │   │   │   ├── auth/telegram/  # Telegram auth endpoints
+│   │   │   │   ├── auth/telegram/  # Telegram auth endpoints (disabled)
 │   │   │   │   └── ...
 │   │   │   ├── about/, faq/, for-business/  # Static pages
 │   │   │   └── layout.tsx           # Root layout (Geist font, providers)
@@ -71,23 +70,18 @@ bandup/
 │   │   │   │   ├── reading/        # Passage display, notes drawer
 │   │   │   │   ├── writing/        # Editor, word counter, feedback
 │   │   │   │   └── speaking/       # Voice recorder, topic card
-│   │   │   ├── auth/               # Login, Telegram auth
+│   │   │   ├── auth/               # Login components
 │   │   │   └── layout/             # Header, footer, sidebar, dashboard-main
 │   │   ├── hooks/                   # Custom hooks (use-reading-test, use-listening-test, etc.)
 │   │   ├── lib/
 │   │   │   ├── strapi/             # Strapi API helpers (api.ts, client.ts, server.ts)
-│   │   │   ├── supabase/           # Supabase clients (client.ts, server.ts, service.ts)
 │   │   │   ├── constants/          # Test config, reading instructions
 │   │   │   ├── evaluate-essay.ts   # AI writing evaluation
 │   │   │   ├── evaluate-speaking.ts # AI speaking evaluation
 │   │   │   ├── gemini.ts           # Gemini client
 │   │   │   └── openai.ts           # OpenAI client
 │   │   ├── stores/test-store.ts    # Zustand test state (answers, timer, navigation)
-│   │   ├── types/database.ts       # Supabase DB types (auto-generated style)
 │   │   └── actions/auth.ts         # Server actions for auth
-│   ├── supabase/
-│   │   ├── migrations/             # SQL migrations (tables, seeds)
-│   │   └── seed.sql
 │   └── scripts/                    # Import/seed scripts for test data
 ├── backend/
 │   ├── src/api/                    # Strapi content types
@@ -106,8 +100,8 @@ bandup/
 └── package.json                    # Root scripts (concurrently)
 ```
 
-## Database Schema (Supabase)
-Key tables: `tests`, `listening_sections`, `reading_passages`, `writing_tasks`, `speaking_topics`, `questions`, `test_attempts`, `user_answers`, `writing_submissions`, `test_progress`, `full_mock_test_attempts`, `profiles`, `telegram_auth_codes`, `feature_notifications`
+## Database Schema (Strapi)
+Key content types: `test`, `listening-section`, `reading-passage`, `writing-task`, `speaking-topic`, `question`, `test-attempt`, `user-answer`, `writing-submission`, `test-progress`, `full-mock-test-attempt`, `telegram-auth-code`, `feature-notification`
 
 Question types: `tfng`, `mcq_single`, `mcq_multiple`, `gap_fill`, `matching_headings`, `matching_info`, `summary_completion`, `short_answer`
 
@@ -119,14 +113,12 @@ Test attempt statuses: `in_progress`, `completed`, `abandoned`
 - Path alias: `@/` maps to `frontend/src/`
 - UI components use shadcn/ui (new-york style) with Radix primitives
 - API routes use Strapi REST helpers from `lib/strapi/api.ts` (find, findOne, create, update)
-- Auth: JWT stored in `strapi_jwt` cookie; Supabase for user management + Postgres
+- Auth: JWT stored in `strapi_jwt` cookie; Strapi users-permissions for user management
 - Test state persisted in sessionStorage via Zustand (`ielts-test-storage` key)
 - Fonts: Geist Sans + Geist Mono
 - Domain: bandup.uz
-- Telegram Mini App support (iframe-friendly headers)
 
 ## Environment Variables
 - `NEXT_PUBLIC_STRAPI_URL` — Strapi URL (default: http://localhost:1337)
 - `STRAPI_API_TOKEN` — Server-side Strapi API token
-- Supabase keys in `frontend/.env.local`
 - OpenAI + Gemini API keys for AI evaluation

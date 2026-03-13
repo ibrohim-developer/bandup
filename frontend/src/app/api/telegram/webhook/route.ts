@@ -1,4 +1,17 @@
 import { NextResponse } from 'next/server'
+
+// Telegram webhook is disabled — Supabase has been removed.
+
+export async function POST() {
+  return NextResponse.json(
+    { error: 'Telegram webhook is disabled' },
+    { status: 404 }
+  )
+}
+
+/*
+// Original implementation (used Supabase):
+
 import { createServiceClient } from '@/lib/supabase/service'
 import crypto from 'crypto'
 
@@ -46,7 +59,6 @@ async function sendMessage(chatId: number, text: string, replyMarkup?: object) {
 }
 
 export async function POST(request: Request) {
-  // Verify the request has a valid secret token if configured
   const secretToken = request.headers.get('x-telegram-bot-api-secret-token')
   const expectedSecret = process.env.TELEGRAM_WEBHOOK_SECRET
   if (expectedSecret && secretToken !== expectedSecret) {
@@ -61,26 +73,23 @@ export async function POST(request: Request) {
 
   const chatId = message.chat.id
 
-  // Handle /start command
   if (message.text === '/start') {
-    // Mini App button
     await sendMessage(
       chatId,
-      '📖 <b>BandUp — IELTS Mock Exams</b>\n\nTap the button below to open the app.',
+      'BandUp — IELTS Mock Exams\n\nTap the button below to open the app.',
       {
         inline_keyboard: [
-          [{ text: '📖 Open BandUp', web_app: { url: 'https://bandup.uz/dashboard' } }],
+          [{ text: 'Open BandUp', web_app: { url: 'https://bandup.uz/dashboard' } }],
         ],
       }
     )
 
-    // Contact sharing for code-based login
     await sendMessage(
       chatId,
       'Or share your contact to get a login code for the website:',
       {
         keyboard: [
-          [{ text: '📱 Share my contact', request_contact: true }],
+          [{ text: 'Share my contact', request_contact: true }],
         ],
         resize_keyboard: true,
         one_time_keyboard: true,
@@ -89,29 +98,25 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: true })
   }
 
-  // Handle contact sharing
   if (message.contact) {
     const contact = message.contact
     const telegramUser = message.from
 
-    // Ensure the contact belongs to the sender (prevent sharing someone else's contact)
     if (contact.user_id && contact.user_id !== telegramUser.id) {
-      await sendMessage(chatId, '❌ Please share your own contact, not someone else\'s.')
+      await sendMessage(chatId, 'Please share your own contact, not someone else\'s.')
       return NextResponse.json({ ok: true })
     }
 
     const supabase = createServiceClient()
     const code = generateCode()
-    const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString() // 10 minutes
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString()
 
-    // Delete any existing unused codes for this telegram user
     await supabase
       .from('telegram_auth_codes')
       .delete()
       .eq('telegram_id', telegramUser.id)
       .eq('used', false)
 
-    // Insert new code
     const { error } = await supabase.from('telegram_auth_codes').insert({
       code,
       telegram_id: telegramUser.id,
@@ -123,20 +128,20 @@ export async function POST(request: Request) {
     })
 
     if (error) {
-      await sendMessage(chatId, '❌ Something went wrong. Please try again.')
+      await sendMessage(chatId, 'Something went wrong. Please try again.')
       return NextResponse.json({ ok: true })
     }
 
     await sendMessage(
       chatId,
-      `✅ Your login code:\n\n<b>${code}</b>\n\nEnter this code on the website to sign in.\nThe code expires in 10 minutes.`,
+      `Your login code:\n\n<b>${code}</b>\n\nEnter this code on the website to sign in.\nThe code expires in 10 minutes.`,
       { remove_keyboard: true }
     )
 
     return NextResponse.json({ ok: true })
   }
 
-  // Default response for unrecognized messages
   await sendMessage(chatId, 'Send /start to get a login code.')
   return NextResponse.json({ ok: true })
 }
+*/

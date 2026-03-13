@@ -1,8 +1,7 @@
 "use client";
 
 import { useEffect, useState, createContext, useContext } from "react";
-import { useRouter, usePathname } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
+import { usePathname } from "next/navigation";
 
 interface TelegramContextValue {
   isTelegram: boolean;
@@ -21,7 +20,6 @@ export function useTelegram() {
 export function TelegramProvider({ children }: { children: React.ReactNode }) {
   const [isTelegram, setIsTelegram] = useState(false);
   const [isReady, setIsReady] = useState(false);
-  const router = useRouter();
   const pathname = usePathname();
 
   useEffect(() => {
@@ -50,62 +48,16 @@ export function TelegramProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
+    // Detected Telegram Mini App context
     setIsTelegram(true);
     WebApp.disableVerticalSwipes();
+    WebApp.ready();
+    WebApp.expand();
+    setIsReady(true);
 
-    const backHandler = () => router.back();
-
-    async function authenticate() {
-      try {
-        const supabase = createClient();
-        const {
-          data: { session },
-        } = await supabase.auth.getSession();
-
-        if (session) {
-          WebApp!.ready();
-          WebApp!.expand();
-          setIsReady(true);
-          return;
-        }
-
-        const response = await fetch("/api/auth/telegram/mini-app", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ initData: WebApp!.initData }),
-        });
-
-        const data = await response.json();
-        if (data.token_hash) {
-          await supabase.auth.verifyOtp({
-            token_hash: data.token_hash,
-            type: "magiclink",
-          });
-
-          if (
-            pathname === "/" ||
-            pathname?.startsWith("/sign-in") ||
-            pathname?.startsWith("/sign-up")
-          ) {
-            router.replace("/dashboard");
-          }
-        }
-      } catch (err) {
-        console.error("Telegram Mini App auth failed:", err);
-      } finally {
-        WebApp!.ready();
-        WebApp!.expand();
-        setIsReady(true);
-      }
-    }
-
-    authenticate();
-
-    WebApp.BackButton.onClick(backHandler);
-
-    return () => {
-      WebApp.BackButton.offClick(backHandler);
-    };
+    // Telegram auth is disabled — Supabase has been removed.
+    // Previously this would auto-authenticate via /api/auth/telegram/mini-app
+    // Re-enable when Telegram auth is implemented with Strapi.
   }, []);
 
   useEffect(() => {
