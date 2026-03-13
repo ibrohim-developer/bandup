@@ -57,7 +57,11 @@ interface Question {
   metadata: Record<string, unknown> | null;
 }
 
-function BookmarkButton({ questionId, flaggedQuestions, toggleFlag }: {
+function BookmarkButton({
+  questionId,
+  flaggedQuestions,
+  toggleFlag,
+}: {
   questionId: string;
   flaggedQuestions: string[];
   toggleFlag: (id: string) => void;
@@ -106,7 +110,8 @@ function ReadingTestContent({ testId }: { testId: string }) {
   const isReviewMode = searchParams.get("review") === "true";
   const reviewAttemptId = searchParams.get("attemptId");
 
-  const { resumeTimer, timeRemaining, flaggedQuestions, toggleFlag } = useTestStore();
+  const { resumeTimer, timeRemaining, flaggedQuestions, toggleFlag } =
+    useTestStore();
   const { isFullscreen, toggleFullscreen } = useFullscreen();
 
   const {
@@ -141,15 +146,22 @@ function ReadingTestContent({ testId }: { testId: string }) {
     questionGroups,
     activeQuestionNumber,
     goToQuestion,
-    goToPrevQuestion,
-    goToNextQuestion,
   } = useQuestionNavigation(passages, activePassageId);
 
   const testOptions = useTestOptions();
-  const { notes, addHighlight, removeHighlight, addNote, removeNote, getNoteByMarkId } = useNotes();
+  const {
+    notes,
+    addHighlight,
+    removeHighlight,
+    addNote,
+    removeNote,
+    getNoteByMarkId,
+  } = useNotes();
   const [notesDrawerOpen, setNotesDrawerOpen] = useState(false);
   const [pendingNoteText, setPendingNoteText] = useState<string | null>(null);
-  const [pendingNoteMarkId, setPendingNoteMarkId] = useState<string | null>(null);
+  const [pendingNoteMarkId, setPendingNoteMarkId] = useState<string | null>(
+    null,
+  );
   const [activeNoteId, setActiveNoteId] = useState<string | null>(null);
   const [cancelNoteMarkId, setCancelNoteMarkId] = useState<string | null>(null);
   useSyncTestTheme(testOptions.contrast);
@@ -271,7 +283,9 @@ function ReadingTestContent({ testId }: { testId: string }) {
       <div className="min-h-screen bg-muted/30 flex items-center justify-center">
         <Card className="max-w-3xl w-full mx-4">
           <CardHeader className="px-4 md:px-8 pt-5 pb-4">
-            <CardTitle className="text-2xl md:text-3xl">IELTS Reading Test</CardTitle>
+            <CardTitle className="text-2xl md:text-3xl">
+              IELTS Reading Test
+            </CardTitle>
             <CardDescription className="text-sm md:text-base mt-1">
               Please read the instructions carefully before starting
             </CardDescription>
@@ -295,7 +309,9 @@ function ReadingTestContent({ testId }: { testId: string }) {
                   <BookOpen className="h-4 w-4 md:h-5 md:w-5 text-primary" />
                 </div>
                 <div>
-                  <p className="font-medium text-base md:text-lg">Reading Passages</p>
+                  <p className="font-medium text-base md:text-lg">
+                    Reading Passages
+                  </p>
                   <p className="text-sm md:text-base text-muted-foreground">
                     This test contains {passages.length} passage
                     {passages.length > 1 ? "s" : ""} with {totalQuestions}{" "}
@@ -309,7 +325,9 @@ function ReadingTestContent({ testId }: { testId: string }) {
                   <Send className="h-4 w-4 md:h-5 md:w-5 text-primary" />
                 </div>
                 <div>
-                  <p className="font-medium text-base md:text-lg">Instructions</p>
+                  <p className="font-medium text-base md:text-lg">
+                    Instructions
+                  </p>
                   <ul className="text-sm md:text-base text-muted-foreground space-y-1.5 mt-1 list-disc list-inside">
                     <li>
                       Read each passage carefully before answering questions
@@ -352,6 +370,18 @@ function ReadingTestContent({ testId }: { testId: string }) {
 
   const { theme, rootStyle } = testOptions;
 
+  const handleNavigation = () => {
+    if (isReviewMode) {
+      router.push(`/dashboard/results/${reviewAttemptId}`);
+    } else if (
+      window.confirm(
+        "If you leave this page, all your answers will be lost and your test progress will not be saved.",
+      )
+    ) {
+      router.push("/dashboard/reading");
+    }
+  };
+
   return (
     <div className="h-screen flex flex-col overflow-hidden" style={rootStyle}>
       {/* Top Header Bar */}
@@ -366,13 +396,7 @@ function ReadingTestContent({ testId }: { testId: string }) {
           <Button
             variant="outline"
             size="default"
-            onClick={() => {
-              if (isReviewMode) {
-                router.push(`/dashboard/results/${reviewAttemptId}`);
-              } else if (window.confirm("If you leave this page, all your answers will be lost and your test progress will not be saved.")) {
-                router.push("/dashboard/reading");
-              }
-            }}
+            onClick={handleNavigation}
             className="flex items-center gap-2 text-sm md:text-base px-2 md:px-3"
           >
             <ArrowLeft className="h-4 w-4 md:h-5 md:w-5" />
@@ -381,7 +405,10 @@ function ReadingTestContent({ testId }: { testId: string }) {
           <div className="bg-red-600 text-white px-2 md:px-4 py-0.5 md:py-[3.5px] text-sm md:text-lg font-bold rounded">
             IELTS
           </div>
-          <span className="hidden md:inline text-lg" style={{ color: theme.textMuted }}>
+          <span
+            className="hidden md:inline text-lg"
+            style={{ color: theme.textMuted }}
+          >
             ID: {testId?.slice(0, 5) || "-----"}
           </span>
         </div>
@@ -440,7 +467,9 @@ function ReadingTestContent({ testId }: { testId: string }) {
           borderBottom: `1px solid ${theme.border}`,
         }}
       >
-        <p className="font-bold text-base md:text-lg">Part {activePassageIndex + 1}</p>
+        <p className="font-bold text-base md:text-lg">
+          Part {activePassageIndex + 1}
+        </p>
         <p className="text-sm md:text-base" style={{ color: theme.textMuted }}>
           Read the text and answer questions {firstQuestionNum}-
           {lastQuestionNum}.
@@ -486,7 +515,8 @@ function ReadingTestContent({ testId }: { testId: string }) {
                   group.context || (firstMeta?.context as string | undefined);
                 // Prefer group-level instruction (from API), fallback to metadata
                 const instructionHtml =
-                  group.instruction || (firstMeta?.instruction as string | undefined);
+                  group.instruction ||
+                  (firstMeta?.instruction as string | undefined);
 
                 const isSingleQuestion = group.startNum === group.endNum;
 
@@ -520,8 +550,9 @@ function ReadingTestContent({ testId }: { testId: string }) {
                       // Helper to build question data for group-level components
                       const buildGroupQuestions = () =>
                         group.questions.map((question) => {
-                          const globalIdx =
-                            currentPassage.questions.findIndex((pq) => pq.id === question.id);
+                          const globalIdx = currentPassage.questions.findIndex(
+                            (pq) => pq.id === question.id,
+                          );
                           const review = reviewData[question.id];
                           const value = isReviewMode
                             ? review?.userAnswer || ""
@@ -531,7 +562,8 @@ function ReadingTestContent({ testId }: { testId: string }) {
                             questionNumber: questionOffset + globalIdx + 1,
                             questionText: question.text,
                             value,
-                            onChange: (val: string) => handleAnswer(question.id, val),
+                            onChange: (val: string) =>
+                              handleAnswer(question.id, val),
                             disabled: isReviewMode,
                             reviewMode: isReviewMode,
                             correctAnswer: review?.correctAnswer,
@@ -543,7 +575,11 @@ function ReadingTestContent({ testId }: { testId: string }) {
                       // Matching types with group-level options → radio grid
                       const groupOptions = group.options ?? [];
                       if (
-                        ["matching_info", "matching_headings", "matching_names"].includes(group.type) &&
+                        [
+                          "matching_info",
+                          "matching_headings",
+                          "matching_names",
+                        ].includes(group.type) &&
                         groupOptions.length > 0
                       ) {
                         return (
@@ -552,7 +588,9 @@ function ReadingTestContent({ testId }: { testId: string }) {
                               {contextHtml && (
                                 <div
                                   className="text-sm leading-relaxed rich-html"
-                                  dangerouslySetInnerHTML={{ __html: contextHtml }}
+                                  dangerouslySetInnerHTML={{
+                                    __html: contextHtml,
+                                  }}
                                 />
                               )}
                               <MatchingGrid
@@ -561,7 +599,11 @@ function ReadingTestContent({ testId }: { testId: string }) {
                               />
                             </div>
                             {!isReviewMode && (
-                              <BookmarkButton questionId={group.questions[0].id} flaggedQuestions={flaggedQuestions} toggleFlag={toggleFlag} />
+                              <BookmarkButton
+                                questionId={group.questions[0].id}
+                                flaggedQuestions={flaggedQuestions}
+                                toggleFlag={toggleFlag}
+                              />
                             )}
                           </div>
                         );
@@ -577,8 +619,12 @@ function ReadingTestContent({ testId }: { testId: string }) {
                             contextHtml={contextHtml || undefined}
                             options={groupOptions}
                             questions={buildGroupQuestions()}
-                            flaggedQuestions={!isReviewMode ? flaggedQuestions : undefined}
-                            onToggleFlag={!isReviewMode ? toggleFlag : undefined}
+                            flaggedQuestions={
+                              !isReviewMode ? flaggedQuestions : undefined
+                            }
+                            onToggleFlag={
+                              !isReviewMode ? toggleFlag : undefined
+                            }
                           />
                         );
                       }
@@ -592,33 +638,51 @@ function ReadingTestContent({ testId }: { testId: string }) {
                           <div className="space-y-6">
                             {group.questions.map((question) => {
                               const globalIdx =
-                                currentPassage.questions.findIndex((pq) => pq.id === question.id);
+                                currentPassage.questions.findIndex(
+                                  (pq) => pq.id === question.id,
+                                );
                               const review = reviewData[question.id];
                               const value = isReviewMode
                                 ? review?.userAnswer || ""
                                 : answers[question.id]?.answer || "";
                               // Use question text, or strip HTML tags from context for question stem
-                              const qText = question.text ||
-                                (contextHtml ? contextHtml.replace(/<[^>]*>/g, "").trim() : "");
+                              const qText =
+                                question.text ||
+                                (contextHtml
+                                  ? contextHtml.replace(/<[^>]*>/g, "").trim()
+                                  : "");
                               return (
-                                <div key={question.id} className="group/q flex items-start gap-1">
+                                <div
+                                  key={question.id}
+                                  className="group/q flex items-start gap-1"
+                                >
                                   <div className="flex-1">
                                     <MultipleChoice
                                       questionId={question.id}
-                                      questionNumber={questionOffset + globalIdx + 1}
+                                      questionNumber={
+                                        questionOffset + globalIdx + 1
+                                      }
                                       questionText={qText}
                                       options={groupOptions}
                                       value={value}
-                                      onChange={(val: string) => handleAnswer(question.id, val)}
+                                      onChange={(val: string) =>
+                                        handleAnswer(question.id, val)
+                                      }
                                       disabled={isReviewMode}
                                       reviewMode={isReviewMode}
                                       correctAnswer={review?.correctAnswer}
                                       isCorrect={review?.isCorrect}
-                                      isUnanswered={unansweredQuestions.has(question.id)}
+                                      isUnanswered={unansweredQuestions.has(
+                                        question.id,
+                                      )}
                                     />
                                   </div>
                                   {!isReviewMode && (
-                                    <BookmarkButton questionId={question.id} flaggedQuestions={flaggedQuestions} toggleFlag={toggleFlag} />
+                                    <BookmarkButton
+                                      questionId={question.id}
+                                      flaggedQuestions={flaggedQuestions}
+                                      toggleFlag={toggleFlag}
+                                    />
                                   )}
                                 </div>
                               );
@@ -638,12 +702,16 @@ function ReadingTestContent({ testId }: { testId: string }) {
                               {contextHtml && (
                                 <div
                                   className="text-sm leading-relaxed rich-html"
-                                  dangerouslySetInnerHTML={{ __html: contextHtml }}
+                                  dangerouslySetInnerHTML={{
+                                    __html: contextHtml,
+                                  }}
                                 />
                               )}
                               {group.questions.map((question) => {
                                 const globalIdx =
-                                  currentPassage.questions.findIndex((pq) => pq.id === question.id);
+                                  currentPassage.questions.findIndex(
+                                    (pq) => pq.id === question.id,
+                                  );
                                 const review = reviewData[question.id];
                                 const value = isReviewMode
                                   ? review?.userAnswer || ""
@@ -652,22 +720,32 @@ function ReadingTestContent({ testId }: { testId: string }) {
                                   <MultipleAnswer
                                     key={question.id}
                                     questionId={question.id}
-                                    questionNumber={questionOffset + globalIdx + 1}
+                                    questionNumber={
+                                      questionOffset + globalIdx + 1
+                                    }
                                     questionText={question.text}
                                     options={groupOptions}
                                     value={value}
-                                    onChange={(val: string) => handleAnswer(question.id, val)}
+                                    onChange={(val: string) =>
+                                      handleAnswer(question.id, val)
+                                    }
                                     disabled={isReviewMode}
                                     reviewMode={isReviewMode}
                                     correctAnswer={review?.correctAnswer}
                                     isCorrect={review?.isCorrect}
-                                    isUnanswered={unansweredQuestions.has(question.id)}
+                                    isUnanswered={unansweredQuestions.has(
+                                      question.id,
+                                    )}
                                   />
                                 );
                               })}
                             </div>
                             {!isReviewMode && (
-                              <BookmarkButton questionId={group.questions[0].id} flaggedQuestions={flaggedQuestions} toggleFlag={toggleFlag} />
+                              <BookmarkButton
+                                questionId={group.questions[0].id}
+                                flaggedQuestions={flaggedQuestions}
+                                toggleFlag={toggleFlag}
+                              />
                             )}
                           </div>
                         );
@@ -683,12 +761,22 @@ function ReadingTestContent({ testId }: { testId: string }) {
                             <div className="flex-1">
                               <FlowChart
                                 title={contextHtml || undefined}
-                                options={groupOptions as unknown as { optionKey?: string; optionText: string; orderIndex?: number }[]}
+                                options={
+                                  groupOptions as unknown as {
+                                    optionKey?: string;
+                                    optionText: string;
+                                    orderIndex?: number;
+                                  }[]
+                                }
                                 questions={buildGroupQuestions()}
                               />
                             </div>
                             {!isReviewMode && (
-                              <BookmarkButton questionId={group.questions[0].id} flaggedQuestions={flaggedQuestions} toggleFlag={toggleFlag} />
+                              <BookmarkButton
+                                questionId={group.questions[0].id}
+                                flaggedQuestions={flaggedQuestions}
+                                toggleFlag={toggleFlag}
+                              />
                             )}
                           </div>
                         );
@@ -697,15 +785,27 @@ function ReadingTestContent({ testId }: { testId: string }) {
                       // Fill-in-blank types with context HTML → embedded inputs
                       if (
                         contextHtml &&
-                        ["gap_fill", "summary_completion", "summary_completion_drag_drop", "short_answer", "note_completion", "table_completion", "sentence_completion"].includes(group.type)
+                        [
+                          "gap_fill",
+                          "summary_completion",
+                          "summary_completion_drag_drop",
+                          "short_answer",
+                          "note_completion",
+                          "table_completion",
+                          "sentence_completion",
+                        ].includes(group.type)
                       ) {
                         return (
                           <div className="text-sm leading-relaxed rich-html">
                             <ContextFillInBlank
                               contextHtml={contextHtml}
                               questions={buildGroupQuestions()}
-                              flaggedQuestions={!isReviewMode ? flaggedQuestions : undefined}
-                              onToggleFlag={!isReviewMode ? toggleFlag : undefined}
+                              flaggedQuestions={
+                                !isReviewMode ? flaggedQuestions : undefined
+                              }
+                              onToggleFlag={
+                                !isReviewMode ? toggleFlag : undefined
+                              }
                             />
                           </div>
                         );
@@ -722,14 +822,23 @@ function ReadingTestContent({ testId }: { testId: string }) {
                           )}
                           {group.questions.map((question) => {
                             const globalIdx =
-                              currentPassage.questions.findIndex((pq) => pq.id === question.id);
+                              currentPassage.questions.findIndex(
+                                (pq) => pq.id === question.id,
+                              );
                             return (
-                              <div key={question.id} className="group/q flex items-start gap-1">
+                              <div
+                                key={question.id}
+                                className="group/q flex items-start gap-1"
+                              >
                                 <div className="flex-1">
                                   {renderQuestion(question, globalIdx)}
                                 </div>
                                 {!isReviewMode && (
-                                  <BookmarkButton questionId={question.id} flaggedQuestions={flaggedQuestions} toggleFlag={toggleFlag} />
+                                  <BookmarkButton
+                                    questionId={question.id}
+                                    flaggedQuestions={flaggedQuestions}
+                                    toggleFlag={toggleFlag}
+                                  />
                                 )}
                               </div>
                             );
@@ -785,7 +894,9 @@ function ReadingTestContent({ testId }: { testId: string }) {
                       className="text-xs md:text-sm font-bold mr-0.5 md:mr-1 whitespace-nowrap"
                       style={{ color: theme.text }}
                     >
-                      <span className="hidden md:inline">Part {passageIdx + 1}</span>
+                      <span className="hidden md:inline">
+                        Part {passageIdx + 1}
+                      </span>
                       <span className="md:hidden">P{passageIdx + 1}</span>
                     </span>
                     {passage.questions.map((q, idx) => {
@@ -825,7 +936,9 @@ function ReadingTestContent({ testId }: { testId: string }) {
                       className="text-xs md:text-sm font-bold"
                       style={{ color: theme.text }}
                     >
-                      <span className="hidden md:inline">Part {passageIdx + 1}</span>
+                      <span className="hidden md:inline">
+                        Part {passageIdx + 1}
+                      </span>
                       <span className="md:hidden">P{passageIdx + 1}</span>
                     </span>
                     <span
