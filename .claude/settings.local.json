@@ -2,7 +2,10 @@
   "permissions": {
     "allow": [
       "Bash(find /c/Users/User/web/bandup -maxdepth 1 -name .env* -o -name *.env*)",
-      "Bash(find /c/Users/User/web/bandup -type f \\\\\\(-name *oauth* -o -name *google* \\\\\\))"
+      "Bash(find /c/Users/User/web/bandup -type f \\\\\\(-name *oauth* -o -name *google* \\\\\\))",
+      "WebSearch",
+      "WebFetch(domain:core.telegram.org)",
+      "Bash(pnpm add:*)"
     ]
   }
 }

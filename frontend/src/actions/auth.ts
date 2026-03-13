@@ -156,3 +156,47 @@ export async function signInWithGoogle() {
   // (Settings → Providers → Google → Redirect URL = http://localhost:3000/auth/callback)
   redirect(`${STRAPI_URL}/api/connect/google`)
 }
+
+export async function signInWithTelegram() {
+  const botId = process.env.NEXT_PUBLIC_TELEGRAM_BOT_ID || ''
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+  const redirectUri = `${siteUrl}/api/auth/telegram/callback`
+
+  // Generate PKCE code verifier and challenge
+  const { randomBytes, createHash } = await import('crypto')
+  const codeVerifier = randomBytes(32).toString('base64url')
+  const codeChallenge = createHash('sha256').update(codeVerifier).digest('base64url')
+
+  // Generate state for CSRF protection
+  const state = randomBytes(16).toString('hex')
+
+  // Store code_verifier and state in cookies so the callback can access them
+  const { cookies } = await import('next/headers')
+  const cookieStore = await cookies()
+  cookieStore.set('telegram_code_verifier', codeVerifier, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    path: '/',
+    maxAge: 600, // 10 minutes
+  })
+  cookieStore.set('telegram_oauth_state', state, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    path: '/',
+    maxAge: 600,
+  })
+
+  const params = new URLSearchParams({
+    client_id: botId,
+    redirect_uri: redirectUri,
+    response_type: 'code',
+    scope: 'openid profile',
+    state,
+    code_challenge: codeChallenge,
+    code_challenge_method: 'S256',
+  })
+
+  redirect(`https://oauth.telegram.org/auth?${params.toString()}`)
+}
