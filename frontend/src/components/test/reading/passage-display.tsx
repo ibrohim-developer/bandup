@@ -25,89 +25,35 @@ interface PassageDisplayProps {
   onCancelNoteMarkHandled?: () => void;
 }
 
-function getTextNodesInRange(range: Range): Text[] {
-  const textNodes: Text[] = [];
-  const walker = document.createTreeWalker(
-    range.commonAncestorContainer.nodeType === Node.TEXT_NODE
-      ? range.commonAncestorContainer.parentElement!
-      : range.commonAncestorContainer,
-    NodeFilter.SHOW_TEXT
-  );
-
-  let node: Text | null;
-  while ((node = walker.nextNode() as Text | null)) {
-    if (range.intersectsNode(node) && node.textContent?.trim()) {
-      textNodes.push(node);
-    }
-  }
-  return textNodes;
-}
-
 function wrapRangeWithMark(
   range: Range,
   bgColor: string,
   textColor: string,
-  markType: MarkType
+  markType: MarkType,
 ): string {
   const id = crypto.randomUUID();
+  const mark = document.createElement("mark");
+  mark.dataset.highlightId = id;
+  mark.dataset.markType = markType;
+  mark.style.backgroundColor = bgColor;
+  mark.style.color = textColor;
+  mark.style.borderRadius = "2px";
+  mark.style.padding = "0 1px";
+  mark.style.cursor = "pointer";
 
-  const createMark = () => {
-    const mark = document.createElement("mark");
-    mark.dataset.highlightId = id;
-    mark.dataset.markType = markType;
-    mark.style.backgroundColor = bgColor;
-    mark.style.color = textColor;
-    mark.style.borderRadius = "2px";
-    mark.style.padding = "0 1px";
-    mark.style.cursor = "pointer";
-    return mark;
-  };
-
-  // Simple case: selection within a single text node
   try {
-    const mark = createMark();
     range.surroundContents(mark);
-    return id;
   } catch {
-    // Cross-element selection — wrap each text node individually
-  }
-
-  const textNodes = getTextNodesInRange(range);
-
-  for (const textNode of textNodes) {
-    const mark = createMark();
-    let targetNode: Text = textNode;
-
-    // Split start text node if it's the range start container
-    if (textNode === range.startContainer && range.startOffset > 0) {
-      targetNode = textNode.splitText(range.startOffset);
-    }
-
-    // Split end text node if it's the range end container
-    if (
-      textNode === range.endContainer ||
-      targetNode === range.endContainer
-    ) {
-      const offset =
-        targetNode === range.endContainer
-          ? range.endOffset
-          : range.endOffset - (textNode.length - targetNode.length);
-      if (offset > 0 && offset < targetNode.length) {
-        targetNode.splitText(offset);
-      }
-    }
-
-    targetNode.parentNode?.insertBefore(mark, targetNode);
-    mark.appendChild(targetNode);
+    const fragment = range.extractContents();
+    mark.appendChild(fragment);
+    range.insertNode(mark);
   }
 
   return id;
 }
 
 function removeMarkById(container: HTMLElement, id: string) {
-  const marks = container.querySelectorAll(
-    `mark[data-highlight-id="${id}"]`
-  );
+  const marks = container.querySelectorAll(`mark[data-highlight-id="${id}"]`);
   marks.forEach((mark) => {
     const parent = mark.parentNode;
     while (mark.firstChild) {
@@ -227,7 +173,7 @@ export function PassageDisplay({
         mode: "actions",
       });
     },
-    [onNoteMarkClick]
+    [onNoteMarkClick],
   );
 
   const applyHighlight = useCallback(() => {
@@ -235,7 +181,12 @@ export function PassageDisplay({
     const text = pendingSelectedTextRef.current;
     if (!range || !contentRef.current) return;
 
-    const id = wrapRangeWithMark(range, highlight.bg, highlight.color, "highlight");
+    const id = wrapRangeWithMark(
+      range,
+      highlight.bg,
+      highlight.color,
+      "highlight",
+    );
     window.getSelection()?.removeAllRanges();
     onHighlight?.(id, text);
     closePopup();
@@ -246,7 +197,12 @@ export function PassageDisplay({
     const text = pendingSelectedTextRef.current;
     if (!range || !text || !contentRef.current) return;
 
-    const markId = wrapRangeWithMark(range, noteHighlight.bg, noteHighlight.color, "note");
+    const markId = wrapRangeWithMark(
+      range,
+      noteHighlight.bg,
+      noteHighlight.color,
+      "note",
+    );
     window.getSelection()?.removeAllRanges();
     onNote?.(markId, text);
     closePopup();
@@ -337,7 +293,7 @@ export function PassageDisplay({
             />
           </div>
         ),
-        document.body
+        document.body,
       )
     : null;
 
