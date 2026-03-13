@@ -402,7 +402,7 @@ function ReadingTestContent({ testId }: { testId: string }) {
             <ArrowLeft className="h-4 w-4 md:h-5 md:w-5" />
             <span className="hidden md:inline">Back</span>
           </Button>
-          <div className="bg-red-600 text-white px-2 md:px-4 py-0.5 md:py-[3.5px] text-sm md:text-lg font-bold rounded">
+          <div className="bg-red-600 text-white px-2 md:px-4 h-7 md:h-8 flex items-center text-sm md:text-base font-bold rounded">
             IELTS
           </div>
           <span
@@ -434,10 +434,10 @@ function ReadingTestContent({ testId }: { testId: string }) {
           <TestOptionsMenu {...testOptions} />
           <button
             onClick={() => setNotesDrawerOpen(true)}
-            className="p-1.5 md:p-2 transition-opacity opacity-70 hover:opacity-100 relative"
+            className="hidden md:block p-2 transition-opacity opacity-70 hover:opacity-100 relative"
             title="Notes"
           >
-            <StickyNote className="h-5 w-5 md:h-6 md:w-6" />
+            <StickyNote className="h-6 w-6" />
             {notes.length > 0 && (
               <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
                 {notes.length}
@@ -583,8 +583,8 @@ function ReadingTestContent({ testId }: { testId: string }) {
                         groupOptions.length > 0
                       ) {
                         return (
-                          <div className="group/q flex items-start gap-1">
-                            <div className="flex-1 space-y-4">
+                          <div className="group/q relative">
+                            <div className="space-y-4">
                               {contextHtml && (
                                 <div
                                   className="text-sm leading-relaxed rich-html"
@@ -599,11 +599,13 @@ function ReadingTestContent({ testId }: { testId: string }) {
                               />
                             </div>
                             {!isReviewMode && (
-                              <BookmarkButton
-                                questionId={group.questions[0].id}
-                                flaggedQuestions={flaggedQuestions}
-                                toggleFlag={toggleFlag}
-                              />
+                              <div className="absolute top-0 right-0">
+                                <BookmarkButton
+                                  questionId={group.questions[0].id}
+                                  flaggedQuestions={flaggedQuestions}
+                                  toggleFlag={toggleFlag}
+                                />
+                              </div>
                             )}
                           </div>
                         );

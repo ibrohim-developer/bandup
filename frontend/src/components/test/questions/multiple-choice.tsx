@@ -58,20 +58,20 @@ export function MultipleChoice({
           {questionNumber}
         </span>
         <p className="text-sm leading-relaxed">
-          {questionText}
+          <span dangerouslySetInnerHTML={{ __html: questionText }} />
           {getQuestionBadge()}
         </p>
       </div>
 
       <div className="ml-8 space-y-2">
         {options.map((option, index) => {
-          const optionLetter = String.fromCharCode(65 + index)
+          const optionLetter = String.fromCharCode(65 + index) 
           const isSelected = value === optionLetter
           return (
             <div
               key={`${questionId}-${index}`}
               className={cn(
-                'flex items-center space-x-3 rounded-lg border p-4 transition-colors',
+                'flex items-center space-x-3 rounded-lg border px-3 py-2 md:p-4 transition-colors',
                 !disabled && 'cursor-pointer',
                 reviewMode && isSelected && isCorrect && 'border-green-500 bg-green-50 dark:bg-green-950/20',
                 reviewMode && isSelected && !isCorrect && 'border-red-500 bg-red-50 dark:bg-red-950/20',

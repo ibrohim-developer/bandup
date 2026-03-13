@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { cn } from "@/lib/utils";
-import { GripVertical, GripHorizontal } from "lucide-react";
+import { GripVertical, ChevronsUpDown } from "lucide-react";
 
 interface SplitViewProps {
   leftPanel: React.ReactNode;
@@ -111,25 +111,29 @@ export function SplitView({
         >
           {/* Top Panel */}
           <div
-            className="flex flex-col overflow-y-auto border-b border-gray-200"
+            className="flex flex-col overflow-y-auto "
             style={{ height: `${ratio}%` }}
           >
             <div className="flex-1">{leftPanel}</div>
           </div>
 
-          {/* Horizontal Resizer — thin visual bar with large touch target via padding */}
+          {/* Horizontal Resizer — line with centered pill icon */}
           <div
-            className={cn(
-              "relative flex cursor-row-resize items-center justify-center shrink-0 py-3 -my-3 z-10",
-              "before:absolute before:inset-x-0 before:top-1/2 before:-translate-y-1/2 before:h-1.5 before:bg-gray-200 before:transition-colors",
-              isDragging && "before:bg-gray-400",
-              !isDragging && "hover:before:bg-gray-300",
-            )}
+            className="relative flex cursor-row-resize items-center justify-center shrink-0 py-3 -my-3 z-10"
             onMouseDown={handleMouseDown}
             onTouchStart={handleTouchStart}
           >
-            <GripHorizontal className="relative w-5 h-3 text-gray-400" />
-            <GripHorizontal className="relative w-5 h-3 text-gray-400 -ml-2.5" />
+            <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-px bg-border" />
+            <div
+              className={cn(
+                "relative flex items-center justify-center w-10 h-7 rounded-full border bg-background shadow-sm transition-colors",
+                isDragging
+                  ? "border-muted-foreground/50"
+                  : "border-border hover:border-muted-foreground/40",
+              )}
+            >
+              <ChevronsUpDown className="w-4 h-4 text-muted-foreground" />
+            </div>
           </div>
 
           {/* Bottom Panel */}

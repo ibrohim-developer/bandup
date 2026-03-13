@@ -342,7 +342,7 @@ export function PassageDisplay({
     : null;
 
   return (
-    <article className="p-8 space-y-4">
+    <article className="p-3 md:p-8 space-y-4">
       <h2 className="text-xl font-bold">{title}</h2>
       {paragraphs.subtitle && (
         <p className="text-sm italic opacity-70">{paragraphs.subtitle}</p>

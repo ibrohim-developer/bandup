@@ -78,7 +78,7 @@ export function MultipleAnswer({
             <div
               key={`${questionId}-${index}`}
               className={cn(
-                'flex items-center space-x-3 rounded-lg border p-4 transition-colors',
+                'flex items-center space-x-3 rounded-lg border px-3 py-2 md:p-4 transition-colors',
                 !disabled && 'cursor-pointer',
                 reviewMode && isSelected && isCorrectOption && 'border-green-500 bg-green-50 dark:bg-green-950/20',
                 reviewMode && isSelected && !isCorrectOption && 'border-red-500 bg-red-50 dark:bg-red-950/20',

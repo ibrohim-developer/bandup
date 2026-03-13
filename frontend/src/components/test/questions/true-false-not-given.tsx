@@ -55,7 +55,7 @@ export function TrueFalseNotGiven({
   };
 
   return (
-    <div id={`question-${questionId}`} className="space-y-3">
+    <div id={`question-${questionId}`} className="space-y-3 md:space-y-3">
       <div className="flex gap-2 items-start">
         <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded bg-gray-200 text-xs font-bold text-gray-700">
           {questionNumber}
@@ -70,7 +70,7 @@ export function TrueFalseNotGiven({
         value={value}
         onValueChange={onChange}
         disabled={disabled}
-        className="ml-8 space-y-2"
+        className="ml-8 space-y-1 md:space-y-2"
       >
         {options.map((option) => {
           const isUserAnswer = value === option.value;
@@ -78,7 +78,7 @@ export function TrueFalseNotGiven({
             <div
               key={option.value}
               className={cn(
-                "flex items-center space-x-3 rounded-lg border p-4 transition-colors",
+                "flex items-center space-x-3 rounded-lg border px-3 py-2 md:p-4 transition-colors",
                 !disabled && "cursor-pointer",
                 reviewMode &&
                   isUserAnswer &&
@@ -101,7 +101,7 @@ export function TrueFalseNotGiven({
               />
               <Label
                 htmlFor={`${questionId}-${option.value}`}
-                className={cn("flex-1", !disabled && "cursor-pointer")}
+                className={cn("flex-1 text-sm", !disabled && "cursor-pointer")}
               >
                 {option.label}
               </Label>
