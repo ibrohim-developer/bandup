@@ -60,13 +60,20 @@ export async function GET(request: Request) {
       return NextResponse.redirect(`${SITE_URL}/sign-in?error=tg_token_failed`)
     }
 
-    const tokenData = await tokenRes.json()
-    console.log('Telegram token response:', JSON.stringify(tokenData))
+    const tokenText = await tokenRes.text()
+    console.log('Telegram token response:', tokenText.slice(0, 200))
+    let tokenData: Record<string, string>
+    try {
+      tokenData = JSON.parse(tokenText)
+    } catch {
+      console.error('Telegram token response not JSON:', tokenText.slice(0, 500))
+      return NextResponse.redirect(`${SITE_URL}/sign-in?error=tg_token_not_json`)
+    }
     const accessToken = tokenData.access_token
 
     if (!accessToken) {
       console.error('Telegram token response missing access_token:', tokenData)
-      return NextResponse.redirect(`${SITE_URL}/sign-in?error=tg_no_access_token&tgerr=${encodeURIComponent(tokenData.error || '')}&botid=${encodeURIComponent(BOT_ID)}&tokset=${!!TELEGRAM_CLIENT_SECRET}`)
+      return NextResponse.redirect(`${SITE_URL}/sign-in?error=tg_no_access_token&tgerr=${encodeURIComponent(tokenData.error || '')}`)
     }
 
     // Fetch user info from Telegram
@@ -74,16 +81,24 @@ export async function GET(request: Request) {
       headers: { Authorization: `Bearer ${accessToken}` },
     })
 
+    const userInfoText = await userInfoRes.text()
+    console.log('Telegram userinfo response:', userInfoText.slice(0, 200))
     if (!userInfoRes.ok) {
-      console.error('Telegram userinfo failed:', await userInfoRes.text())
+      console.error('Telegram userinfo failed:', userInfoText)
       return NextResponse.redirect(`${SITE_URL}/sign-in?error=tg_userinfo_failed`)
     }
 
-    const userInfo = await userInfoRes.json()
+    let userInfo: Record<string, unknown>
+    try {
+      userInfo = JSON.parse(userInfoText)
+    } catch {
+      console.error('Telegram userinfo not JSON:', userInfoText.slice(0, 500))
+      return NextResponse.redirect(`${SITE_URL}/sign-in?error=tg_userinfo_not_json`)
+    }
 
     const telegramId = String(userInfo.sub || userInfo.id)
-    const fullName = (userInfo.name || `${userInfo.first_name || ''} ${userInfo.last_name || ''}`.trim()) || ''
-    const avatarUrl = (userInfo.picture || userInfo.photo_url) || ''
+    const fullName = (userInfo.name || `${String(userInfo.first_name || '')} ${String(userInfo.last_name || '')}`.trim()) || ''
+    const avatarUrl = String(userInfo.picture || userInfo.photo_url || '')
     const syntheticEmail = `tg_${telegramId}@telegram.bandup.uz`
     const password = getDeterministicPassword(telegramId)
 
@@ -92,6 +107,10 @@ export async function GET(request: Request) {
       `${STRAPI_URL}/api/users?filters[telegram_id][$eq]=${telegramId}`,
       { headers: { Authorization: `Bearer ${STRAPI_API_TOKEN}` } }
     )
+    if (!findRes.ok) {
+      console.error('Strapi find user failed:', await findRes.text())
+      return NextResponse.redirect(`${SITE_URL}/sign-in?error=tg_strapi_find_failed`)
+    }
     const existingUsers = await findRes.json()
 
     let jwt: string
