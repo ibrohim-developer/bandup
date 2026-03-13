@@ -37,6 +37,7 @@ export async function GET(request: Request) {
   try {
     // Exchange code for tokens
     const redirectUri = `${SITE_URL}/api/auth/telegram/callback`
+    console.log('Telegram auth - BOT_ID:', BOT_ID, 'token set:', !!TELEGRAM_BOT_TOKEN, 'token prefix:', TELEGRAM_BOT_TOKEN?.slice(0, 12))
     const credentials = Buffer.from(`${BOT_ID}:${TELEGRAM_BOT_TOKEN}`).toString('base64')
 
     const tokenRes = await fetch('https://oauth.telegram.org/token', {
@@ -61,11 +62,12 @@ export async function GET(request: Request) {
     }
 
     const tokenData = await tokenRes.json()
+    console.log('Telegram token response:', JSON.stringify(tokenData))
     const accessToken = tokenData.access_token
 
     if (!accessToken) {
       console.error('Telegram token response missing access_token:', tokenData)
-      return NextResponse.redirect(`${SITE_URL}/sign-in?error=tg_no_access_token`)
+      return NextResponse.redirect(`${SITE_URL}/sign-in?error=tg_no_access_token&keys=${encodeURIComponent(Object.keys(tokenData).join(','))}`)
     }
 
     // Fetch user info from Telegram
