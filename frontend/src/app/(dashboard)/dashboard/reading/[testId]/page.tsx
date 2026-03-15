@@ -110,7 +110,7 @@ function ReadingTestContent({ testId }: { testId: string }) {
   const isReviewMode = searchParams.get("review") === "true";
   const reviewAttemptId = searchParams.get("attemptId");
 
-  const { resumeTimer, timeRemaining, flaggedQuestions, toggleFlag } =
+  const { resumeTimer, timeRemaining, flaggedQuestions, toggleFlag, resetTest } =
     useTestStore();
   const { isFullscreen, toggleFullscreen } = useFullscreen();
 
@@ -202,6 +202,7 @@ function ReadingTestContent({ testId }: { testId: string }) {
             key={question.id}
             {...commonProps}
             options={question.options ?? []}
+            maxSelections={(question.metadata?.maxSelections as number | undefined) ?? 2}
           />
         );
       case "tfng":
@@ -378,6 +379,7 @@ function ReadingTestContent({ testId }: { testId: string }) {
         "If you leave this page, all your answers will be lost and your test progress will not be saved.",
       )
     ) {
+      resetTest();
       router.push("/dashboard/reading");
     }
   };
@@ -738,6 +740,7 @@ function ReadingTestContent({ testId }: { testId: string }) {
                                     isUnanswered={unansweredQuestions.has(
                                       question.id,
                                     )}
+                                    maxSelections={(group.metadata?.maxSelections as number | undefined) ?? (question.metadata?.maxSelections as number | undefined) ?? 2}
                                   />
                                 );
                               })}

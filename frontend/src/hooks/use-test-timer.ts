@@ -5,28 +5,29 @@ import { useTestStore } from '@/stores/test-store'
 
 export function useTestTimer(onTimeUp?: () => void) {
   const { timeRemaining, isTimerRunning, tick, pauseTimer, resumeTimer } = useTestStore()
-  const intervalRef = useRef<NodeJS.Timeout | null>(null)
   const onTimeUpRef = useRef(onTimeUp)
 
   useEffect(() => {
     onTimeUpRef.current = onTimeUp
   }, [onTimeUp])
 
+  // Interval lifecycle: only depends on isTimerRunning — not recreated on every tick
   useEffect(() => {
-    if (isTimerRunning && timeRemaining > 0) {
-      intervalRef.current = setInterval(() => {
-        tick()
-      }, 1000)
-    } else if (timeRemaining === 0 && isTimerRunning) {
+    if (!isTimerRunning || timeRemaining <= 0) return
+
+    const id = setInterval(() => {
+      tick()
+    }, 1000)
+
+    return () => clearInterval(id)
+  }, [isTimerRunning, tick]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Time-up detection: separate from the interval
+  useEffect(() => {
+    if (timeRemaining === 0 && isTimerRunning) {
       onTimeUpRef.current?.()
     }
-
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current)
-      }
-    }
-  }, [isTimerRunning, timeRemaining, tick])
+  }, [timeRemaining, isTimerRunning])
 
   const formatTime = useCallback((seconds: number) => {
     const mins = Math.floor(seconds / 60)

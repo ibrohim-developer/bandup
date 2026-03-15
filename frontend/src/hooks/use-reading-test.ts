@@ -35,7 +35,7 @@ export function useReadingTest(
   reviewAttemptId: string | null,
 ) {
   const router = useRouter();
-  const { initTest, answers, setAnswer, timeRemaining } =
+  const { initTest, answers, setAnswer, timeRemaining, resetTest } =
     useTestStore();
 
   const [passages, setPassages] = useState<Passage[]>([]);
@@ -107,6 +107,11 @@ export function useReadingTest(
       return;
     }
 
+    setHasStarted(false);
+    setIsSubmitting(false);
+    setIsTimeUp(false);
+    setShowSubmitDialog(false);
+
     try {
       const res = await fetch("/api/reading/start", {
         method: "POST",
@@ -175,11 +180,12 @@ export function useReadingTest(
       }
 
       const result = await res.json();
-      router.push(`/dashboard/results/${result.attemptId}`);
+      resetTest();
+      router.replace(`/dashboard/results/${result.attemptId}`);
     } catch {
       setIsSubmitting(false);
     }
-  }, [testId, answers, timeRemaining, totalTime, router]);
+  }, [testId, answers, timeRemaining, totalTime, router, resetTest]);
 
   const handleTimeUp = useCallback(() => {
     setIsTimeUp(true);

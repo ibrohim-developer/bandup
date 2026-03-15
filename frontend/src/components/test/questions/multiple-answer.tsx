@@ -17,6 +17,7 @@ interface MultipleAnswerProps {
   correctAnswer?: string
   isCorrect?: boolean
   isUnanswered?: boolean
+  maxSelections?: number
 }
 
 export function MultipleAnswer({
@@ -31,16 +32,20 @@ export function MultipleAnswer({
   correctAnswer,
   isCorrect,
   isUnanswered,
+  maxSelections = 2,
 }: MultipleAnswerProps) {
   const selectedLetters = value ? value.split(',').filter(Boolean) : []
   const correctLetters = correctAnswer ? correctAnswer.split(',').filter(Boolean) : []
+  const limitReached = selectedLetters.length >= maxSelections
 
   const toggleOption = (letter: string) => {
     if (disabled) return
-    const newSelected = selectedLetters.includes(letter)
-      ? selectedLetters.filter((l) => l !== letter)
-      : [...selectedLetters, letter].sort()
-    onChange(newSelected.join(','))
+    if (selectedLetters.includes(letter)) {
+      onChange(selectedLetters.filter((l) => l !== letter).join(','))
+    } else {
+      if (limitReached) return
+      onChange([...selectedLetters, letter].sort().join(','))
+    }
   }
 
   const getQuestionBadge = () => {
@@ -63,10 +68,17 @@ export function MultipleAnswer({
         <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded bg-gray-200 text-xs font-bold text-gray-700">
           {questionNumber}
         </span>
-        <p className="text-sm leading-relaxed">
-          {questionText}
-          {getQuestionBadge()}
-        </p>
+        <div className="flex-1">
+          <p className="text-sm leading-relaxed">
+            {questionText}
+            {getQuestionBadge()}
+          </p>
+          {!reviewMode && (
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Choose {maxSelections} answers ({selectedLetters.length}/{maxSelections} selected)
+            </p>
+          )}
+        </div>
       </div>
 
       <div className="ml-8 space-y-2">
@@ -74,27 +86,29 @@ export function MultipleAnswer({
           const optionLetter = String.fromCharCode(65 + index)
           const isSelected = selectedLetters.includes(optionLetter)
           const isCorrectOption = correctLetters.includes(optionLetter)
+          const isDisabledByLimit = !isSelected && limitReached && !disabled
           return (
             <div
               key={`${questionId}-${index}`}
               className={cn(
                 'flex items-center space-x-3 rounded-lg border px-3 py-2 md:p-4 transition-colors',
-                !disabled && 'cursor-pointer',
+                !disabled && !isDisabledByLimit && 'cursor-pointer',
+                isDisabledByLimit && 'cursor-not-allowed opacity-50',
                 reviewMode && isSelected && isCorrectOption && 'border-green-500 bg-green-50 dark:bg-green-950/20',
                 reviewMode && isSelected && !isCorrectOption && 'border-red-500 bg-red-50 dark:bg-red-950/20',
                 reviewMode && !isSelected && isCorrectOption && 'border-green-300 bg-green-50/50 dark:bg-green-950/10',
                 !reviewMode && isSelected && 'border-primary bg-primary/5',
-                !reviewMode && !isSelected && 'hover:bg-muted/50'
+                !reviewMode && !isSelected && !isDisabledByLimit && 'hover:bg-muted/50'
               )}
               onClick={() => toggleOption(optionLetter)}
             >
               <Checkbox
                 checked={isSelected}
-                disabled={disabled}
+                disabled={disabled || isDisabledByLimit}
                 className="pointer-events-none"
               />
               <Label
-                className={cn("flex-1", !disabled && "cursor-pointer")}
+                className={cn("flex-1", !disabled && !isDisabledByLimit && "cursor-pointer")}
               >
                 <span className="font-semibold mr-2">{optionLetter}.</span>
                 {option}

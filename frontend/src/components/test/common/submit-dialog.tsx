@@ -33,6 +33,10 @@ export function SubmitDialog({
   const unanswered = totalQuestions - answeredCount
   const allAnswered = unanswered === 0
 
+  const handleSubmit = () => {
+      onConfirm()
+      onOpenChange(false)
+  }
   // Time-up dialog — auto submit, no dismiss
   if (timeUp) {
     return (
@@ -51,7 +55,7 @@ export function SubmitDialog({
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button onClick={onConfirm} disabled={isSubmitting}>
+            <Button onClick={handleSubmit} disabled={isSubmitting}>
               {isSubmitting ? 'Submitting...' : 'Submit Test'}
             </Button>
           </DialogFooter>
@@ -80,7 +84,7 @@ export function SubmitDialog({
             >
               Cancel
             </Button>
-            <Button onClick={onConfirm} disabled={isSubmitting}>
+            <Button onClick={handleSubmit} disabled={isSubmitting}>
               {isSubmitting ? 'Submitting...' : 'Submit Test'}
             </Button>
           </DialogFooter>
@@ -133,7 +137,7 @@ export function SubmitDialog({
           >
             Continue Test
           </Button>
-          <Button onClick={onConfirm} disabled={isSubmitting}>
+          <Button onClick={handleSubmit} disabled={isSubmitting}>
             {isSubmitting ? 'Submitting...' : 'Submit Test'}
           </Button>
         </DialogFooter>
