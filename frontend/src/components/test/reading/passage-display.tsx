@@ -3,11 +3,13 @@
 import { useState, useRef, useCallback, useEffect, useMemo } from "react";
 import { createPortal } from "react-dom";
 import { Highlighter, StickyNote } from "lucide-react";
+import { useWordDefinition } from "@/hooks/use-word-definition";
+import { WordDefinitionPopup } from "./word-definition-popup";
 
 interface PopupState {
   x: number;
   y: number;
-  mode: "actions" | "remove";
+  mode: "actions" | "remove" | "definition";
 }
 
 type MarkType = "highlight" | "note";
@@ -136,6 +138,8 @@ export function PassageDisplay({
   const pendingRemoveIdRef = useRef<string | null>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const popupRef = useRef<HTMLDivElement>(null);
+  const [clickedWord, setClickedWord] = useState("");
+  const { state: definitionState, lookup: lookupDefinition, reset: resetDefinition } = useWordDefinition();
 
   const paragraphs = useMemo(() => {
     const parts = content.split(/\r?\n\r?\n/).filter((p) => p.trim());
@@ -177,7 +181,9 @@ export function PassageDisplay({
     pendingRangeRef.current = null;
     pendingSelectedTextRef.current = "";
     pendingRemoveIdRef.current = null;
-  }, []);
+    setClickedWord("");
+    resetDefinition();
+  }, [resetDefinition]);
 
   const handleMouseUp = useCallback(
     (e: React.MouseEvent) => {
@@ -209,6 +215,23 @@ export function PassageDisplay({
 
       const selection = window.getSelection();
       if (!selection || selection.isCollapsed || !selection.rangeCount) {
+        // Single click — try to look up the word at click position (desktop only)
+        if (window.innerWidth < 768) return;
+        const range = document.caretRangeFromPoint(e.clientX, e.clientY);
+        if (range && range.startContainer.nodeType === Node.TEXT_NODE) {
+          const text = range.startContainer.textContent || "";
+          const offset = range.startOffset;
+          let start = offset;
+          let end = offset;
+          while (start > 0 && /[a-z']/i.test(text[start - 1])) start--;
+          while (end < text.length && /[a-z']/i.test(text[end])) end++;
+          const word = text.slice(start, end).replace(/^'+|'+$/g, "");
+          if (word.length >= 2) {
+            setClickedWord(word);
+            lookupDefinition(word);
+            setPopup({ x: e.clientX, y: e.clientY - 8, mode: "definition" });
+          }
+        }
         return;
       }
 
@@ -227,7 +250,7 @@ export function PassageDisplay({
         mode: "actions",
       });
     },
-    [onNoteMarkClick]
+    [onNoteMarkClick, lookupDefinition]
   );
 
   const applyHighlight = useCallback(() => {
@@ -311,7 +334,7 @@ export function PassageDisplay({
               }}
             />
           </div>
-        ) : (
+        ) : popup.mode === "remove" ? (
           <div
             ref={popupRef}
             className="fixed z-50 flex items-center"
@@ -336,7 +359,19 @@ export function PassageDisplay({
               }}
             />
           </div>
-        ),
+        ) : popup.mode === "definition" ? (
+          <div
+            ref={popupRef}
+            className="fixed z-50"
+            style={{
+              left: Math.max(170, Math.min(popup.x, window.innerWidth - 170)),
+              top: popup.y,
+              transform: "translate(-50%, -100%)",
+            }}
+          >
+            <WordDefinitionPopup state={definitionState} word={clickedWord} />
+          </div>
+        ) : null,
         document.body
       )
     : null;
