@@ -13,7 +13,7 @@ const config: Core.Config.Middlewares = [
     config: {
       proxy: true,
       cookie: {
-        secure: true,
+        secure: 'auto',
         sameSite: 'lax',
       },
     },
