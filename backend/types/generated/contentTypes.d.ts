@@ -442,9 +442,11 @@ export interface ApiBusinessInquiryBusinessInquiry
     draftAndPublish: false;
   };
   attributes: {
+    center_type: Schema.Attribute.String;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+    email: Schema.Attribute.String;
     learning_centre_name: Schema.Attribute.String;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
@@ -452,6 +454,7 @@ export interface ApiBusinessInquiryBusinessInquiry
       'api::business-inquiry.business-inquiry'
     > &
       Schema.Attribute.Private;
+    location: Schema.Attribute.String;
     message: Schema.Attribute.Text;
     name: Schema.Attribute.String & Schema.Attribute.Required;
     phone: Schema.Attribute.String & Schema.Attribute.Required;

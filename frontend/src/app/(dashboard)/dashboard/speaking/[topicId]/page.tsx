@@ -41,6 +41,7 @@ export default function SpeakingTestPage() {
   const [recordings, setRecordings] = useState<Map<number, Recording>>(new Map());
   const [submitting, setSubmitting] = useState(false);
   const [evaluating, setEvaluating] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [elapsed, setElapsed] = useState(0);
   const startTimeRef = useRef(Date.now());
@@ -154,7 +155,7 @@ export default function SpeakingTestPage() {
       }
 
       // 4. Redirect to results
-      router.push(`/dashboard/results/${attemptId}`);
+      router.push(`/dashboard/speaking/result/${attemptId}`);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Something went wrong");
       setSubmitting(false);
@@ -235,6 +236,7 @@ export default function SpeakingTestPage() {
         <VoiceRecorder
           key={currentQuestion}
           onRecordingComplete={handleRecordingComplete}
+          onRecordingStateChange={setIsRecording}
           disabled={submitting || evaluating}
         />
       </div>
@@ -244,7 +246,7 @@ export default function SpeakingTestPage() {
         <Button
           variant="outline"
           onClick={() => setCurrentQuestion((q) => q - 1)}
-          disabled={currentQuestion === 0}
+          disabled={currentQuestion === 0 || isRecording}
           className="gap-2"
         >
           <ChevronLeft className="h-4 w-4" />
@@ -256,7 +258,12 @@ export default function SpeakingTestPage() {
             <button
               key={i}
               onClick={() => setCurrentQuestion(i)}
+              disabled={isRecording}
               className={`h-8 w-8 rounded-full text-xs font-bold transition-colors ${
+                isRecording
+                  ? "opacity-50 cursor-not-allowed"
+                  : ""
+              } ${
                 i === currentQuestion
                   ? "bg-primary text-primary-foreground"
                   : recordings.has(i)
@@ -273,6 +280,7 @@ export default function SpeakingTestPage() {
           <Button
             variant="outline"
             onClick={() => setCurrentQuestion((q) => q + 1)}
+            disabled={isRecording}
             className="gap-2"
           >
             Next
@@ -281,7 +289,7 @@ export default function SpeakingTestPage() {
         ) : (
           <Button
             onClick={handleSubmit}
-            disabled={!allRecorded || submitting || evaluating}
+            disabled={!allRecorded || submitting || evaluating || isRecording}
             className="gap-2"
           >
             {submitting ? (

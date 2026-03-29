@@ -55,53 +55,47 @@ export function TrueFalseNotGiven({
   };
 
   return (
-    <div id={`question-${questionId}`} className="space-y-3 md:space-y-3">
-      <div className="flex gap-2 items-start">
-        <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded bg-gray-200 text-xs font-bold text-gray-700">
-          {questionNumber}
-        </span>
-        <p className="text-sm leading-relaxed">
-          {questionText}
-          {getQuestionBadge()}
-        </p>
-      </div>
+    <div id={`question-${questionId}`} className="space-y-2">
+      <p className="text-sm leading-relaxed">
+        <span className="mr-2 font-bold">{questionNumber}</span>
+        {questionText}
+        {getQuestionBadge()}
+      </p>
 
       <RadioGroup
         value={value}
         onValueChange={onChange}
         disabled={disabled}
-        className="ml-8 space-y-1 md:space-y-2"
+        className="space-y-0 gap-1"
       >
         {options.map((option) => {
           const isUserAnswer = value === option.value;
+          const isSelectedInReview = reviewMode && isUserAnswer;
+
           return (
             <div
               key={option.value}
               className={cn(
-                "flex items-center space-x-3 rounded-lg border px-3 py-2 md:p-4 transition-colors",
+                "flex items-center gap-3 px-4 py-3 w-full transition-colors",
                 !disabled && "cursor-pointer",
-                reviewMode &&
-                  isUserAnswer &&
-                  isCorrect &&
-                  "border-green-500 bg-green-50 dark:bg-green-950/20",
-                reviewMode &&
-                  isUserAnswer &&
-                  !isCorrect &&
-                  "border-red-500 bg-red-50 dark:bg-red-950/20",
-                !reviewMode &&
-                  value === option.value &&
-                  "border-primary bg-primary/5",
-                !reviewMode && !value && "hover:bg-muted/50",
+                isSelectedInReview && isCorrect && "bg-green-100 dark:bg-green-950/30",
+                isSelectedInReview && !isCorrect && "bg-red-100 dark:bg-red-950/30",
+                !reviewMode && isUserAnswer && "bg-gray-200 dark:bg-muted",
+                !reviewMode && !isUserAnswer && "hover:bg-gray-100 dark:hover:bg-muted/50",
               )}
               onClick={() => !disabled && onChange(option.value)}
             >
               <RadioGroupItem
                 value={option.value}
                 id={`${questionId}-${option.value}`}
+                className="shrink-0"
               />
               <Label
                 htmlFor={`${questionId}-${option.value}`}
-                className={cn("flex-1 text-sm", !disabled && "cursor-pointer")}
+                className={cn(
+                  "text-sm font-medium tracking-wide text-foreground",
+                  !disabled && "cursor-pointer",
+                )}
               >
                 {option.label}
               </Label>

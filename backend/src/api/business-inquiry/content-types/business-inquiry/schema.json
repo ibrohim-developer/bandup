@@ -26,6 +26,15 @@
     },
     "message": {
       "type": "text"
+    },
+    "center_type": {
+      "type": "string"
+    },
+    "email": {
+      "type": "string"
+    },
+    "location": {
+      "type": "string"
     }
   }
 }

@@ -73,7 +73,7 @@ export function ContextFillInBlank({
         const isFlagged = showBookmarks && flaggedQuestions!.includes(question.questionId);
 
         return createPortal(
-          <span className="inline-flex items-center gap-0.5 mx-1 align-middle group/blank">
+          <span className="inline-flex items-center gap-0.5 mx-0.5 align-middle group/blank relative">
             <Input
               id={`question-${question.questionId}`}
               value={
@@ -127,7 +127,7 @@ export function ContextFillInBlank({
                 type="button"
                 onClick={() => onToggleFlag!(question.questionId)}
                 className={cn(
-                  "shrink-0 p-0.5 pr-0 transition-all cursor-pointer",
+                  "shrink-0 absolute -right-3.5 z-10 transition-all cursor-pointer",
                   isFlagged
                     ? "opacity-100"
                     : "opacity-0 group-hover/blank:opacity-100",
@@ -136,10 +136,10 @@ export function ContextFillInBlank({
               >
                 <Bookmark
                   className={cn(
-                    "h-5 w-5",
+                    "h-6 w-6",
                     isFlagged
                       ? "fill-red-500 text-red-500"
-                      : "text-muted-foreground/40 hover:text-muted-foreground",
+                      : "text-muted-foreground/40 text-muted-foreground",
                   )}
                 />
               </button>

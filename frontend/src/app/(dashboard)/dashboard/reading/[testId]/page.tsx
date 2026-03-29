@@ -75,7 +75,7 @@ function BookmarkButton({
       title={isFlagged ? "Remove flag" : "Flag for review"}
     >
       <Bookmark
-        className={`h-5 w-5 ${isFlagged ? "fill-red-500 text-red-500" : "text-muted-foreground/40 hover:text-muted-foreground"}`}
+        className={`h-6 w-6 ${isFlagged ? "fill-red-500 text-red-500" : "text-muted-foreground/40 hover:text-muted-foreground"}`}
       />
     </button>
   );
@@ -585,30 +585,21 @@ function ReadingTestContent({ testId }: { testId: string }) {
                         groupOptions.length > 0
                       ) {
                         return (
-                          <div className="group/q relative">
-                            <div className="space-y-4">
-                              {contextHtml && (
-                                <div
-                                  className="text-sm leading-relaxed rich-html"
-                                  dangerouslySetInnerHTML={{
-                                    __html: contextHtml,
-                                  }}
-                                />
-                              )}
-                              <MatchingGrid
-                                options={groupOptions}
-                                questions={buildGroupQuestions()}
+                          <div className="space-y-4">
+                            {contextHtml && (
+                              <div
+                                className="text-sm leading-relaxed rich-html"
+                                dangerouslySetInnerHTML={{
+                                  __html: contextHtml,
+                                }}
                               />
-                            </div>
-                            {!isReviewMode && (
-                              <div className="absolute top-0 right-0">
-                                <BookmarkButton
-                                  questionId={group.questions[0].id}
-                                  flaggedQuestions={flaggedQuestions}
-                                  toggleFlag={toggleFlag}
-                                />
-                              </div>
                             )}
+                            <MatchingGrid
+                              options={groupOptions}
+                              questions={buildGroupQuestions()}
+                              flaggedQuestions={!isReviewMode ? flaggedQuestions : undefined}
+                              onToggleFlag={!isReviewMode ? toggleFlag : undefined}
+                            />
                           </div>
                         );
                       }

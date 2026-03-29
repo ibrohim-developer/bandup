@@ -60,7 +60,6 @@ const menuItems = [
     title: "Full Mock Test",
     href: "/dashboard/full-mock-test",
     icon: ClipboardList,
-    soon: true,
   },
 ];
 

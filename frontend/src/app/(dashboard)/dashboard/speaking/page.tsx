@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-// import Link from "@/components/no-prefetch-link";
+import Link from "next/link";
 import { Users, List } from "lucide-react";
 
 export const metadata: Metadata = {
@@ -45,10 +45,7 @@ export default function SpeakingPage() {
           </span>
         </div>
 
-        <div className="bg-card border border-border p-6 md:p-8 rounded-xl flex flex-col items-center text-center gap-4 relative opacity-75">
-          <span className="absolute top-3 right-3 bg-primary/10 text-primary text-[10px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded">
-            Soon
-          </span>
+        <div className="bg-card border border-border p-6 md:p-8 rounded-xl flex flex-col items-center text-center gap-4 relative">
           <div className="bg-primary/10 p-4 rounded-full">
             <List className="h-8 w-8 text-primary" />
           </div>
@@ -56,15 +53,12 @@ export default function SpeakingPage() {
           <p className="text-sm text-muted-foreground">
             Browse speaking topics and practice questions organized by part.
           </p>
-          {/* <Link
+          <Link
             href="/dashboard/speaking/questions"
             className="bg-primary text-primary-foreground px-8 py-3 rounded-lg font-black text-xs tracking-widest hover:opacity-90 transition-all uppercase mt-auto"
           >
             Browse Questions
-          </Link> */}
-          <span className="bg-muted text-muted-foreground px-8 py-3 rounded-lg font-black text-xs tracking-widest uppercase mt-auto cursor-not-allowed">
-            Browse Questions
-          </span>
+          </Link>
         </div>
       </div>
     </div>

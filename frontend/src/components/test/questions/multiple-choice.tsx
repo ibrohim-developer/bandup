@@ -52,42 +52,36 @@ export function MultipleChoice({
   }
 
   return (
-    <div id={`question-${questionId}`} className="space-y-3">
-      <div className="flex gap-2 items-start">
-        <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded bg-gray-200 text-xs font-bold text-gray-700">
-          {questionNumber}
-        </span>
-        <p className="text-sm leading-relaxed">
-          <span dangerouslySetInnerHTML={{ __html: questionText }} />
-          {getQuestionBadge()}
-        </p>
-      </div>
+    <div id={`question-${questionId}`} className="space-y-2">
+      <p className="text-sm leading-relaxed">
+        <span className="font-bold mr-2">{questionNumber}</span>
+        <span dangerouslySetInnerHTML={{ __html: questionText }} />
+        {getQuestionBadge()}
+      </p>
 
-      <div className="ml-8 space-y-2">
+      <div className="space-y-0 flex flex-col gap-1">
         {options.map((option, index) => {
-          const optionLetter = String.fromCharCode(65 + index) 
+          const optionLetter = String.fromCharCode(65 + index)
           const isSelected = value === optionLetter
           return (
             <div
               key={`${questionId}-${index}`}
               className={cn(
-                'flex items-center space-x-3 rounded-lg border px-3 py-2 md:p-4 transition-colors',
+                'flex items-center gap-3 px-4 py-3 w-full transition-colors',
                 !disabled && 'cursor-pointer',
-                reviewMode && isSelected && isCorrect && 'border-green-500 bg-green-50 dark:bg-green-950/20',
-                reviewMode && isSelected && !isCorrect && 'border-red-500 bg-red-50 dark:bg-red-950/20',
-                !reviewMode && isSelected && 'border-primary bg-primary/5',
-                !reviewMode && !isSelected && 'hover:bg-muted/50'
+                reviewMode && isSelected && isCorrect && 'bg-green-100 dark:bg-green-950/30',
+                reviewMode && isSelected && !isCorrect && 'bg-red-100 dark:bg-red-950/30',
+                !reviewMode && isSelected && 'bg-gray-200 dark:bg-muted',
+                !reviewMode && !isSelected && 'hover:bg-gray-100 dark:hover:bg-muted/50',
               )}
               onClick={() => toggleOption(optionLetter)}
             >
               <Checkbox
                 checked={isSelected}
                 disabled={disabled}
-                className="pointer-events-none"
+                className="pointer-events-none shrink-0"
               />
-              <Label
-                className={cn("flex-1", !disabled && "cursor-pointer")}
-              >
+              <Label className={cn("flex-1 text-sm font-medium text-foreground", !disabled && "cursor-pointer")}>
                 <span className="font-semibold mr-2">{optionLetter}.</span>
                 {option}
               </Label>

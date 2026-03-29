@@ -57,6 +57,7 @@ export default function FullMockSpeakingPage({
     // Recordings: key = "topicIdx-questionIdx"
     const [recordings, setRecordings] = useState<Map<string, Recording>>(new Map());
 
+    const [isRecording, setIsRecording] = useState(false);
     const [submitting, setSubmitting] = useState(false);
     const [evaluating, setEvaluating] = useState(false);
 
@@ -217,7 +218,7 @@ export default function FullMockSpeakingPage({
                         throw new Error(data.error || "Evaluation failed");
                     }
 
-                    router.push(`/dashboard/results/${attemptId}`);
+                    router.push(`/dashboard/speaking/result/${attemptId}`);
                 }
             }
         } catch (err) {
@@ -405,6 +406,7 @@ export default function FullMockSpeakingPage({
                 <VoiceRecorder
                     key={currentKey}
                     onRecordingComplete={handleRecordingComplete}
+                    onRecordingStateChange={setIsRecording}
                     disabled={submitting || evaluating}
                 />
             </div>
@@ -414,7 +416,7 @@ export default function FullMockSpeakingPage({
                 <Button
                     variant="outline"
                     onClick={goToPrev}
-                    disabled={isFirst}
+                    disabled={isFirst || isRecording}
                     className="gap-2"
                 >
                     <ChevronLeft className="h-4 w-4" />
@@ -436,7 +438,10 @@ export default function FullMockSpeakingPage({
                                             setCurrentTopicIdx(tIdx);
                                             setCurrentQuestionIdx(qIdx);
                                         }}
-                                        className={`h-7 w-7 md:h-8 md:w-8 rounded-full text-[10px] md:text-xs font-bold transition-colors ${isActive
+                                        disabled={isRecording}
+                                        className={`h-7 w-7 md:h-8 md:w-8 rounded-full text-[10px] md:text-xs font-bold transition-colors ${
+                                            isRecording ? "opacity-50 cursor-not-allowed" : ""
+                                        } ${isActive
                                                 ? "bg-primary text-primary-foreground"
                                                 : isRecorded
                                                     ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border border-green-300 dark:border-green-700"
@@ -458,7 +463,7 @@ export default function FullMockSpeakingPage({
                 {isLast ? (
                     <Button
                         onClick={handleSubmit}
-                        disabled={!allRecorded || submitting || evaluating}
+                        disabled={!allRecorded || submitting || evaluating || isRecording}
                         className="gap-2"
                     >
                         {submitting ? (
@@ -479,7 +484,7 @@ export default function FullMockSpeakingPage({
                         )}
                     </Button>
                 ) : (
-                    <Button variant="outline" onClick={goToNext} className="gap-2">
+                    <Button variant="outline" onClick={goToNext} disabled={isRecording} className="gap-2">
                         Next
                         <ChevronRight className="h-4 w-4" />
                     </Button>

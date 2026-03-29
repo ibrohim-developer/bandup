@@ -107,7 +107,7 @@ export function SentenceEndings({
                 >
                   <Bookmark
                     className={cn(
-                      "h-5 w-5",
+                      "h-6 w-6",
                       flaggedQuestions?.includes(q.questionId)
                         ? "fill-red-500 text-red-500"
                         : "text-muted-foreground/40 hover:text-muted-foreground",

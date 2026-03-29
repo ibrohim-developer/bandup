@@ -36,7 +36,7 @@ export function Header({ isLoggedIn = false, userEmail, userAvatar, userName }: 
           <div className="hidden md:flex items-center space-x-10 text-xs font-bold uppercase tracking-widest">
             <a className="hover:text-primary transition-colors" href="#features">Features</a>
             <a className="hover:text-primary transition-colors" href="#how-it-works">How it Works</a>
-            <Link className="hover:text-primary transition-colors" href="/for-business">For Business</Link>
+            <Link className="hover:text-primary transition-colors" href="/for-business">For Businesses</Link>
             {isLoggedIn ? (
               <div className="flex items-center gap-3">
                 <Link
@@ -73,7 +73,7 @@ export function Header({ isLoggedIn = false, userEmail, userAvatar, userName }: 
             <nav className="flex flex-col gap-6">
               <a className="text-xs font-bold uppercase tracking-widest hover:text-primary" href="#features">Features</a>
               <a className="text-xs font-bold uppercase tracking-widest hover:text-primary" href="#how-it-works">How it Works</a>
-              <Link className="text-xs font-bold uppercase tracking-widest hover:text-primary" href="/for-business">For Business</Link>
+              <Link className="text-xs font-bold uppercase tracking-widest hover:text-primary" href="/for-business">For Businesses</Link>
               <div className="pt-4 border-t border-black">
                 {isLoggedIn ? (
                   <div className="flex flex-col gap-3">

@@ -6,10 +6,11 @@ import { Button } from "@/components/ui/button";
 
 interface VoiceRecorderProps {
   onRecordingComplete: (blob: Blob, durationSeconds: number) => void;
+  onRecordingStateChange?: (recording: boolean) => void;
   disabled?: boolean;
 }
 
-export function VoiceRecorder({ onRecordingComplete, disabled }: VoiceRecorderProps) {
+export function VoiceRecorder({ onRecordingComplete, onRecordingStateChange, disabled }: VoiceRecorderProps) {
   const [state, setState] = useState<"idle" | "recording" | "recorded">("idle");
   const [elapsed, setElapsed] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -64,6 +65,7 @@ export function VoiceRecorder({ onRecordingComplete, disabled }: VoiceRecorderPr
         const duration = Math.round((Date.now() - startTimeRef.current) / 1000);
         setElapsed(duration);
         setState("recorded");
+        onRecordingStateChange?.(false);
         onRecordingComplete(blob, duration);
       };
 
@@ -71,6 +73,7 @@ export function VoiceRecorder({ onRecordingComplete, disabled }: VoiceRecorderPr
       setElapsed(0);
       mediaRecorder.start(1000);
       setState("recording");
+      onRecordingStateChange?.(true);
 
       timerRef.current = setInterval(() => {
         setElapsed(Math.round((Date.now() - startTimeRef.current) / 1000));
@@ -78,7 +81,7 @@ export function VoiceRecorder({ onRecordingComplete, disabled }: VoiceRecorderPr
     } catch {
       alert("Microphone access is required to record your answer.");
     }
-  }, [onRecordingComplete]);
+  }, [onRecordingComplete, onRecordingStateChange]);
 
   const stopRecording = useCallback(() => {
     clearTimer();
