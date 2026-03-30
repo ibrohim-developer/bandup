@@ -27,14 +27,14 @@ import {
 const formSchema = z.object({
   centerName: z.string().min(3, 'Center name must be at least 3 characters'),
   centerType: z.enum(['learning-center', 'test-center', 'coaching', 'university', 'other'], {
-    errorMap: () => ({ message: 'Please select a center type' })
+    error: 'Please select a center type'
   }),
   fullName: z.string().min(2, 'Full name must be at least 2 characters'),
   email: z.string().email('Invalid email address'),
   phone: z.string().min(10, 'Phone number must be at least 10 digits'),
   location: z.string().min(3, 'Location is required'),
   studentBase: z.enum(['under-100', '100-500', '500-1000', '1000-5000', 'over-5000'], {
-    errorMap: () => ({ message: 'Please select your student base' })
+    error: 'Please select your student base'
   }),
   description: z.string().min(10, 'Tell us more about your center (minimum 10 characters)'),
   agreeTerms: z.boolean().refine(val => val === true, {
