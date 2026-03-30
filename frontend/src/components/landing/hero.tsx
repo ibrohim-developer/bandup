@@ -48,7 +48,7 @@ export function Hero() {
 
           {/* Trust badges */}
           <div className="mt-16 flex flex-wrap items-center justify-center gap-6 md:gap-10">
-            <TrustBadge icon={<Users className="size-4 text-accent" />} text="10,000+ practice sessions" />
+            <TrustBadge icon={<Users className="size-4 text-accent" />} text="Free, no credit card" />
             <TrustBadge icon={<Sparkles className="size-4 text-accent" />} text="AI-powered feedback" />
             <TrustBadge icon={<TrendingUp className="size-4 text-accent" />} text="All 4 IELTS modules" />
           </div>
@@ -56,9 +56,9 @@ export function Hero() {
           {/* Floating module cards preview */}
           <div className="mt-16 grid w-full max-w-3xl grid-cols-2 gap-3 md:grid-cols-4">
             <ModuleCard icon={<Mic className="size-5" />} label="Speaking" color="bg-accent/10 text-accent" />
-            <ModuleCard icon={<PenLine className="size-5" />} label="Writing" color="bg-foreground/10 text-foreground" />
+            <ModuleCard icon={<PenLine className="size-5" />} label="Writing" color="bg-accent/10 text-accent" />
             <ModuleCard icon={<BookOpen className="size-5" />} label="Reading" color="bg-accent/10 text-accent" />
-            <ModuleCard icon={<Headphones className="size-5" />} label="Listening" color="bg-foreground/10 text-foreground" />
+            <ModuleCard icon={<Headphones className="size-5" />} label="Listening" color="bg-accent/10 text-accent" />
           </div>
         </div>
       </div>

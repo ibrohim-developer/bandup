@@ -58,7 +58,7 @@ export default function HomePage() {
         <AiDemo />
         <DashboardPreview />
         <Testimonials />
-        <Pricing />
+        {/* <Pricing /> */}
         <FAQ />
         <FinalCTA />
       </main>
