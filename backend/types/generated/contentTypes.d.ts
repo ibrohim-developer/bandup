@@ -1021,7 +1021,7 @@ export interface ApiTestTest extends Struct.CollectionTypeSchema {
     localizations: Schema.Attribute.Relation<'oneToMany', 'api::test.test'> &
       Schema.Attribute.Private;
     module_type: Schema.Attribute.Enumeration<
-      ['listening', 'reading', 'writing']
+      ['listening', 'reading', 'writing', 'speaking']
     >;
     publishedAt: Schema.Attribute.DateTime;
     reading_passages: Schema.Attribute.Relation<

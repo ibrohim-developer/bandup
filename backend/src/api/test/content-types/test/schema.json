@@ -9,6 +9,7 @@
   "options": {
     "draftAndPublish": false
   },
+  "pluginOptions": {},
   "attributes": {
     "title": {
       "type": "string",
@@ -19,8 +20,12 @@
     },
     "difficulty_level": {
       "type": "enumeration",
-      "enum": ["easy", "medium", "hard"],
-      "default": "medium"
+      "default": "medium",
+      "enum": [
+        "easy",
+        "medium",
+        "hard"
+      ]
     },
     "is_published": {
       "type": "boolean",
@@ -28,8 +33,13 @@
     },
     "module_type": {
       "type": "enumeration",
-      "enum": ["listening", "reading", "writing"],
-      "required": false
+      "required": false,
+      "enum": [
+        "listening",
+        "reading",
+        "writing",
+        "speaking"
+      ]
     },
     "audio_url": {
       "type": "string"

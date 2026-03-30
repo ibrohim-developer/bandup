@@ -22,7 +22,10 @@
     },
     "task_type": {
       "type": "enumeration",
-      "enum": ["report", "essay"]
+      "enum": [
+        "report",
+        "essay"
+      ]
     },
     "prompt": {
       "type": "richtext",
