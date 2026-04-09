@@ -15,6 +15,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "No file provided" }, { status: 400 });
   }
 
+  if (file.size < 5000) {
+    return NextResponse.json({ error: "Recording too short or silent" }, { status: 400 });
+  }
+
   // Forward the upload to Strapi's upload API
   const strapiForm = new FormData();
   strapiForm.append("files", file, file.name || "recording.webm");

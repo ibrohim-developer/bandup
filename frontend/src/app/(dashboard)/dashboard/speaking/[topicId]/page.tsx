@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { VoiceRecorder } from "@/components/test/speaking/voice-recorder";
 import {
@@ -12,6 +13,7 @@ import {
   CheckCircle,
   Clock,
   MessageSquare,
+  ArrowLeft,
 } from "lucide-react";
 
 interface TopicData {
@@ -192,6 +194,16 @@ export default function SpeakingTestPage() {
 
   return (
     <div className="max-w-3xl mx-auto space-y-6 pb-12">
+      {/* Back */}
+      {topic.test?.documentId && (
+        <Link
+          href={`/dashboard/speaking/test/${topic.test.documentId}`}
+          className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground text-sm font-medium"
+        >
+          <ArrowLeft className="h-4 w-4" /> Back to Test
+        </Link>
+      )}
+
       {/* Header */}
       <div className="bg-card border border-border rounded-xl p-6">
         <div className="flex items-center justify-between mb-4">

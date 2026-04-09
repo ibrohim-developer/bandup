@@ -55,9 +55,9 @@ export function TelegramProvider({ children }: { children: React.ReactNode }) {
     WebApp.expand();
     setIsReady(true);
 
-    // Telegram auth is disabled — Supabase has been removed.
+    // ⚠️ Telegram auth is DISABLED FOR NOW — Supabase has been removed.
     // Previously this would auto-authenticate via /api/auth/telegram/mini-app
-    // Re-enable when Telegram auth is implemented with Strapi.
+    // TODO: Re-enable when Telegram auth is implemented with Strapi.
   }, []);
 
   useEffect(() => {

@@ -2,40 +2,33 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { VirtualTestList } from "@/components/test/common/virtual-test-list";
-import {
-  SpeakingTopicCard,
-  type SpeakingTopicItem,
-} from "./speaking-topic-card";
-import { fetchSpeakingTopics } from "@/app/(dashboard)/dashboard/speaking/questions/actions";
+import { SpeakingTestCard } from "./speaking-test-card";
+import { fetchSpeakingTests, type SpeakingTestItem } from "@/app/(dashboard)/dashboard/speaking/questions/actions";
 
 interface Props {
-  initialTopics: SpeakingTopicItem[];
+  initialTests: SpeakingTestItem[];
   hasMore: boolean;
   filterParams: Record<string, string | undefined>;
 }
 
-export function SpeakingVirtualList({
-  initialTopics,
-  hasMore: initialHasMore,
-  filterParams,
-}: Props) {
-  const [topics, setTopics] = useState(initialTopics);
+export function SpeakingVirtualList({ initialTests, hasMore: initialHasMore, filterParams }: Props) {
+  const [tests, setTests] = useState(initialTests);
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(initialHasMore);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    setTopics(initialTopics);
+    setTests(initialTests);
     setPage(0);
     setHasMore(initialHasMore);
-  }, [initialTopics, initialHasMore]);
+  }, [initialTests, initialHasMore]);
 
   const loadMore = useCallback(async () => {
     if (isLoading || !hasMore) return;
     setIsLoading(true);
     const nextPage = page + 1;
-    const result = await fetchSpeakingTopics(filterParams, nextPage);
-    setTopics((prev) => [...prev, ...result.items]);
+    const result = await fetchSpeakingTests(filterParams, nextPage);
+    setTests((prev) => [...prev, ...result.items]);
     setPage(nextPage);
     setHasMore(result.hasMore);
     setIsLoading(false);
@@ -43,9 +36,9 @@ export function SpeakingVirtualList({
 
   return (
     <VirtualTestList
-      items={topics}
-      renderCard={(topic) => <SpeakingTopicCard topic={topic} />}
-      emptyMessage="No speaking topics available yet."
+      items={tests}
+      renderCard={(test) => <SpeakingTestCard test={test} />}
+      emptyMessage="No speaking tests available yet."
       hasMore={hasMore}
       isLoading={isLoading}
       onLoadMore={loadMore}

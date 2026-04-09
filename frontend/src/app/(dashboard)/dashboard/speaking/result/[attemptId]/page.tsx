@@ -102,48 +102,72 @@ export default async function SpeakingResultPage({
     },
   ];
 
-  // Map submissions for question feedback
-  const feedbackSubmissions = (submissions || []).map((s: any) => {
-    const topic = s.speaking_topic;
-    const questions = Array.isArray(topic?.questions) ? topic.questions : [];
-    let parsedFeedback = null;
-    if (s.feedback) {
-      try {
-        parsedFeedback =
-          typeof s.feedback === "string" ? JSON.parse(s.feedback) : s.feedback;
-      } catch {
-        parsedFeedback = null;
-      }
+  // Group submissions by speaking_topic
+  const topicGroupsMap = new Map<string, { topic: any; submissions: any[] }>();
+  for (const s of submissions || []) {
+    const topicId = s.speaking_topic?.documentId || "unknown";
+    if (!topicGroupsMap.has(topicId)) {
+      topicGroupsMap.set(topicId, { topic: s.speaking_topic, submissions: [] });
     }
-    return {
-      questionIndex: s.question_index,
-      questionText:
-        questions[s.question_index] || `Question ${s.question_index + 1}`,
-      transcript: s.transcript,
-      overallBandScore: s.overall_band_score,
-      fluencyScore: s.fluency_score,
-      lexicalScore: s.lexical_score,
-      grammarScore: s.grammar_score,
-      pronunciationScore: s.pronunciation_score,
-      durationSeconds: s.duration_seconds,
-      feedback: parsedFeedback,
-    };
-  });
+    topicGroupsMap.get(topicId)!.submissions.push(s);
+  }
 
-  // Get topic info from first submission
-  const firstTopic = submissions?.[0]?.speaking_topic;
-  const topicName = firstTopic?.topic || "Speaking";
-  const partNumber = firstTopic?.part_number || 1;
+  // Sort groups by part_number
+  const topicGroups = Array.from(topicGroupsMap.values()).sort(
+    (a, b) => (a.topic?.part_number || 0) - (b.topic?.part_number || 0)
+  );
+
+  // Build feedback per group
+  const feedbackGroups = topicGroups.map((group) => {
+    const topic = group.topic;
+    const topicName = topic?.topic || "Speaking";
+    const partNumber = topic?.part_number || 1;
+    const subs = group.submissions.map((s: any) => {
+      const questions = Array.isArray(topic?.questions) ? topic.questions : [];
+      let parsedFeedback = null;
+      if (s.feedback) {
+        try {
+          parsedFeedback =
+            typeof s.feedback === "string" ? JSON.parse(s.feedback) : s.feedback;
+        } catch {
+          parsedFeedback = null;
+        }
+      }
+      return {
+        questionIndex: s.question_index,
+        questionText:
+          questions[s.question_index] || `Question ${s.question_index + 1}`,
+        transcript: s.transcript,
+        overallBandScore: s.overall_band_score,
+        fluencyScore: s.fluency_score,
+        lexicalScore: s.lexical_score,
+        grammarScore: s.grammar_score,
+        pronunciationScore: s.pronunciation_score,
+        durationSeconds: s.duration_seconds,
+        feedback: parsedFeedback,
+      };
+    });
+    return { topicName, partNumber, submissions: subs };
+  });
 
   // Aggregate top 5 actions from all submissions
   const allActions: string[] = [];
-  for (const sub of feedbackSubmissions) {
-    if (sub.feedback?.top_5_actions) {
-      allActions.push(...sub.feedback.top_5_actions);
+  for (const group of feedbackGroups) {
+    for (const sub of group.submissions) {
+      if (sub.feedback?.top_5_actions) {
+        allActions.push(...sub.feedback.top_5_actions);
+      }
     }
   }
   // Deduplicate and take top 5
   const uniqueActions = [...new Set(allActions)].slice(0, 5);
+
+  // For "Try Again" button — link to test if available, else first topic
+  const retryHref = attempt.test?.documentId
+    ? `/dashboard/speaking/test/${attempt.test.documentId}`
+    : topicGroups[0]?.topic?.documentId
+      ? `/dashboard/speaking/${topicGroups[0].topic.documentId}`
+      : null;
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -186,8 +210,8 @@ export default async function SpeakingResultPage({
               All Topics
             </Button>
           </Link>
-          {firstTopic?.documentId && (
-            <Link href={`/dashboard/speaking/${firstTopic.documentId}`}>
+          {retryHref && (
+            <Link href={retryHref}>
               <Button className="gap-2 px-5 md:px-8 h-11 md:h-12 rounded-xl font-bold text-sm md:text-md uppercase flex items-center">
                 <RotateCcw className="h-4 w-4" />
                 Try Again
@@ -238,11 +262,16 @@ export default async function SpeakingResultPage({
 
         <TabsContent value="feedback" className="mt-8">
           <h2 className="mb-6 text-2xl font-bold">Question-by-Question Feedback</h2>
-          <SpeakingQuestionFeedback
-            submissions={feedbackSubmissions}
-            topicName={topicName}
-            partNumber={partNumber}
-          />
+          <div className="space-y-8">
+            {feedbackGroups.map((group) => (
+              <SpeakingQuestionFeedback
+                key={group.partNumber}
+                submissions={group.submissions}
+                topicName={group.topicName}
+                partNumber={group.partNumber}
+              />
+            ))}
+          </div>
         </TabsContent>
 
         <TabsContent value="recommendations" className="mt-8">

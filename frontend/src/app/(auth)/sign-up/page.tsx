@@ -6,9 +6,9 @@ import { signUp, signInWithGoogle } from '@/actions/auth'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { BookOpen, Loader2, CheckCircle, Eye, EyeOff, ArrowLeft } from 'lucide-react'
-import { TelegramLoginWidget } from '@/components/auth/telegram-login-widget'
+// import { TelegramLoginWidget } from '@/components/auth/telegram-login-widget'
 
-const TELEGRAM_BOT_NAME = process.env.NEXT_PUBLIC_TELEGRAM_BOT_NAME || 'YourBotName'
+// const TELEGRAM_BOT_NAME = process.env.NEXT_PUBLIC_TELEGRAM_BOT_NAME || 'YourBotName'
 
 export default function SignUpPage() {
   const [error, setError] = useState<string | null>(null)
@@ -102,8 +102,8 @@ export default function SignUpPage() {
           <span className="font-bold text-gray-800 dark:text-gray-100">Continue with Google</span>
         </button>
 
-        {/* Telegram */}
-        <TelegramLoginWidget botName={TELEGRAM_BOT_NAME} />
+        {/* Telegram - DISABLED */}
+        {/* <TelegramLoginWidget botName={TELEGRAM_BOT_NAME} /> */}
 
         {/* Divider */}
         <div className="relative py-4">
