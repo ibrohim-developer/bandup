@@ -6,19 +6,35 @@ import { Loader2, Sparkles } from "lucide-react";
 
 export function EvaluatingBanner({ attemptId }: { attemptId: string }) {
   const router = useRouter();
-  const didFetch = useRef(false);
+  const didTrigger = useRef(false);
 
   useEffect(() => {
-    if (didFetch.current) return;
-    didFetch.current = true;
+    if (didTrigger.current) return;
+    didTrigger.current = true;
 
+    // Fire evaluation in background — don't await, don't block
     fetch("/api/writing/evaluate", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ attemptId }),
-    }).then(() => {
-      router.refresh();
-    });
+    }).catch(() => {});
+
+    // Poll status every 4 seconds until completed
+    const interval = setInterval(async () => {
+      try {
+        const res = await fetch(`/api/writing/status?attemptId=${attemptId}`);
+        if (!res.ok) return;
+        const data = await res.json();
+        if (data.status === "completed") {
+          clearInterval(interval);
+          router.refresh();
+        }
+      } catch {
+        // network hiccup — keep polling
+      }
+    }, 4000);
+
+    return () => clearInterval(interval);
   }, [attemptId, router]);
 
   return (
