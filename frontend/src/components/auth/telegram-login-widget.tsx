@@ -1,7 +1,5 @@
 'use client'
 
-import { signInWithTelegram } from '@/actions/auth'
-
 interface TelegramLoginWidgetProps {
   botName: string
 }
@@ -14,7 +12,7 @@ export function TelegramLoginWidget({ botName }: TelegramLoginWidgetProps) {
   return (
     <button
       type="button"
-      onClick={() => signInWithTelegram()}
+      disabled
       className="w-full flex items-center justify-center gap-3 px-4 py-3 border-2 border-primary/10 hover:border-primary/30 dark:border-primary/20 dark:hover:border-primary/40 rounded-xl bg-card transition-colors group"
     >
       <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none">
