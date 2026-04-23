@@ -12,6 +12,9 @@ import {
   LogOut,
   Sun,
   Moon,
+  PlayCircle,
+  Layers,
+  TrendingUp,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -35,7 +38,12 @@ interface SidebarProps {
   } | null;
 }
 
-const menuItems = [
+const testItems = [
+  {
+    title: "Dashboard",
+    href: "/dashboard/progress",
+    icon: TrendingUp,
+  },
   {
     title: "Reading",
     href: "/dashboard/reading",
@@ -60,6 +68,19 @@ const menuItems = [
     title: "Full Mock Test",
     href: "/dashboard/full-mock-test",
     icon: ClipboardList,
+  },
+];
+
+const learnItems = [
+  {
+    title: "Video Lessons",
+    href: "/dashboard/videos",
+    icon: PlayCircle,
+  },
+  {
+    title: "Flashcards",
+    href: "/dashboard/flashcards",
+    icon: Layers,
   },
 ];
 
@@ -97,16 +118,35 @@ export function Sidebar({ user }: SidebarProps) {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 px-4 space-y-1">
-          {menuItems.map((item) => {
-            const isActive =
-              item.href === "/dashboard"
-                ? pathname === "/dashboard"
-                : pathname.startsWith(item.href);
-
+        <nav className="flex-1 px-4 space-y-1 overflow-y-auto">
+          {testItems.map((item) => {
+            const isActive = pathname.startsWith(item.href);
             return (
-              <div key={item.href}>
+              <Link
+                key={item.href}
+                href={item.href}
+                className={cn(
+                  "flex items-center gap-3 px-4 py-3 text-sm font-bold transition-all rounded-lg",
+                  isActive
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:bg-muted",
+                )}
+              >
+                <item.icon className="h-5 w-5 shrink-0" />
+                <span>{item.title}</span>
+              </Link>
+            );
+          })}
+
+          <div className="pt-3 mt-2 border-t border-border">
+            <p className="px-4 pb-1 text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">
+              Learn
+            </p>
+            {learnItems.map((item) => {
+              const isActive = pathname.startsWith(item.href);
+              return (
                 <Link
+                  key={item.href}
                   href={item.href}
                   className={cn(
                     "flex items-center gap-3 px-4 py-3 text-sm font-bold transition-all rounded-lg",
@@ -118,9 +158,9 @@ export function Sidebar({ user }: SidebarProps) {
                   <item.icon className="h-5 w-5 shrink-0" />
                   <span>{item.title}</span>
                 </Link>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </nav>
 
         {/* Theme Toggle */}
@@ -286,7 +326,7 @@ export function Sidebar({ user }: SidebarProps) {
       {/* Mobile Bottom Navigation */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-card border-t border-border">
         <div className="flex items-center justify-around px-2 py-2 safe-bottom">
-          {menuItems.map((item) => {
+          {[...testItems, ...learnItems].map((item) => {
             const isActive =
               item.href === "/dashboard"
                 ? pathname === "/dashboard"

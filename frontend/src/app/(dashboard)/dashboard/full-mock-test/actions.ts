@@ -17,6 +17,7 @@ export interface FullMockTest {
   writingTasks: number;
   speakingTopics: number;
   duration: number;
+  isLocked: boolean;
 }
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -44,7 +45,7 @@ const getFullMockTests = unstable_cache(
 
     if (!tests?.length) return [];
 
-    return tests.map((test: any) => {
+    return tests.map((test: any, index: number) => {
       const listenings = test.listening_sections ?? [];
       const readings = test.reading_passages ?? [];
       const writings = test.writing_tasks ?? [];
@@ -70,6 +71,7 @@ const getFullMockTests = unstable_cache(
         writingTasks: writings.length,
         speakingTopics: speakings.length,
         duration: 165, // ~2h 45min total
+        isLocked: index > 0,
       };
     });
   },

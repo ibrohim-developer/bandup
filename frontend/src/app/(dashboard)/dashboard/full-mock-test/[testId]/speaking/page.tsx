@@ -423,7 +423,7 @@ export default function FullMockSpeakingPage({
                     Previous
                 </Button>
 
-                <div className="flex items-center gap-1.5">
+                <div className="flex flex-wrap items-center gap-1.5">
                     {topics.map((topic, tIdx) => (
                         <div key={tIdx} className="flex items-center gap-1">
                             {tIdx > 0 && <div className="w-1.5 h-px bg-border mx-0.5" />}

@@ -36,5 +36,5 @@ export default function ReadingTestLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return children;
+  return <div style={{ fontFamily: 'Arial, sans-serif' }}>{children}</div>;
 }

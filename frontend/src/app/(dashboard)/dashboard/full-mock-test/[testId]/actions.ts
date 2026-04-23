@@ -1,6 +1,7 @@
 "use server";
 
-import { findOne } from "@/lib/strapi/api";
+import { findOne, find } from "@/lib/strapi/api";
+import { getToken, getCurrentUser } from "@/lib/strapi/server";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -15,6 +16,8 @@ export interface FullMockTestDetail {
     readingPassages: number;
     writingTasks: number;
     speakingTopics: number;
+    lrwCompleted: boolean;
+    speakingCompleted: boolean;
 }
 
 export async function fetchFullMockTestDetail(
@@ -43,6 +46,24 @@ export async function fetchFullMockTestDetail(
     const writings = test.writing_tasks ?? [];
     const speakings = test.speaking_topics ?? [];
 
+    let lrwCompleted = false;
+    let speakingCompleted = false;
+
+    const token = await getToken();
+    if (token) {
+        const user = await getCurrentUser();
+        if (user) {
+            const attempts = await find("full-mock-test-attempts", {
+                filters: { user: { id: { $eq: user.id } }, test: { documentId: { $eq: testId } } },
+                fields: ["writing_score", "speaking_score"],
+            }, token);
+            if (attempts?.length) {
+                lrwCompleted = attempts.some((a: any) => a.writing_score != null);
+                speakingCompleted = attempts.some((a: any) => a.speaking_score != null);
+            }
+        }
+    }
+
     return {
         id: test.documentId,
         title: test.title,
@@ -60,5 +81,7 @@ export async function fetchFullMockTestDetail(
         readingPassages: readings.length,
         writingTasks: writings.length,
         speakingTopics: speakings.length,
+        lrwCompleted,
+        speakingCompleted,
     };
 }

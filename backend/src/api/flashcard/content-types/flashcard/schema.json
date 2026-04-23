@@ -1,0 +1,39 @@
+{
+  "kind": "collectionType",
+  "collectionName": "flashcards",
+  "info": {
+    "singularName": "flashcard",
+    "pluralName": "flashcards",
+    "displayName": "Flashcard"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "word": {
+      "type": "string",
+      "required": true
+    },
+    "definition": {
+      "type": "text",
+      "required": true
+    },
+    "example_sentence": {
+      "type": "text"
+    },
+    "category": {
+      "type": "enumeration",
+      "enum": ["vocabulary", "grammar", "idioms", "collocations", "academic"],
+      "default": "vocabulary"
+    },
+    "difficulty": {
+      "type": "enumeration",
+      "enum": ["b1", "b2", "c1", "c2"],
+      "default": "b2"
+    },
+    "is_published": {
+      "type": "boolean",
+      "default": true
+    }
+  }
+}

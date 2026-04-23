@@ -1,0 +1,51 @@
+{
+  "kind": "collectionType",
+  "collectionName": "video_lessons",
+  "info": {
+    "singularName": "video-lesson",
+    "pluralName": "video-lessons",
+    "displayName": "Video Lesson"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "youtube_id": {
+      "type": "string",
+      "required": true
+    },
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "description": {
+      "type": "text"
+    },
+    "channel_name": {
+      "type": "string"
+    },
+    "difficulty": {
+      "type": "enumeration",
+      "enum": ["beginner", "intermediate", "advanced"],
+      "default": "intermediate"
+    },
+    "category": {
+      "type": "enumeration",
+      "enum": ["listening", "reading", "writing", "speaking", "general"],
+      "default": "general"
+    },
+    "duration_minutes": {
+      "type": "integer"
+    },
+    "transcript": {
+      "type": "text"
+    },
+    "quiz_questions": {
+      "type": "json"
+    },
+    "is_published": {
+      "type": "boolean",
+      "default": true
+    }
+  }
+}

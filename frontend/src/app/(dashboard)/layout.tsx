@@ -37,7 +37,7 @@ export default function DashboardLayout({
       enableSystem
       disableTransitionOnChange
     >
-      <div className="flex h-screen overflow-hidden" style={{ fontFamily: 'Arial, sans-serif' }}>
+      <div className="flex h-screen overflow-hidden">
         <Suspense fallback={<Sidebar />}>
           <AuthSidebar />
         </Suspense>

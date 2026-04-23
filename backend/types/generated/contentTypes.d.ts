@@ -499,6 +499,43 @@ export interface ApiFeatureNotificationFeatureNotification
   };
 }
 
+export interface ApiFlashcardFlashcard extends Struct.CollectionTypeSchema {
+  collectionName: 'flashcards';
+  info: {
+    displayName: 'Flashcard';
+    pluralName: 'flashcards';
+    singularName: 'flashcard';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    category: Schema.Attribute.Enumeration<
+      ['vocabulary', 'grammar', 'idioms', 'collocations', 'academic']
+    > &
+      Schema.Attribute.DefaultTo<'vocabulary'>;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    definition: Schema.Attribute.Text & Schema.Attribute.Required;
+    difficulty: Schema.Attribute.Enumeration<['b1', 'b2', 'c1', 'c2']> &
+      Schema.Attribute.DefaultTo<'b2'>;
+    example_sentence: Schema.Attribute.Text;
+    is_published: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::flashcard.flashcard'
+    > &
+      Schema.Attribute.Private;
+    publishedAt: Schema.Attribute.DateTime;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    word: Schema.Attribute.String & Schema.Attribute.Required;
+  };
+}
+
 export interface ApiFullMockTestAttemptFullMockTestAttempt
   extends Struct.CollectionTypeSchema {
   collectionName: 'full_mock_test_attempts';
@@ -1076,6 +1113,49 @@ export interface ApiUserAnswerUserAnswer extends Struct.CollectionTypeSchema {
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
     user_answer: Schema.Attribute.String;
+  };
+}
+
+export interface ApiVideoLessonVideoLesson extends Struct.CollectionTypeSchema {
+  collectionName: 'video_lessons';
+  info: {
+    displayName: 'Video Lesson';
+    pluralName: 'video-lessons';
+    singularName: 'video-lesson';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    category: Schema.Attribute.Enumeration<
+      ['listening', 'reading', 'writing', 'speaking', 'general']
+    > &
+      Schema.Attribute.DefaultTo<'general'>;
+    channel_name: Schema.Attribute.String;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    description: Schema.Attribute.Text;
+    difficulty: Schema.Attribute.Enumeration<
+      ['beginner', 'intermediate', 'advanced']
+    > &
+      Schema.Attribute.DefaultTo<'intermediate'>;
+    duration_minutes: Schema.Attribute.Integer;
+    is_published: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::video-lesson.video-lesson'
+    > &
+      Schema.Attribute.Private;
+    publishedAt: Schema.Attribute.DateTime;
+    quiz_questions: Schema.Attribute.JSON;
+    title: Schema.Attribute.String & Schema.Attribute.Required;
+    transcript: Schema.Attribute.Text;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    youtube_id: Schema.Attribute.String & Schema.Attribute.Required;
   };
 }
 
@@ -1678,6 +1758,7 @@ declare module '@strapi/strapi' {
       'admin::user': AdminUser;
       'api::business-inquiry.business-inquiry': ApiBusinessInquiryBusinessInquiry;
       'api::feature-notification.feature-notification': ApiFeatureNotificationFeatureNotification;
+      'api::flashcard.flashcard': ApiFlashcardFlashcard;
       'api::full-mock-test-attempt.full-mock-test-attempt': ApiFullMockTestAttemptFullMockTestAttempt;
       'api::listening-section.listening-section': ApiListeningSectionListeningSection;
       'api::question-group.question-group': ApiQuestionGroupQuestionGroup;
@@ -1691,6 +1772,7 @@ declare module '@strapi/strapi' {
       'api::test-progress.test-progress': ApiTestProgressTestProgress;
       'api::test.test': ApiTestTest;
       'api::user-answer.user-answer': ApiUserAnswerUserAnswer;
+      'api::video-lesson.video-lesson': ApiVideoLessonVideoLesson;
       'api::writing-submission.writing-submission': ApiWritingSubmissionWritingSubmission;
       'api::writing-task.writing-task': ApiWritingTaskWritingTask;
       'plugin::content-releases.release': PluginContentReleasesRelease;

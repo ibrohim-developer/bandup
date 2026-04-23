@@ -33,12 +33,11 @@ export default async function FullMockTestPage({
   const { items: initialTests, totalCount, hasMore } = await fetchFullMockTests(params, 0);
 
   return (
-    <div className="space-y-6 md:space-y-8 pb-12">
-      <TestFilters filters={fullMockFilters} />
-
-      <div className="flex items-start md:items-end justify-between gap-3">
+    <div className="space-y-8 pb-12">
+      {/* Page Header */}
+      <div className="flex items-start md:items-center justify-between gap-4 pb-2 border-b border-border/50">
         <div>
-          <h2 className="text-2xl md:text-3xl font-black mb-1">Full Mock Test</h2>
+          <h2 className="text-2xl md:text-3xl font-black mb-1">Full Mock Tests</h2>
           <p className="text-xs text-muted-foreground font-bold uppercase tracking-widest">
             {totalCount} Available Tests
           </p>
@@ -53,6 +52,10 @@ export default async function FullMockTestPage({
         </Link>
       </div>
 
+      {/* Filters */}
+      <TestFilters filters={fullMockFilters} />
+
+      {/* Test List */}
       <FullMockVirtualList
         initialTests={initialTests}
         hasMore={hasMore}
