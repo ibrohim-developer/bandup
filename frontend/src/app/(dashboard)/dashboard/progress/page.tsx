@@ -13,9 +13,10 @@ import {
   Trophy,
   ClipboardCheck,
 } from "lucide-react";
-import { fetchProgressData } from "./actions";
+import { fetchProgressData, fetchFullMockAttempts } from "./actions";
 import { BandScoreChart } from "@/components/progress/band-score-chart";
 import { ActivityHeatmap } from "@/components/progress/activity-heatmap";
+import { FullMockStats } from "@/components/progress/full-mock-stats";
 
 export const metadata: Metadata = {
   title: "My Progress — BandUp",
@@ -33,7 +34,10 @@ const moduleIcon: Record<string, React.ReactNode> = {
 
 
 export default async function ProgressPage() {
-  const data = await fetchProgressData();
+  const [data, fullMockAttempts] = await Promise.all([
+    fetchProgressData(),
+    fetchFullMockAttempts(),
+  ]);
 
   if (data === null) {
     return (
@@ -115,13 +119,16 @@ export default async function ProgressPage() {
         </div>
       </div>
 
+      {/* Full mock stats */}
+      <FullMockStats attempts={fullMockAttempts} />
+
       {/* Recent activity */}
       <div className="bg-card border border-border rounded-xl overflow-hidden">
         <div className="px-5 py-4 border-b border-border flex items-center justify-between">
-          <h3 className="font-black text-sm">Recent Activity</h3>
+          <h3 className="font-black text-base">Recent Activity</h3>
           <Link
             href="/dashboard/history"
-            className="text-xs font-bold text-muted-foreground hover:text-foreground transition-colors"
+            className="text-sm font-bold px-4 py-2 rounded-lg bg-muted hover:bg-muted/70 transition-colors"
           >
             View all
           </Link>

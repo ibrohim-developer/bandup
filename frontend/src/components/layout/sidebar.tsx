@@ -85,7 +85,7 @@ const learnItems = [
 ];
 
 const testRoutePattern =
-  /^\/dashboard\/((reading|listening|writing)\/[^/]+|speaking\/mock-exam\/[^/]+|(full-mock-test)\/[^/]+|results\/[^/]+)$/;
+  /^\/dashboard\/((reading|listening|writing)\/[^/]+|speaking\/mock-exam\/[^/]+|full-mock-test\/(?!history)[^/]+|results\/[^/]+)$/;
 
 export function Sidebar({ user }: SidebarProps) {
   const pathname = usePathname();

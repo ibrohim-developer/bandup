@@ -82,8 +82,8 @@ export function ActivityHeatmap({ activityMap, totalActive }: Props) {
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <h3 className="font-black text-sm">Activity</h3>
-        <span className="text-xs text-muted-foreground font-bold">
+        <h3 className="font-black text-base">Activity</h3>
+        <span className="text-xs font-bold text-foreground bg-muted px-2.5 py-1 rounded-full">
           {totalActive} active day{totalActive !== 1 ? "s" : ""} in the last year
         </span>
       </div>

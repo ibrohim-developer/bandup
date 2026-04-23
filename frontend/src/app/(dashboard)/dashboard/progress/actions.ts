@@ -1,7 +1,58 @@
 "use server";
 
 import { find } from "@/lib/strapi/api";
-import { getToken, getCurrentUser } from "@/lib/strapi/server"; // getToken used for auth check
+import { getToken, getCurrentUser } from "@/lib/strapi/server";
+
+export interface FullMockAttempt {
+  id: string;
+  testTitle: string;
+  date: string;
+  listening: number | null;
+  reading: number | null;
+  writing: number | null;
+  speaking: number | null;
+  overall: number | null;
+}
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
+export async function fetchFullMockAttempts(): Promise<FullMockAttempt[]> {
+  const token = await getToken();
+  if (!token) return [];
+  const user = await getCurrentUser();
+  if (!user) return [];
+
+  const attempts = await find(
+    "full-mock-test-attempts",
+    {
+      filters: {
+        user: { id: { $eq: user.id } },
+        status: { $eq: "completed" },
+      },
+      fields: ["listening_score", "reading_score", "writing_score", "speaking_score", "overall_band_score", "completed_at"],
+      populate: { test: { fields: ["title"] } },
+      sort: ["completed_at:desc"],
+      pagination: { pageSize: 100 },
+    },
+    token,
+  );
+
+  if (!attempts?.length) return [];
+
+  return attempts.map((a: any) => ({
+    id: a.documentId,
+    testTitle: a.test?.title ?? "Full Mock Test",
+    date: new Date(a.completed_at).toLocaleDateString("en-GB", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    }),
+    listening: a.listening_score ?? null,
+    reading: a.reading_score ?? null,
+    writing: a.writing_score ?? null,
+    speaking: a.speaking_score ?? null,
+    overall: a.overall_band_score ?? null,
+  }));
+}
 
 export interface AttemptPoint {
   date: string;

@@ -88,7 +88,7 @@ export function BandScoreChart({ data }: { data: AttemptPoint[] }) {
     <div className="space-y-4">
       <div className="flex items-start justify-between gap-3 flex-wrap">
         <div>
-          <h3 className="font-black text-sm leading-none mb-1">Band Score Trend</h3>
+          <h3 className="font-black text-base leading-none mb-1">Band Score Trend</h3>
           <p className="text-xs text-muted-foreground">
             All completed tests over time · dashed line = 6.5 target
           </p>

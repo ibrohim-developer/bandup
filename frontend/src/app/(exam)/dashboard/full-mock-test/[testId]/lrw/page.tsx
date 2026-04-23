@@ -576,6 +576,7 @@ function LRWExamContent({ testId }: { testId: string }) {
                                 content={currentPassage.content}
                                 highlight={theme.highlight}
                                 noteHighlight={theme.noteHighlight}
+                                disableWordLookup
                             />
                         }
                         rightPanel={

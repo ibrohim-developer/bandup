@@ -25,6 +25,7 @@ interface PassageDisplayProps {
   onNoteMarkClick?: (markId: string) => void;
   cancelNoteMarkId?: string | null;
   onCancelNoteMarkHandled?: () => void;
+  disableWordLookup?: boolean;
 }
 
 function getTextNodesInRange(range: Range): Text[] {
@@ -131,6 +132,7 @@ export function PassageDisplay({
   onNoteMarkClick,
   cancelNoteMarkId,
   onCancelNoteMarkHandled,
+  disableWordLookup = false,
 }: PassageDisplayProps) {
   const [popup, setPopup] = useState<PopupState | null>(null);
   const pendingRangeRef = useRef<Range | null>(null);
@@ -216,7 +218,7 @@ export function PassageDisplay({
       const selection = window.getSelection();
       if (!selection || selection.isCollapsed || !selection.rangeCount) {
         // Single click — try to look up the word at click position (desktop only)
-        if (window.innerWidth < 768) return;
+        if (disableWordLookup || window.innerWidth < 768) return;
         const range = document.caretRangeFromPoint(e.clientX, e.clientY);
         if (range && range.startContainer.nodeType === Node.TEXT_NODE) {
           const text = range.startContainer.textContent || "";
