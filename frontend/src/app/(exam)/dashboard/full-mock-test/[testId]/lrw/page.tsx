@@ -1,16 +1,17 @@
 "use client";
 
-import { use, Suspense, useMemo } from "react";
+import { use, Suspense, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-} from "@/components/ui/card";
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
 import { TestTimer } from "@/components/test/common/test-timer";
 import { SubmitDialog } from "@/components/test/common/submit-dialog";
 import { TestOptionsMenu } from "@/components/test/common/test-options-menu";
@@ -125,6 +126,8 @@ function LRWExamContent({ testId }: { testId: string }) {
         handleSubmit,
         handleTimeUp,
     } = useFullMockLRW(testId);
+
+    const [showNextModuleDialog, setShowNextModuleDialog] = useState(false);
 
     // Build passages-like structure for navigation hook
     const sectionPassages = useMemo(() => {
@@ -246,93 +249,143 @@ function LRWExamContent({ testId }: { testId: string }) {
 
     // Instructions / Start Screen
     if (!hasStarted) {
+        const totalQuestionsAll = totalListeningQuestions + totalReadingQuestions;
+        const sections = [
+            {
+                icon: Headphones,
+                label: "Listening",
+                duration: "30 min",
+                detail: `${listeningSections.length} sections · ${totalListeningQuestions} questions`,
+                accent: "bg-blue-500",
+                accentSoft: "bg-blue-500/10",
+                text: "text-blue-600 dark:text-blue-400",
+                ring: "ring-blue-500/20",
+            },
+            {
+                icon: BookOpen,
+                label: "Reading",
+                duration: "60 min",
+                detail: `${readingPassages.length} passages · ${totalReadingQuestions} questions`,
+                accent: "bg-emerald-500",
+                accentSoft: "bg-emerald-500/10",
+                text: "text-emerald-600 dark:text-emerald-400",
+                ring: "ring-emerald-500/20",
+            },
+            {
+                icon: PenTool,
+                label: "Writing",
+                duration: "60 min",
+                detail: `${writingTasks.length} tasks`,
+                accent: "bg-purple-500",
+                accentSoft: "bg-purple-500/10",
+                text: "text-purple-600 dark:text-purple-400",
+                ring: "ring-purple-500/20",
+            },
+        ];
+
+        const rules = [
+            "Sections proceed in order: Listening → Reading → Writing",
+            "Each section has its own timer",
+            "You cannot return to a previous section",
+            "Your test will be submitted after the Writing section",
+        ];
+
         return (
-            <div className="min-h-screen bg-muted/30 flex items-center justify-center px-4">
-                <Card className="max-w-3xl w-full">
-                    <CardHeader className="px-4 md:px-8 pt-5 pb-4">
-                        <CardTitle className="text-2xl md:text-3xl">
-                            IELTS Full Mock Test — LRW
-                        </CardTitle>
-                        <CardDescription className="text-sm md:text-base mt-1">
-                            Listening, Reading & Writing — please read the instructions carefully
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-6 md:space-y-8 px-4 md:px-6">
-                        <div className="space-y-5 md:space-y-6">
-                            <div className="flex items-start gap-3 md:gap-4">
-                                <div className="w-9 h-9 md:w-10 md:h-10 rounded-full bg-blue-500/10 flex items-center justify-center shrink-0">
-                                    <Headphones className="h-4 w-4 md:h-5 md:w-5 text-blue-500" />
-                                </div>
-                                <div>
-                                    <p className="font-medium text-base md:text-lg">Listening — 30 minutes</p>
-                                    <p className="text-sm md:text-base text-muted-foreground">
-                                        {listeningSections.length} sections · {totalListeningQuestions} questions
-                                    </p>
-                                </div>
-                            </div>
-
-                            <div className="flex items-start gap-3 md:gap-4">
-                                <div className="w-9 h-9 md:w-10 md:h-10 rounded-full bg-emerald-500/10 flex items-center justify-center shrink-0">
-                                    <BookOpen className="h-4 w-4 md:h-5 md:w-5 text-emerald-500" />
-                                </div>
-                                <div>
-                                    <p className="font-medium text-base md:text-lg">Reading — 60 minutes</p>
-                                    <p className="text-sm md:text-base text-muted-foreground">
-                                        {readingPassages.length} passages · {totalReadingQuestions} questions
-                                    </p>
-                                </div>
-                            </div>
-
-                            <div className="flex items-start gap-3 md:gap-4">
-                                <div className="w-9 h-9 md:w-10 md:h-10 rounded-full bg-purple-500/10 flex items-center justify-center shrink-0">
-                                    <PenTool className="h-4 w-4 md:h-5 md:w-5 text-purple-500" />
-                                </div>
-                                <div>
-                                    <p className="font-medium text-base md:text-lg">Writing — 60 minutes</p>
-                                    <p className="text-sm md:text-base text-muted-foreground">
-                                        {writingTasks.length} tasks
-                                    </p>
-                                </div>
-                            </div>
-
-                            <div className="flex items-start gap-3 md:gap-4">
-                                <div className="w-9 h-9 md:w-10 md:h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                                    <Clock className="h-4 w-4 md:h-5 md:w-5 text-primary" />
-                                </div>
-                                <div>
-                                    <p className="font-medium text-base md:text-lg">Instructions</p>
-                                    <ul className="text-sm md:text-base text-muted-foreground space-y-1.5 mt-1 list-disc list-inside">
-                                        <li>Sections proceed in order: Listening → Reading → Writing</li>
-                                        <li>Each section has its own timer</li>
-                                        <li>You cannot return to a previous section</li>
-                                        <li>Your test will be submitted after the Writing section</li>
-                                    </ul>
-                                </div>
-                            </div>
+            <div className="min-h-screen bg-muted/30 flex items-center justify-center px-4 py-8">
+                <div className="max-w-4xl w-full space-y-6 md:space-y-8">
+                    {/* Hero */}
+                    <div className="text-center space-y-3">
+                        <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-xs font-bold uppercase tracking-widest text-primary">
+                            Full Mock Test
                         </div>
-
-                        <div className="flex gap-3 pt-2 md:pt-4">
-                            <Button
-                                variant="outline"
-                                size="lg"
-                                className="flex-1 text-sm md:text-base"
-                                onClick={() => router.push(`/dashboard/full-mock-test/${testId}`)}
-                            >
-                                Cancel
-                            </Button>
-                            <Button
-                                className="flex-1 text-sm md:text-base"
-                                size="lg"
-                                onClick={() => {
-                                    setHasStarted(true);
-                                    resumeTimer();
-                                }}
-                            >
-                                Begin Test
-                            </Button>
+                        <h1 className="text-3xl md:text-5xl font-black tracking-tight">
+                            Listening, Reading & Writing
+                        </h1>
+                        <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 pt-2 text-sm md:text-base text-muted-foreground">
+                            <span className="flex items-center gap-1.5">
+                                <Clock className="h-4 w-4" />
+                                <span className="font-semibold text-foreground">2h 30min</span> total
+                            </span>
+                            <span className="h-1 w-1 rounded-full bg-muted-foreground/40" />
+                            <span>
+                                <span className="font-semibold text-foreground">3</span> sections
+                            </span>
+                            <span className="h-1 w-1 rounded-full bg-muted-foreground/40" />
+                            <span>
+                                <span className="font-semibold text-foreground">~{totalQuestionsAll}</span> questions
+                            </span>
                         </div>
-                    </CardContent>
-                </Card>
+                    </div>
+
+                    {/* Section cards */}
+                    <div className="grid gap-4 md:gap-5 md:grid-cols-3">
+                        {sections.map((s, idx) => {
+                            const Icon = s.icon;
+                            return (
+                                <div
+                                    key={s.label}
+                                    className="relative bg-card border border-border rounded-xl overflow-hidden transition-shadow hover:shadow-md"
+                                >
+                                    <div className={`h-1 w-full ${s.accent}`} />
+                                    <div className="p-5 md:p-6">
+                                        <div className="flex items-center justify-between mb-4">
+                                            <div className={`w-11 h-11 rounded-lg ${s.accentSoft} flex items-center justify-center`}>
+                                                <Icon className={`h-5 w-5 ${s.text}`} />
+                                            </div>
+                                            <span className={`text-xs font-bold ${s.text}`}>
+                                                {String(idx + 1).padStart(2, "0")}
+                                            </span>
+                                        </div>
+                                        <h3 className="text-lg md:text-xl font-bold mb-1">{s.label}</h3>
+                                        <p className="text-sm text-muted-foreground mb-4">{s.detail}</p>
+                                        <div className={`inline-flex items-center gap-1.5 rounded-md ${s.accentSoft} px-2.5 py-1 text-xs font-semibold ${s.text}`}>
+                                            <Clock className="h-3.5 w-3.5" />
+                                            {s.duration}
+                                        </div>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+
+                    {/* Rules */}
+                    <div className="rounded-xl border border-border bg-card p-5 md:p-6">
+                        <h4 className="text-sm font-bold uppercase tracking-widest text-muted-foreground mb-4">
+                            Before you begin
+                        </h4>
+                        <ul className="grid gap-3 sm:grid-cols-2">
+                            {rules.map((rule) => (
+                                <li key={rule} className="flex items-start gap-2.5 text-sm md:text-base">
+                                    <Check className="h-4 w-4 mt-0.5 shrink-0 text-primary" />
+                                    <span>{rule}</span>
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex flex-col-reverse sm:flex-row gap-3">
+                        <Button
+                            variant="outline"
+                            size="lg"
+                            className="sm:flex-1 text-sm md:text-base"
+                            onClick={() => router.push(`/dashboard/full-mock-test/${testId}`)}
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            className="sm:flex-[2] text-sm md:text-base gap-2"
+                            size="lg"
+                            onClick={() => {
+                                setHasStarted(true);
+                                resumeTimer();
+                            }}
+                        >
+                            Begin Test
+                            <ArrowRight className="h-4 w-4" />
+                        </Button>
+                    </div>
+                </div>
             </div>
         );
     }
@@ -356,15 +409,13 @@ function LRWExamContent({ testId }: { testId: string }) {
 
     return (
         <div className="h-screen flex flex-col overflow-hidden" style={rootStyle}>
-            {/* Top Header Bar */}
+            {/* Row 1 — Utility header */}
             <header
-                className="shrink-0 h-12 md:h-16 flex items-center px-2 md:px-6 justify-between"
+                className="shrink-0 h-12 md:h-14 flex items-center px-2 md:px-6 justify-between"
                 style={{ backgroundColor: theme.bg, borderBottom: `1px solid ${theme.border}` }}
             >
-                <div className="flex items-center gap-2 md:gap-4">
-                    <Button
-                        variant="outline"
-                        size="default"
+                <div className="flex items-center gap-2 md:gap-3">
+                    <button
                         onClick={() => {
                             if (
                                 window.confirm(
@@ -374,46 +425,15 @@ function LRWExamContent({ testId }: { testId: string }) {
                                 router.push(`/dashboard/full-mock-test/${testId}`);
                             }
                         }}
-                        className="flex items-center gap-2 text-sm md:text-base px-2 md:px-3"
+                        className="flex items-center gap-1.5 px-2 md:px-2.5 py-1.5 rounded-md transition-colors hover:bg-white/5 text-sm md:text-base"
+                        style={{ color: theme.text }}
                     >
                         <ArrowLeft className="h-4 w-4 md:h-5 md:w-5" />
                         <span className="hidden md:inline">Back</span>
-                    </Button>
-                    <div className="bg-red-600 text-white px-2 md:px-4 py-0.5 md:py-[3.5px] text-sm md:text-lg font-bold rounded">
+                    </button>
+                    <div className="hidden md:block h-6 w-px" style={{ backgroundColor: theme.border }} />
+                    <div className="font-black text-base md:text-lg tracking-tight" style={{ color: theme.text }}>
                         IELTS
-                    </div>
-
-                    {/* Module progress indicator */}
-                    <div className="hidden md:flex items-center gap-1.5 ml-2">
-                        {(["listening", "reading", "writing"] as ActiveModule[]).map((mod, idx) => {
-                            const info = MODULE_LABELS[mod];
-                            const Icon = info.icon;
-                            const isActive = activeModule === mod;
-                            const isCompleted = completedModules.includes(mod);
-
-                            return (
-                                <div key={mod} className="flex items-center">
-                                    {idx > 0 && (
-                                        <div className="w-4 h-px mx-1" style={{ backgroundColor: theme.border }} />
-                                    )}
-                                    <div
-                                        className={`flex items-center gap-1 px-2 py-1 rounded text-xs font-bold transition-colors ${isActive
-                                            ? "bg-primary/10 text-primary"
-                                            : isCompleted
-                                                ? "text-green-500"
-                                                : "text-muted-foreground opacity-50"
-                                            }`}
-                                    >
-                                        {isCompleted ? (
-                                            <Check className="h-3.5 w-3.5" />
-                                        ) : (
-                                            <Icon className="h-3.5 w-3.5" />
-                                        )}
-                                        {info.label}
-                                    </div>
-                                </div>
-                            );
-                        })}
                     </div>
                 </div>
 
@@ -445,6 +465,97 @@ function LRWExamContent({ testId }: { testId: string }) {
                         width: `${(useTestStore.getState().timeRemaining / sectionTimers[activeModule]) * 100}%`,
                     }}
                 />
+            </div>
+
+            {/* Row 2 — Module stepper */}
+            <div
+                className="hidden md:block shrink-0 px-6 py-3"
+                style={{ backgroundColor: theme.bg, borderBottom: `1px solid ${theme.border}` }}
+            >
+                <div className="max-w-5xl mx-auto flex items-center">
+                    {(["listening", "reading", "writing"] as ActiveModule[]).map((mod, idx) => {
+                        const info = MODULE_LABELS[mod];
+                        const Icon = info.icon;
+                        const isActive = activeModule === mod;
+                        const isCompleted = completedModules.includes(mod);
+                        const isLast = idx === 2;
+
+                        return (
+                            <div key={mod} className="flex items-center flex-1 last:flex-none">
+                                <div className="flex items-center gap-3">
+                                    <div
+                                        className={`relative w-10 h-10 rounded-full flex items-center justify-center transition-all ${
+                                            isActive
+                                                ? "bg-primary text-primary-foreground ring-4 ring-primary/20"
+                                                : isCompleted
+                                                    ? "bg-green-500 text-white"
+                                                    : "bg-muted text-muted-foreground"
+                                        }`}
+                                    >
+                                        {isCompleted ? (
+                                            <Check className="h-5 w-5" />
+                                        ) : (
+                                            <Icon className="h-5 w-5" />
+                                        )}
+                                    </div>
+                                    <div className="flex flex-col">
+                                        <span
+                                            className={`text-[10px] font-bold uppercase tracking-widest ${
+                                                isActive ? "text-primary" : isCompleted ? "text-green-600 dark:text-green-400" : "text-muted-foreground"
+                                            }`}
+                                        >
+                                            Step {idx + 1}
+                                        </span>
+                                        <span
+                                            className={`text-sm font-bold ${
+                                                isActive || isCompleted ? "" : "opacity-60"
+                                            }`}
+                                            style={{ color: isActive || isCompleted ? theme.text : undefined }}
+                                        >
+                                            {info.label}
+                                        </span>
+                                    </div>
+                                </div>
+                                {!isLast && (
+                                    <div className="flex-1 mx-4 h-0.5 rounded-full overflow-hidden" style={{ backgroundColor: theme.border }}>
+                                        <div
+                                            className="h-full bg-green-500 transition-all duration-500"
+                                            style={{ width: isCompleted ? "100%" : "0%" }}
+                                        />
+                                    </div>
+                                )}
+                            </div>
+                        );
+                    })}
+                </div>
+            </div>
+
+            {/* Mobile dot stepper */}
+            <div
+                className="md:hidden shrink-0 px-3 py-2 flex items-center justify-center gap-2"
+                style={{ backgroundColor: theme.bg, borderBottom: `1px solid ${theme.border}` }}
+            >
+                {(["listening", "reading", "writing"] as ActiveModule[]).map((mod) => {
+                    const info = MODULE_LABELS[mod];
+                    const Icon = info.icon;
+                    const isActive = activeModule === mod;
+                    const isCompleted = completedModules.includes(mod);
+                    return (
+                        <div
+                            key={mod}
+                            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold ${
+                                isActive
+                                    ? "bg-primary text-primary-foreground"
+                                    : isCompleted
+                                        ? "bg-green-500/15 text-green-600 dark:text-green-400"
+                                        : "text-muted-foreground opacity-50"
+                            }`}
+                        >
+                            {isCompleted ? <Check className="h-3 w-3" /> : <Icon className="h-3 w-3" />}
+                            {info.label}
+                        </div>
+                    );
+                })}
             </div>
 
             {/* Module-specific sub-header */}
@@ -898,7 +1009,7 @@ function LRWExamContent({ testId }: { testId: string }) {
                 {/* Next Section / Submit button */}
                 {activeModule !== "writing" ? (
                     <button
-                        onClick={goToNextModule}
+                        onClick={() => setShowNextModuleDialog(true)}
                         className="cursor-pointer shrink-0 ml-2 md:ml-3 flex items-center gap-1.5 px-3 py-2 md:px-4 md:py-2.5 bg-primary text-primary-foreground rounded text-xs md:text-sm font-bold transition-colors hover:opacity-90"
                     >
                         Next: {activeModule === "listening" ? "Reading" : "Writing"}
@@ -908,12 +1019,15 @@ function LRWExamContent({ testId }: { testId: string }) {
                     <button
                         onClick={() => setShowSubmitDialog(true)}
                         disabled={isSubmitting}
-                        className="cursor-pointer shrink-0 ml-2 md:ml-3 w-8 h-8 md:w-10 md:h-10 bg-gray-800 hover:bg-gray-900 text-white rounded flex items-center justify-center transition-colors disabled:opacity-50"
+                        className="cursor-pointer shrink-0 ml-2 md:ml-3 flex items-center gap-1.5 px-3 py-2 md:px-4 md:py-2.5 bg-primary text-primary-foreground rounded text-xs md:text-sm font-bold transition-colors hover:opacity-90 disabled:opacity-50"
                     >
                         {isSubmitting ? (
                             <Loader2 className="h-4 w-4 md:h-5 md:w-5 animate-spin" />
                         ) : (
-                            <Check className="h-4 w-4 md:h-5 md:w-5" />
+                            <>
+                                Submit Test
+                                <Check className="h-3.5 w-3.5 md:h-4 md:w-4" />
+                            </>
                         )}
                     </button>
                 )}
@@ -928,6 +1042,42 @@ function LRWExamContent({ testId }: { testId: string }) {
                 isSubmitting={isSubmitting}
                 timeUp={isTimeUp}
             />
+
+            {/* Next module confirmation dialog */}
+            <Dialog open={showNextModuleDialog} onOpenChange={setShowNextModuleDialog}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>
+                            Move to {activeModule === "listening" ? "Reading" : "Writing"}?
+                        </DialogTitle>
+                        <DialogDescription>
+                            You cannot return to this section once you proceed.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="py-3">
+                        <div className="rounded-lg bg-muted p-4 grid grid-cols-2 gap-4 text-sm">
+                            <div>
+                                <p className="text-muted-foreground">Answered</p>
+                                <p className="text-2xl font-bold text-green-600">{answeredCount}</p>
+                            </div>
+                            <div>
+                                <p className="text-muted-foreground">Unanswered</p>
+                                <p className={`text-2xl font-bold ${totalQuestions - answeredCount > 0 ? "text-amber-500" : "text-green-600"}`}>
+                                    {totalQuestions - answeredCount}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setShowNextModuleDialog(false)}>
+                            Stay here
+                        </Button>
+                        <Button onClick={() => { setShowNextModuleDialog(false); goToNextModule(); }}>
+                            Continue to {activeModule === "listening" ? "Reading" : "Writing"}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }

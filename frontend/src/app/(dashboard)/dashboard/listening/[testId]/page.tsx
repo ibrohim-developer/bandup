@@ -592,7 +592,7 @@ function ListeningTestContent({ testId }: { testId: string }) {
           borderTop: `1px solid ${theme.border}`,
         }}
       >
-        <div className="flex items-center justify-between flex-1 min-w-0 overflow-x-auto">
+        <div className="flex items-center flex-1 min-w-0 overflow-x-auto">
           {sectionPassages.map((passage, passageIdx) => {
             const passageOffset = sectionPassages
               .slice(0, passageIdx)
@@ -602,8 +602,17 @@ function ListeningTestContent({ testId }: { testId: string }) {
               (q) => !!answers[q.id]?.answer?.trim(),
             ).length;
 
+            const qCount = passage.questions.length;
+            // Reserve width for the active (expanded) state so switching parts doesn't shift layout.
+            // Active row = label + qCount buttons + gaps. Responsive: mobile w-6/gap-1, md w-8/gap-1.5.
+            const reservedMinWidth = `calc(${qCount} * (var(--nav-btn) + var(--nav-gap)) + var(--nav-label))`;
+
             return (
-              <div key={passage.id} className="flex items-center">
+              <div
+                key={passage.id}
+                className="flex items-center [--nav-btn:1.5rem] [--nav-gap:0.25rem] [--nav-label:3.5rem] md:[--nav-btn:2rem] md:[--nav-gap:0.375rem] md:[--nav-label:4.75rem]"
+                style={{ minWidth: reservedMinWidth }}
+              >
                 {passageIdx > 0 && (
                   <div
                     className="w-px h-6 mx-1.5 md:mx-3"
@@ -646,7 +655,7 @@ function ListeningTestContent({ testId }: { testId: string }) {
                 ) : (
                   <button
                     onClick={() => setActiveSectionId(passage.id)}
-                    className="flex items-center gap-1 md:gap-2 px-1 md:px-2 py-1 rounded transition-opacity hover:opacity-80 whitespace-nowrap"
+                    className="flex items-center gap-1 md:gap-2 py-1 rounded transition-opacity hover:opacity-80 whitespace-nowrap"
                   >
                     <span
                       className="text-xs md:text-sm font-bold"

@@ -41,6 +41,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Missing recordings" }, { status: 400 });
   }
 
+  const fullMockAttemptId: string | undefined = body.fullMockAttemptId;
+
   // Create ONE test attempt
   const attempt = await create("test-attempts", {
     user: user.id,
@@ -50,6 +52,7 @@ export async function POST(request: NextRequest) {
     started_at: new Date(Date.now() - timeSpentSeconds * 1000).toISOString(),
     completed_at: new Date().toISOString(),
     time_spent_seconds: timeSpentSeconds,
+    ...(fullMockAttemptId ? { full_mock_test_attempt: fullMockAttemptId } : {}),
   });
 
   // Create speaking submissions for all topics

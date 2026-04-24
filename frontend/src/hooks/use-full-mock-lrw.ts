@@ -306,7 +306,15 @@ export function useFullMockLRW(testId: string) {
                 content: writingContents[task.id] || "",
             }));
 
-            // Submit all 3 modules
+            // Create (or reuse) a full-mock-test-attempt session to group the 4 module attempts
+            const sessionRes = await fetch("/api/full-mock-test/session", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ testId }),
+            });
+            const { sessionId } = await sessionRes.json();
+
+            // Submit all 3 modules, tagging each attempt with the session
             const [listeningRes, readingRes, writingRes] = await Promise.all([
                 fetch("/api/listening/submit", {
                     method: "POST",
@@ -317,6 +325,7 @@ export function useFullMockLRW(testId: string) {
                         timeSpentSeconds: currentTimers.listening > 0
                             ? sectionTimers.listening - currentTimers.listening
                             : sectionTimers.listening,
+                        fullMockAttemptId: sessionId,
                     }),
                 }),
                 fetch("/api/reading/submit", {
@@ -328,6 +337,7 @@ export function useFullMockLRW(testId: string) {
                         timeSpentSeconds: currentTimers.reading > 0
                             ? sectionTimers.reading - currentTimers.reading
                             : sectionTimers.reading,
+                        fullMockAttemptId: sessionId,
                     }),
                 }),
                 fetch("/api/writing/submit", {
@@ -339,19 +349,30 @@ export function useFullMockLRW(testId: string) {
                         timeSpentSeconds: currentTimers.writing > 0
                             ? sectionTimers.writing - currentTimers.writing
                             : sectionTimers.writing,
+                        fullMockAttemptId: sessionId,
                     }),
                 }),
             ]);
 
-            const [listeningResult, readingResult, writingResult] = await Promise.all([
+            const [listeningJson, readingJson] = await Promise.all([
                 listeningRes.json(),
                 readingRes.json(),
                 writingRes.json(),
             ]);
 
-            // Redirect to results — we'll show the listening result page for now
-            // In the future, this should go to a combined results page
-            router.push(`/dashboard/results/${listeningResult.attemptId}`);
+            // Persist L+R band scores on the session. Writing is still evaluating; speaking hasn't started.
+            await fetch("/api/full-mock-test/session", {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    sessionId,
+                    listeningScore: listeningJson?.bandScore ?? null,
+                    readingScore: readingJson?.bandScore ?? null,
+                }),
+            });
+
+            // Save silently — results are revealed after speaking completes
+            router.push(`/dashboard/full-mock-test/${testId}`);
         } catch {
             setIsSubmitting(false);
         }

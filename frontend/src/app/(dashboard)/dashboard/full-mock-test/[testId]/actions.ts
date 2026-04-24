@@ -53,13 +53,23 @@ export async function fetchFullMockTestDetail(
     if (token) {
         const user = await getCurrentUser();
         if (user) {
-            const attempts = await find("full-mock-test-attempts", {
-                filters: { user: { id: { $eq: user.id } }, test: { documentId: { $eq: testId } } },
-                fields: ["writing_score", "speaking_score"],
+            // Latest full-mock session (if any) drives the card state.
+            const sessions = await find("full-mock-test-attempts", {
+                filters: {
+                    user: { id: { $eq: user.id } },
+                    test: { documentId: { $eq: testId } },
+                },
+                sort: ["createdAt:desc"],
+                pagination: { pageSize: 1 },
+                populate: { test_attempts: { fields: ["module_type", "status"] } },
             }, token);
-            if (attempts?.length) {
-                lrwCompleted = attempts.some((a: any) => a.writing_score != null);
-                speakingCompleted = attempts.some((a: any) => a.speaking_score != null);
+            const session = sessions?.[0];
+            if (session) {
+                const modules = new Set(
+                    (session.test_attempts ?? []).map((a: any) => a.module_type),
+                );
+                lrwCompleted = modules.has("listening") && modules.has("reading") && modules.has("writing");
+                speakingCompleted = modules.has("speaking");
             }
         }
     }

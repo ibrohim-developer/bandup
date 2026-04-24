@@ -569,6 +569,10 @@ export interface ApiFullMockTestAttemptFullMockTestAttempt
     > &
       Schema.Attribute.DefaultTo<'in_progress'>;
     test: Schema.Attribute.Relation<'manyToOne', 'api::test.test'>;
+    test_attempts: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::test-attempt.test-attempt'
+    >;
     time_spent_seconds: Schema.Attribute.Integer;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
@@ -918,6 +922,10 @@ export interface ApiTestAttemptTestAttempt extends Struct.CollectionTypeSchema {
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+    full_mock_test_attempt: Schema.Attribute.Relation<
+      'manyToOne',
+      'api::full-mock-test-attempt.full-mock-test-attempt'
+    >;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       'oneToMany',

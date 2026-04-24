@@ -8,10 +8,11 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { testId, submissions, timeSpentSeconds } = (await request.json()) as {
+  const { testId, submissions, timeSpentSeconds, fullMockAttemptId } = (await request.json()) as {
     testId: string;
     submissions: Array<{ taskId: string; content: string }>;
     timeSpentSeconds: number;
+    fullMockAttemptId?: string;
   };
 
   if (!testId || !submissions?.length) {
@@ -29,6 +30,7 @@ export async function POST(request: NextRequest) {
     status: "evaluating",
     completed_at: new Date().toISOString(),
     time_spent_seconds: timeSpentSeconds,
+    ...(fullMockAttemptId ? { full_mock_test_attempt: fullMockAttemptId } : {}),
   });
 
   if (!attempt) {

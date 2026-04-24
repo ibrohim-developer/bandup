@@ -9,10 +9,11 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { testId, answers, timeSpentSeconds } = (await request.json()) as {
+  const { testId, answers, timeSpentSeconds, fullMockAttemptId } = (await request.json()) as {
     testId: string;
     answers: Record<string, string>;
     timeSpentSeconds: number;
+    fullMockAttemptId?: string;
   };
 
   if (!testId || !answers) {
@@ -64,6 +65,7 @@ export async function POST(request: NextRequest) {
     band_score: bandScore,
     completed_at: new Date().toISOString(),
     time_spent_seconds: timeSpentSeconds,
+    ...(fullMockAttemptId ? { full_mock_test_attempt: fullMockAttemptId } : {}),
   });
 
   if (!attempt) {

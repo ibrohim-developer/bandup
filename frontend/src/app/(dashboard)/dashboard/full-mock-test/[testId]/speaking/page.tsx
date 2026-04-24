@@ -150,7 +150,18 @@ export default function FullMockSpeakingPage({
         setError(null);
 
         try {
-            // Upload and submit for each topic
+            // Find the in-progress session created during LRW (speaking is always last)
+            const sessionGetRes = await fetch(
+                `/api/full-mock-test/session?testId=${testId}`,
+            );
+            const { sessionId } = await sessionGetRes.json();
+
+            // Upload recordings and build a single multi-topic payload
+            const topicGroups: {
+                topicId: string;
+                recordings: { questionIndex: number; audioUrl: string; durationSeconds: number }[];
+            }[] = [];
+
             for (let topicIdx = 0; topicIdx < topics.length; topicIdx++) {
                 const topic = topics[topicIdx];
                 const uploadedRecordings: {
@@ -184,43 +195,58 @@ export default function FullMockSpeakingPage({
                     });
                 }
 
-                // Submit this topic
-                const submitRes = await fetch("/api/speaking/submit", {
-                    method: "POST",
+                topicGroups.push({ topicId: topic.documentId, recordings: uploadedRecordings });
+            }
+
+            // Single submit for all topics → one speaking test-attempt
+            const submitRes = await fetch("/api/speaking/submit", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    testId,
+                    topics: topicGroups,
+                    timeSpentSeconds: elapsed,
+                    fullMockAttemptId: sessionId,
+                }),
+            });
+
+            if (!submitRes.ok) {
+                const data = await submitRes.json();
+                throw new Error(data.error || "Submit failed");
+            }
+
+            const { attemptId } = await submitRes.json();
+
+            setSubmitting(false);
+            setEvaluating(true);
+
+            const evalRes = await fetch("/api/speaking/evaluate", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ attemptId }),
+            });
+
+            if (!evalRes.ok) {
+                const data = await evalRes.json();
+                throw new Error(data.error || "Evaluation failed");
+            }
+
+            const { bandScore: speakingScore } = await evalRes.json();
+
+            // Finalize the session with the speaking score + mark complete
+            if (sessionId) {
+                await fetch("/api/full-mock-test/session", {
+                    method: "PATCH",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
-                        topicId: topic.documentId,
-                        recordings: uploadedRecordings,
-                        timeSpentSeconds: elapsed,
+                        sessionId,
+                        speakingScore: speakingScore ?? null,
+                        complete: true,
                     }),
                 });
-
-                if (!submitRes.ok) {
-                    const data = await submitRes.json();
-                    throw new Error(data.error || "Submit failed");
-                }
-
-                const { attemptId } = await submitRes.json();
-
-                // Evaluate the last topic (redirect to its results)
-                if (topicIdx === topics.length - 1) {
-                    setSubmitting(false);
-                    setEvaluating(true);
-
-                    const evalRes = await fetch("/api/speaking/evaluate", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ attemptId }),
-                    });
-
-                    if (!evalRes.ok) {
-                        const data = await evalRes.json();
-                        throw new Error(data.error || "Evaluation failed");
-                    }
-
-                    router.push(`/dashboard/speaking/result/${attemptId}`);
-                }
             }
+
+            router.push(`/dashboard/full-mock-test/${testId}/results`);
         } catch (err) {
             setError(err instanceof Error ? err.message : "Something went wrong");
             setSubmitting(false);

@@ -63,8 +63,18 @@ export default async function FullMockTestDetailPage({
                                 {test.description}
                             </p>
                         )}
-                        <div className="inline-block rounded-full bg-primary/10 px-4 py-2 text-sm font-medium text-primary">
-                            Academic
+                        <div className="flex flex-wrap items-center gap-3">
+                            <div className="inline-block rounded-full bg-primary/10 px-4 py-2 text-sm font-medium text-primary">
+                                Academic
+                            </div>
+                            {test.lrwCompleted && test.speakingCompleted && (
+                                <Link href={`/dashboard/full-mock-test/${testId}/results`}>
+                                    <Button className="gap-2">
+                                        <CheckCircle className="h-4 w-4" />
+                                        View Full Results
+                                    </Button>
+                                </Link>
+                            )}
                         </div>
                     </div>
 
@@ -78,14 +88,14 @@ export default async function FullMockTestDetailPage({
                     {/* Section Cards */}
                     <div className="grid gap-6 md:gap-8 lg:grid-cols-2">
                         {/* LRW Card */}
-                        <div className="bg-card border border-border rounded-xl p-6 md:p-8 flex flex-col gap-6">
+                        <div className={`bg-card rounded-xl p-6 md:p-8 flex flex-col gap-6 transition-colors ${test.lrwCompleted ? "border-2 border-green-500/40 bg-green-500/5" : "border border-border"}`}>
                             <div>
                                 <div className="flex items-center justify-between gap-2 mb-2">
                                     <h3 className="text-xl md:text-2xl font-bold text-foreground">
                                         Listening, Reading & Writing
                                     </h3>
                                     {test.lrwCompleted && (
-                                        <span className="flex items-center gap-1 text-xs font-bold text-green-600 dark:text-green-400 shrink-0">
+                                        <span className="flex items-center gap-1.5 rounded-full bg-green-500/15 px-3 py-1 text-xs font-bold text-green-600 dark:text-green-400 shrink-0">
                                             <CheckCircle className="h-4 w-4" />
                                             Completed
                                         </span>
@@ -156,24 +166,31 @@ export default async function FullMockTestDetailPage({
                                     <p className="text-xs text-muted-foreground">Total Duration</p>
                                     <p className="text-xl font-bold text-foreground">~2h 30min</p>
                                 </div>
-                                <Link href={`/dashboard/full-mock-test/${testId}/lrw`}>
-                                    <Button className="gap-2">
-                                        {test.lrwCompleted ? "Retake" : "Start Test"}
-                                        <ArrowRight className="h-4 w-4" />
+                                {test.lrwCompleted ? (
+                                    <Button disabled className="gap-2 cursor-not-allowed opacity-70">
+                                        <CheckCircle className="h-4 w-4" />
+                                        Completed
                                     </Button>
-                                </Link>
+                                ) : (
+                                    <Link href={`/dashboard/full-mock-test/${testId}/lrw`}>
+                                        <Button className="gap-2">
+                                            Start Test
+                                            <ArrowRight className="h-4 w-4" />
+                                        </Button>
+                                    </Link>
+                                )}
                             </div>
                         </div>
 
                         {/* Speaking Card */}
-                        <div className="bg-card border border-border rounded-xl p-6 md:p-8 flex flex-col gap-6">
+                        <div className={`bg-card rounded-xl p-6 md:p-8 flex flex-col gap-6 transition-colors ${test.speakingCompleted ? "border-2 border-green-500/40 bg-green-500/5" : "border border-border"}`}>
                             <div>
                                 <div className="flex items-center justify-between gap-2 mb-2">
                                     <h3 className="text-xl md:text-2xl font-bold text-foreground">
                                         Speaking
                                     </h3>
                                     {test.speakingCompleted && (
-                                        <span className="flex items-center gap-1 text-xs font-bold text-green-600 dark:text-green-400 shrink-0">
+                                        <span className="flex items-center gap-1.5 rounded-full bg-green-500/15 px-3 py-1 text-xs font-bold text-green-600 dark:text-green-400 shrink-0">
                                             <CheckCircle className="h-4 w-4" />
                                             Completed
                                         </span>
@@ -210,12 +227,19 @@ export default async function FullMockTestDetailPage({
                                     <p className="text-xs text-muted-foreground">Total Duration</p>
                                     <p className="text-xl font-bold text-foreground">~15min</p>
                                 </div>
-                                <Link href={`/dashboard/full-mock-test/${testId}/speaking`}>
-                                    <Button className="gap-2">
-                                        {test.speakingCompleted ? "Retake" : "Start Test"}
-                                        <ArrowRight className="h-4 w-4" />
+                                {test.speakingCompleted ? (
+                                    <Button disabled className="gap-2 cursor-not-allowed opacity-70">
+                                        <CheckCircle className="h-4 w-4" />
+                                        Completed
                                     </Button>
-                                </Link>
+                                ) : (
+                                    <Link href={`/dashboard/full-mock-test/${testId}/speaking`}>
+                                        <Button className="gap-2">
+                                            Start Test
+                                            <ArrowRight className="h-4 w-4" />
+                                        </Button>
+                                    </Link>
+                                )}
                             </div>
                         </div>
                     </div>
