@@ -88,7 +88,15 @@ export default function LRWExamPage({
 function LRWExamContent({ testId }: { testId: string }) {
     const router = useRouter();
     const { isFullscreen, toggleFullscreen } = useFullscreen();
-    const { resumeTimer } = useTestStore();
+    const { resumeTimer, resetTest } = useTestStore();
+
+    const abandonAndLeave = () => {
+        resetTest();
+        try {
+            sessionStorage.removeItem("ielts-test-storage");
+        } catch { }
+        router.push(`/dashboard/full-mock-test/${testId}`);
+    };
 
     const {
         activeModule,
@@ -128,6 +136,7 @@ function LRWExamContent({ testId }: { testId: string }) {
     } = useFullMockLRW(testId);
 
     const [showNextModuleDialog, setShowNextModuleDialog] = useState(false);
+    const [showExitDialog, setShowExitDialog] = useState(false);
 
     // Build passages-like structure for navigation hook
     const sectionPassages = useMemo(() => {
@@ -172,7 +181,10 @@ function LRWExamContent({ testId }: { testId: string }) {
 
     const testOptions = useTestOptions();
     useSyncTestTheme(testOptions.contrast);
-    useNavigationProtection({ enabled: hasStarted });
+    useNavigationProtection({
+        enabled: hasStarted,
+        onBackAttempt: abandonAndLeave,
+    });
 
     const renderQuestion = (question: Question, index: number) => {
         const globalIndex = questionOffset + index;
@@ -416,15 +428,7 @@ function LRWExamContent({ testId }: { testId: string }) {
             >
                 <div className="flex items-center gap-2 md:gap-3">
                     <button
-                        onClick={() => {
-                            if (
-                                window.confirm(
-                                    "If you leave this page, all your answers will be lost and your test progress will not be saved.",
-                                )
-                            ) {
-                                router.push(`/dashboard/full-mock-test/${testId}`);
-                            }
-                        }}
+                        onClick={() => setShowExitDialog(true)}
                         className="flex items-center gap-1.5 px-2 md:px-2.5 py-1.5 rounded-md transition-colors hover:bg-white/5 text-sm md:text-base"
                         style={{ color: theme.text }}
                     >
@@ -1074,6 +1078,32 @@ function LRWExamContent({ testId }: { testId: string }) {
                         </Button>
                         <Button onClick={() => { setShowNextModuleDialog(false); goToNextModule(); }}>
                             Continue to {activeModule === "listening" ? "Reading" : "Writing"}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {/* Exit confirmation dialog */}
+            <Dialog open={showExitDialog} onOpenChange={setShowExitDialog}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Leave the test?</DialogTitle>
+                        <DialogDescription>
+                            Your answers and progress will be lost. Nothing is saved until you submit the full Listening, Reading & Writing section.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setShowExitDialog(false)}>
+                            Stay in test
+                        </Button>
+                        <Button
+                            variant="destructive"
+                            onClick={() => {
+                                setShowExitDialog(false);
+                                abandonAndLeave();
+                            }}
+                        >
+                            Leave anyway
                         </Button>
                     </DialogFooter>
                 </DialogContent>

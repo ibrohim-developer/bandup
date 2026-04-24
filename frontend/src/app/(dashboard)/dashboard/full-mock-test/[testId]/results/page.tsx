@@ -25,7 +25,8 @@ interface AnswerRow {
     isCorrect: boolean;
 }
 
-async function latestSessionAttempts(userId: number, testDocId: string, token: string) {
+async function latestSessionAttempts(userId: number, testDocId: string, _token: string) {
+    // Admin token — Authenticated role lacks find permission on this collection.
     const sessions = await find(
         "full-mock-test-attempts",
         {
@@ -35,9 +36,8 @@ async function latestSessionAttempts(userId: number, testDocId: string, token: s
             },
             sort: ["createdAt:desc"],
             pagination: { pageSize: 1 },
-            populate: { test_attempts: true },
+            populate: { test_attempts: { populate: "*" } },
         },
-        token,
     );
     const session = sessions?.[0];
     const attempts = (session?.test_attempts ?? []) as any[];
@@ -51,14 +51,13 @@ async function latestSessionAttempts(userId: number, testDocId: string, token: s
     return byModule;
 }
 
-async function fetchLROAnswers(attemptId: string, testDocId: string, moduleType: "listening" | "reading", token: string): Promise<AnswerRow[]> {
+async function fetchLROAnswers(attemptId: string, testDocId: string, moduleType: "listening" | "reading", _token: string): Promise<AnswerRow[]> {
     const userAnswers = await find(
         "user-answers",
         {
             filters: { test_attempt: { documentId: { $eq: attemptId } } },
             populate: ["question"],
         },
-        token,
     );
     const answeredMap = new Map<string, any>();
     for (const ua of userAnswers ?? []) {
@@ -76,7 +75,6 @@ async function fetchLROAnswers(attemptId: string, testDocId: string, moduleType:
                     questions: { sort: ["question_number"] },
                 },
             },
-            token,
         );
         for (const p of passages ?? []) {
             const grouped = (p.question_groups ?? []).flatMap((g: any) => g.questions ?? []);
@@ -89,7 +87,6 @@ async function fetchLROAnswers(attemptId: string, testDocId: string, moduleType:
                 filters: { test: { documentId: { $eq: testDocId } } },
                 populate: { questions: { sort: ["question_number"] } },
             },
-            token,
         );
         for (const s of sections ?? []) allQuestions.push(...(s.questions ?? []));
     }
@@ -155,7 +152,7 @@ export default async function FullMockResultsPage({
     const user = await getCurrentUser();
     if (!user) notFound();
 
-    const test = await findOne("tests", testId, { fields: ["title", "description"] }, token);
+    const test = await findOne("tests", testId, { fields: ["title", "description"] });
     if (!test) notFound();
 
     const byModule = await latestSessionAttempts(user.id, testId, token);
@@ -177,7 +174,6 @@ export default async function FullMockResultsPage({
                 filters: { test_attempt: { documentId: { $eq: writingAttempt.documentId } } },
                 populate: ["writing_task"],
             },
-            token,
         ),
         find(
             "speaking-submissions",
@@ -186,7 +182,6 @@ export default async function FullMockResultsPage({
                 populate: ["speaking_topic"],
                 sort: ["question_index:asc"],
             },
-            token,
         ),
     ]);
 

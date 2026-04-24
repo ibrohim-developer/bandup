@@ -10,7 +10,16 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui/card";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
 import { VoiceRecorder } from "@/components/test/speaking/voice-recorder";
+import { useNavigationProtection } from "@/hooks/use-navigation-protection";
 import {
     Loader2,
     ChevronLeft,
@@ -60,6 +69,25 @@ export default function FullMockSpeakingPage({
     const [isRecording, setIsRecording] = useState(false);
     const [submitting, setSubmitting] = useState(false);
     const [evaluating, setEvaluating] = useState(false);
+    const [showExitDialog, setShowExitDialog] = useState(false);
+
+    const abandonAndLeave = useCallback(() => {
+        setRecordings(new Map());
+        setCurrentTopicIdx(0);
+        setCurrentQuestionIdx(0);
+        setElapsed(0);
+        setHasStarted(false);
+        try {
+            sessionStorage.removeItem("ielts-test-storage");
+        } catch { }
+        router.push(`/dashboard/full-mock-test/${testId}`);
+    }, [router, testId]);
+
+    useNavigationProtection({
+        enabled: hasStarted && !submitting && !evaluating,
+        confirmMessage: "If you leave, your recordings will be lost.",
+        onBackAttempt: abandonAndLeave,
+    });
 
     // Timer
     const [elapsed, setElapsed] = useState(0);
@@ -379,11 +407,7 @@ export default function FullMockSpeakingPage({
                 <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => {
-                        if (window.confirm("If you leave, your recordings will be lost.")) {
-                            router.push(`/dashboard/full-mock-test/${testId}`);
-                        }
-                    }}
+                    onClick={() => setShowExitDialog(true)}
                     className="gap-2"
                 >
                     <ArrowLeft className="h-4 w-4" />
@@ -528,6 +552,32 @@ export default function FullMockSpeakingPage({
             <div className="text-center text-xs text-muted-foreground">
                 {totalRecorded} of {totalQuestions} questions recorded
             </div>
+
+            {/* Exit confirmation dialog */}
+            <Dialog open={showExitDialog} onOpenChange={setShowExitDialog}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Leave the speaking test?</DialogTitle>
+                        <DialogDescription>
+                            Your recordings will be lost and your mock test will stay incomplete. Nothing is saved until you finish all parts and submit.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setShowExitDialog(false)}>
+                            Stay in test
+                        </Button>
+                        <Button
+                            variant="destructive"
+                            onClick={() => {
+                                setShowExitDialog(false);
+                                abandonAndLeave();
+                            }}
+                        >
+                            Leave anyway
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }
