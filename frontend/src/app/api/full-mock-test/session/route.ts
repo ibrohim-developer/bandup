@@ -71,6 +71,7 @@ export async function GET(request: NextRequest) {
     const testId = searchParams.get("testId");
     if (!testId) return NextResponse.json({ error: "testId required" }, { status: 400 });
 
+    // Must use admin token: Strapi 5 rejects `user` as a filter key with user JWT.
     const sessions = await find("full-mock-test-attempts", {
         filters: {
             user: { id: { $eq: user.id } },

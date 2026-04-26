@@ -25,8 +25,8 @@ interface AnswerRow {
     isCorrect: boolean;
 }
 
+// Must use admin token: Strapi 5 rejects `user` as a filter key with user JWT (ValidationError).
 async function latestSessionAttempts(userId: number, testDocId: string, _token: string) {
-    // Admin token — Authenticated role lacks find permission on this collection.
     const sessions = await find(
         "full-mock-test-attempts",
         {

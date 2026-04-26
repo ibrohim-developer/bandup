@@ -48,14 +48,11 @@ export async function fetchFullMockTestDetail(
 
     let lrwCompleted = false;
     let speakingCompleted = false;
-
+ 
     const token = await getToken();
     if (token) {
         const user = await getCurrentUser();
         if (user) {
-            // Latest full-mock session (if any) drives the card state.
-            // Use admin token (omit user token) since the Authenticated role
-            // typically doesn't have find permission on full-mock-test-attempts.
             const sessions = await find("full-mock-test-attempts", {
                 filters: {
                     user: { id: { $eq: user.id } },

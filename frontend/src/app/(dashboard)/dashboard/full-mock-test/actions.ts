@@ -90,6 +90,7 @@ export async function fetchFullMockTests(
   if (token) {
     const user = await getCurrentUser();
     if (user) {
+      // Must use admin token: Strapi 5 rejects `user` as a filter key with user JWT.
       const attempts = await find("full-mock-test-attempts", {
         filters: {
           user: { id: { $eq: user.id } },
@@ -97,7 +98,7 @@ export async function fetchFullMockTests(
         },
         populate: ["test"],
         fields: ["status"],
-      }, token);
+      });
       attempts?.forEach((a: any) => {
         if (a.test?.documentId) completedTestIds.add(a.test.documentId);
       });

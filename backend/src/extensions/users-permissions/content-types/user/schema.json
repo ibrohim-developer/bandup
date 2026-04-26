@@ -79,6 +79,9 @@
     },
     "phone": {
       "type": "string"
+    },
+    "mock_test_expires_at": {
+      "type": "datetime"
     }
   }
 }

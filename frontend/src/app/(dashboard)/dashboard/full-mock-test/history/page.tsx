@@ -8,14 +8,11 @@ export const metadata: Metadata = {
   description: "All your completed IELTS full mock test attempts.",
 };
 
-function ScoreBadge({ value }: { value: number | null }) {
-  if (value == null) return <span className="text-muted-foreground font-bold">—</span>;
-  const color = value >= 7 ? "text-emerald-500" : value >= 6 ? "text-yellow-500" : "text-red-400";
-  return <span className={`font-black ${color}`}>{value}</span>;
-}
 
 export default async function FullMockHistoryPage() {
   const attempts = await fetchFullMockAttempts();
+
+  const tableHeaders = ["#", "Date", "Test", "Listening", "Reading", "Writing", "Speaking", "Overall", ""];
 
   return (
     <div className="space-y-6 pb-12">
@@ -41,7 +38,7 @@ export default async function FullMockHistoryPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border bg-muted/40">
-                  {["#", "Date", "Test", "Listening", "Reading", "Writing", "Speaking", "Overall", ""].map((h) => (
+                  {tableHeaders.map((h) => (
                     <th
                       key={h}
                       className="px-5 py-3 text-left text-xs font-bold text-muted-foreground whitespace-nowrap"
@@ -90,4 +87,11 @@ export default async function FullMockHistoryPage() {
       </div>
     </div>
   );
+}
+
+
+function ScoreBadge({ value }: { value: number | null }) {
+  if (value == null) return <span className="text-muted-foreground font-bold">—</span>;
+  const color = value >= 7 ? "text-emerald-500" : value >= 6 ? "text-yellow-500" : "text-red-400";
+  return <span className={`font-black ${color}`}>{value}</span>;
 }

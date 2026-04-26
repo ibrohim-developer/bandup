@@ -66,7 +66,8 @@ export default async function ProgressPage() {
       {/* Stat cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {(() => {
-          const fullStat = data.moduleStats.find((m) => m.module === "full");
+          const mockBands = fullMockAttempts.map((a) => a.overall ?? 0).filter((v) => v > 0);
+          const bestMockBand = mockBands.length > 0 ? Math.max(...mockBands) : null;
           return [
             {
               label: "Tests Completed",
@@ -80,12 +81,12 @@ export default async function ProgressPage() {
             },
             {
               label: "Full Mocks Done",
-              value: fullStat?.completed ?? 0,
+              value: fullMockAttempts.length,
               icon: <ClipboardCheck className="h-5 w-5" />,
             },
             {
               label: "Best Mock Band",
-              value: fullStat?.best_band ?? "—",
+              value: bestMockBand ?? "—",
               icon: <Trophy className="h-5 w-5" />,
             },
           ];

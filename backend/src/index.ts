@@ -77,7 +77,6 @@ export default {
                 data: {
                   action: `${uid}.${action}`,
                   role: roleId,
-                  enabled: true,
                 },
               });
           }

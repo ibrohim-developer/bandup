@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
   // Verify the attempt belongs to this user and is in "evaluating" status
   const attempts = await find("test-attempts", {
     filters: { documentId: { $eq: attemptId } },
-    populate: ["user", "test"],
+    populate: ["user", "test", "full_mock_test_attempt"],
   });
 
   const attempt = attempts?.[0];

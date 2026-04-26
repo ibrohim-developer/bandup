@@ -33,7 +33,6 @@ export async function fetchFullMockAttempts(): Promise<FullMockAttempt[]> {
       sort: ["completed_at:desc"],
       pagination: { pageSize: 100 },
     },
-    token,
   );
 
   if (!attempts?.length) return [];

@@ -1,18 +1,18 @@
 import Link from "@/components/no-prefetch-link";
 import { find } from "@/lib/strapi/api";
 import { Button } from "@/components/ui/button";
-import { BAND_DESCRIPTORS } from "@/lib/constants/test-config";
 import {
   PenTool,
   CheckCircle,
-  XCircle,
   ArrowLeft,
-  Sparkles,
-  Heart,
+  Clock,
   List,
   RotateCcw,
 } from "lucide-react";
-import { WritingFeedback } from "@/components/test/writing/writing-feedback";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { SpeakingScoreBreakdown } from "@/components/test/speaking/speaking-score-breakdown";
+import { WritingTaskFeedback } from "@/components/test/writing/writing-task-feedback";
+import { WritingRecommendations } from "@/components/test/writing/writing-recommendations";
 import { AnswerToggle } from "./answer-toggle";
 import { EvaluatingBanner } from "./evaluating-banner";
 import { FeedbackForm } from "./feedback-form";
@@ -240,95 +240,139 @@ function WritingResultsContent({ attempt, testTitle, tasks, submissions }: {
   tasks: any[];
   submissions: any[];
 }) {
-  const isEvaluating = attempt.status === "evaluating";
-  const bandScore = attempt.band_score || 0;
-  const formatTime = (seconds: number) => { const mins = Math.floor(seconds / 60); const secs = seconds % 60; return `${mins}m ${secs}s`; };
-  const getScoreColor = (score: number | null) => { if (score === null) return "text-muted-foreground"; if (score >= 7) return "text-green-600"; if (score >= 5) return "text-amber-600"; return "text-red-600"; };
+  if (attempt.status === "evaluating") return <EvaluatingBanner attemptId={attempt.id} />;
 
-  if (isEvaluating) return <EvaluatingBanner attemptId={attempt.id} />;
+  const bandScore = attempt.band_score || 0;
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}m ${secs}s`;
+  };
 
   const scoredSubmissions = submissions.filter((s: any) => s.overall_band_score !== null);
-  const avg = (field: string) => scoredSubmissions.length > 0 ? scoredSubmissions.reduce((sum: number, s: any) => sum + (s[field] || 0), 0) / scoredSubmissions.length : null;
-  const avgTaskAchievement = avg("task_achievement_score");
-  const avgCoherence = avg("coherence_score");
-  const avgLexical = avg("lexical_score");
-  const avgGrammar = avg("grammar_score");
+  const avg = (field: string) =>
+    scoredSubmissions.length > 0
+      ? Math.round(
+          (scoredSubmissions.reduce((sum: number, s: any) => sum + (s[field] || 0), 0) /
+            scoredSubmissions.length) * 2
+        ) / 2
+      : 0;
+
+  const criteria = [
+    { name: "Task Achievement", score: avg("task_achievement_score"), maxScore: 9, description: "How well you address the task requirements" },
+    { name: "Coherence & Cohesion", score: avg("coherence_score"), maxScore: 9, description: "Logical flow and organization of ideas" },
+    { name: "Lexical Resource", score: avg("lexical_score"), maxScore: 9, description: "Range and accuracy of vocabulary used" },
+    { name: "Grammatical Range", score: avg("grammar_score"), maxScore: 9, description: "Variety and correctness of grammatical structures" },
+  ];
+
+  const taskItems = tasks.map((task: any) => {
+    const sub = submissions.find((s: any) => s.task_id === task.documentId);
+    let parsedFeedback = null;
+    if (sub?.feedback) {
+      try {
+        parsedFeedback = typeof sub.feedback === "string" ? JSON.parse(sub.feedback) : sub.feedback;
+      } catch { /* */ }
+    }
+    return {
+      taskNumber: task.task_number,
+      taskType: task.task_type,
+      content: sub?.content || "",
+      wordCount: sub?.word_count || 0,
+      overallBandScore: sub?.overall_band_score ?? null,
+      taskAchievementScore: sub?.task_achievement_score ?? null,
+      coherenceScore: sub?.coherence_score ?? null,
+      lexicalScore: sub?.lexical_score ?? null,
+      grammarScore: sub?.grammar_score ?? null,
+      parsedFeedback,
+    };
+  });
+
+  const allActions: string[] = [];
+  for (const sub of submissions) {
+    let parsed = null;
+    try { parsed = typeof sub.feedback === "string" ? JSON.parse(sub.feedback) : sub.feedback; } catch { /* */ }
+    if (parsed?.top_5_actions) allActions.push(...parsed.top_5_actions);
+  }
+  const uniqueActions = [...new Set(allActions)].slice(0, 5);
 
   return (
     <div className="max-w-7xl mx-auto mt-8 px-4 md:px-6">
-      <Link href="/dashboard" className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground mb-8 text-sm font-medium"><ArrowLeft className="h-4 w-4" />Back to Dashboard</Link>
+      <Link
+        href="/dashboard/writing"
+        className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground mb-8 text-sm font-medium"
+      >
+        <ArrowLeft className="h-4 w-4" /> Back to Writing
+      </Link>
+
+      {/* Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
         <div>
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 md:w-14 md:h-14 bg-purple-500 rounded-full flex items-center justify-center shrink-0"><PenTool className="text-white h-6 w-6 md:h-7 md:w-7" /></div>
-            <h1 className="text-3xl md:text-5xl font-bold tracking-tight uppercase leading-none">Test Results</h1>
+            <div className="w-12 h-12 md:w-14 md:h-14 bg-purple-500 rounded-full flex items-center justify-center shrink-0">
+              <PenTool className="text-white h-6 w-6 md:h-7 md:w-7" />
+            </div>
+            <h1 className="text-3xl md:text-5xl font-bold tracking-tight uppercase leading-none">
+              Test Results
+            </h1>
           </div>
           <p className="text-base md:text-lg font-bold text-muted-foreground mt-2 uppercase">{testTitle}</p>
         </div>
         <div className="flex flex-wrap items-center gap-3 md:gap-4">
-          <Link href="/dashboard/writing"><Button variant="outline" className="gap-2 px-5 md:px-8 h-11 md:h-12 rounded-xl font-bold text-sm md:text-md uppercase flex items-center"><List className="h-4 w-4" />View All Tests</Button></Link>
-          <Link href={`/dashboard/writing/${attempt.test_id}`}><Button className="gap-2 px-5 md:px-8 h-11 md:h-12 rounded-xl font-bold text-sm md:text-md uppercase flex items-center"><RotateCcw className="h-4 w-4" />Try Again</Button></Link>
+          <Link href="/dashboard/writing">
+            <Button variant="outline" className="gap-2 px-5 md:px-8 h-11 md:h-12 rounded-xl font-bold text-sm md:text-md uppercase flex items-center">
+              <List className="h-4 w-4" />View All Tests
+            </Button>
+          </Link>
+          <Link href={`/dashboard/writing/${attempt.test_id}`}>
+            <Button className="gap-2 px-5 md:px-8 h-11 md:h-12 rounded-xl font-bold text-sm md:text-md uppercase flex items-center">
+              <RotateCcw className="h-4 w-4" />Try Again
+            </Button>
+          </Link>
         </div>
       </div>
-      {/* <div id="review" className="border-1 border-border rounded-xl overflow-hidden mb-10">
-        <div className=" border-b border-border flex justify-between">
-          <div className="p-8">
-            <h3 className="text-2xl font-bold uppercase tracking-tight flex items-center gap-2"><Sparkles className="h-5 w-5 text-purple-500" />AI Evaluation Summary</h3>
-            <p className="text-sm text-muted-foreground mt-1">Average scores across all tasks</p>
-          </div>
-          <div className="p-8">
-            <p className="text-sm font-bold text-muted-foreground uppercase tracking-widest mb-2">Band Score</p>
-            <p className="text-6xl md:text-7xl font-bold text-primary">{bandScore}</p>
-            <p className="text-sm font-bold text-muted-foreground mt-1">{BAND_DESCRIPTORS[Math.floor(bandScore)] || "Good user"}</p>
-          </div>
-        </div>
 
-        <div className="p-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-            {[["Task Achievement", avgTaskAchievement], ["Coherence & Cohesion", avgCoherence], ["Lexical Resource", avgLexical], ["Grammar", avgGrammar]].map(([label, val]) => (
-              <div key={label as string} className="text-center p-4 rounded-lg bg-muted">
-                <div className={`text-3xl font-bold ${getScoreColor(val as number | null)}`}>{(val as number | null) !== null ? (val as number).toFixed(1) : "-"}</div>
-                <div className="text-sm text-muted-foreground mt-1">{label as string}</div>
-              </div>
-            ))}
+      {/* Score hero */}
+      <div className="border border-border rounded-2xl bg-gradient-to-br from-purple-500/5 to-primary/5 px-8 py-12 text-center mb-12">
+        <div className="flex flex-col items-center">
+          <div className="mb-6 flex items-center gap-3">
+            <CheckCircle className="h-8 w-8 text-primary" />
+            <span className="text-lg font-semibold text-muted-foreground">Your Overall Score</span>
           </div>
+          <div className="mb-4 text-8xl md:text-9xl font-bold text-primary">{bandScore}</div>
+          <div className="mb-8 text-xl font-medium text-muted-foreground">/ 9.0 IELTS Band</div>
           {attempt.time_spent_seconds && (
-            <div className="p-4 rounded-lg border"><div className="flex items-center justify-between"><span className="text-muted-foreground">Time Spent</span><span className="font-medium">{formatTime(attempt.time_spent_seconds)}</span></div></div>
+            <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-6 py-2 text-sm font-medium text-primary">
+              <Clock className="h-4 w-4" />
+              Duration: {formatTime(attempt.time_spent_seconds)}
+            </div>
           )}
         </div>
-      </div> */}
-      {tasks.map((task: any) => {
-        const submission = submissions.find((s: any) => s.task_id === task.documentId);
-        if (!submission) return null;
-        return (
-          <div key={task.documentId} className="border-1 border-border rounded-xl overflow-hidden mb-10">
-            <div className="p-4 md:p-8 border-b border-border">
-              <h3 className="text-xl md:text-2xl font-bold uppercase tracking-tight">Task {task.task_number} - {task.task_type === "report" ? "Report Writing" : "Essay Writing"}</h3>
-              <p className="text-sm text-muted-foreground mt-1">{submission.word_count} words written (minimum: {task.min_words}){submission.overall_band_score !== null && <span className="ml-2 font-medium">| Band Score: {submission.overall_band_score}</span>}</p>
-            </div>
-            <div className="p-4 md:p-8 space-y-6">
-              {submission.feedback && (
-                <WritingFeedback
-                  feedback={submission.feedback}
-                  overallBandScore={submission.overall_band_score}
-                  taskAchievementScore={submission.task_achievement_score}
-                  coherenceScore={submission.coherence_score}
-                  lexicalScore={submission.lexical_score}
-                  grammarScore={submission.grammar_score}
-                />
-              )}
-              {submission.overall_band_score === null && !submission.feedback && (<div className="p-4 rounded-lg border border-amber-200 dark:border-amber-800 bg-amber-50/50 dark:bg-amber-950/20 text-sm text-amber-700 dark:text-amber-400">Evaluation pending - scores are not yet available for this task.</div>)}
-              <div><h4 className="text-sm font-bold uppercase tracking-wider text-muted-foreground mb-2">Your Essay</h4><div className="p-4 rounded-lg bg-muted/50 border text-sm whitespace-pre-line max-h-60 overflow-y-auto">{submission.content}</div></div>
-            </div>
-          </div>
-        );
-      })}
+      </div>
+
+      {/* Tabs */}
+      <Tabs defaultValue="breakdown" className="mb-12">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="breakdown">Score Breakdown</TabsTrigger>
+          <TabsTrigger value="feedback">Task Feedback</TabsTrigger>
+          <TabsTrigger value="recommendations">Recommendations</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="breakdown" className="mt-8">
+          <h2 className="mb-6 text-2xl font-bold">Scoring Criteria Analysis</h2>
+          <SpeakingScoreBreakdown criteria={criteria} />
+        </TabsContent>
+
+        <TabsContent value="feedback" className="mt-8">
+          <h2 className="mb-6 text-2xl font-bold">Task-by-Task Feedback</h2>
+          <WritingTaskFeedback tasks={taskItems} />
+        </TabsContent>
+
+        <TabsContent value="recommendations" className="mt-8">
+          <WritingRecommendations actions={uniqueActions} />
+        </TabsContent>
+      </Tabs>
 
       <FeedbackForm attemptId={attempt.id} />
-      {/* <div className="flex flex-col items-center justify-center gap-6 pb-20 pt-4 text-center">
-        <p className="text-base md:text-xl font-bold text-muted-foreground uppercase tracking-tight">Support our mission to keep IELTS practice free for everyone.</p>
-        <Button size="lg" className="flex items-center gap-3 px-8 md:px-12 py-6 rounded-xl font-bold text-sm tracking-widest uppercase"><Heart className="h-5 w-5" />Donate to Support</Button>
-      </div> */}
     </div>
   );
 }

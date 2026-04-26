@@ -78,7 +78,7 @@ export async function fetchReadingTests(
         },
         populate: ["test"],
         fields: ["status"],
-      }, token);
+      });
       attempts?.forEach((a: any) => {
         if (a.test?.documentId) completedTestIds.add(a.test.documentId);
       });

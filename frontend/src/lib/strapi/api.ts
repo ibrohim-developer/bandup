@@ -86,6 +86,9 @@ export async function find(
     cache: 'no-store',
   })
   const json = await res.json()
+  if (!res.ok) {
+    console.error(`[strapi] find(${collection}) ${res.status}:`, JSON.stringify(json))
+  }
   return json.data || []
 }
 
