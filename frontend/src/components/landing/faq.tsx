@@ -7,9 +7,14 @@ import {
 
 const faqs = [
   {
+    question: "Is there a free trial?",
+    answer:
+      "Everything on BandUp is free — Listening, Reading, Writing, and Speaking practice with AI feedback. The only paid part is full mock tests, and even there your first mock test is free so you can try it before paying.",
+  },
+  {
     question: "How accurate is the AI scoring?",
     answer:
-      "Our AI scoring model has been trained on thousands of real IELTS essays and speaking samples graded by certified examiners. On average, our predicted band scores are within 0.5 bands of the actual IELTS score. We continuously improve accuracy with new data.",
+      "Our AI scoring uses the official IELTS band descriptors as its rubric to evaluate Writing and Speaking responses. Predicted band scores are typically within ~0.5–1 band of an examiner's score, and we keep refining the prompts and rubric checks to improve accuracy.",
   },
   {
     question: "Can I practice just one module?",
@@ -22,11 +27,6 @@ const faqs = [
       "We currently support the IELTS Academic format, which is the most common format for university admissions. General Training support is coming soon and will include all relevant question types and topics.",
   },
   {
-    question: "Is there a free trial?",
-    answer:
-      "Yes! You can start practicing for free immediately with our Free plan, which includes 2 practice sessions per day with basic AI feedback. No credit card required. Upgrade to Pro anytime to unlock unlimited practice.",
-  },
-  {
     question: "How is BandUp different from other IELTS prep apps?",
     answer:
       "BandUp is the only platform that provides instant AI feedback across all four IELTS modules with detailed band score predictions. Most apps only cover Reading and Listening. We also offer full mock exams under real conditions, progress tracking, and speaking practice with AI evaluation.",
@@ -34,7 +34,7 @@ const faqs = [
   {
     question: "Can I use BandUp on my phone?",
     answer:
-      "Yes, BandUp is fully responsive and works great on mobile browsers. For Speaking practice, you just need a working microphone. A dedicated mobile app is in development and will be available soon.",
+      "Yes, BandUp is fully responsive and works on mobile browsers, but we recommend using it on a computer or laptop for the best experience. For Speaking practice, you just need a working microphone.",
   },
 ]
 

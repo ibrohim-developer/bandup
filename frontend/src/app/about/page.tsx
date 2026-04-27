@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { Header } from "@/components/layout/header";
-import { Footer } from "@/components/layout/footer";
+import { Navbar } from "@/components/landing/navbar";
+import { LandingFooter } from "@/components/landing/footer";
 import { ForceLightTheme } from "@/components/force-light-theme";
 import { JsonLd } from "@/components/json-ld";
 import { getUser } from "@/actions/auth";
@@ -22,10 +22,45 @@ const breadcrumbSchema = {
   ],
 };
 
-async function AuthHeader() {
+const offerings = [
+  {
+    icon: Target,
+    iconBg: "bg-accent/10",
+    iconColor: "text-accent",
+    title: "Real Exam Format",
+    description:
+      "Practice with tests that strictly follow the official IELTS format — Listening, Reading, Writing, and Speaking modules with authentic time constraints.",
+  },
+  {
+    icon: Zap,
+    iconBg: "bg-primary/10",
+    iconColor: "text-primary",
+    title: "AI-Powered Scoring",
+    description:
+      "Get instant band score predictions with detailed breakdowns of your performance. Our AI models are trained on thousands of examiner-graded scripts.",
+  },
+  {
+    icon: Globe,
+    iconBg: "bg-primary/10",
+    iconColor: "text-primary",
+    title: "Made for Uzbekistan",
+    description:
+      "Built locally with an understanding of the challenges Uzbek students face when preparing for international English exams.",
+  },
+  {
+    icon: Users,
+    iconBg: "bg-accent/10",
+    iconColor: "text-accent",
+    title: "Free for Everyone",
+    description:
+      "No paywalls, no hidden fees. BandUp provides free access to mock tests so every student can prepare effectively.",
+  },
+];
+
+async function AuthNavbar() {
   const user = await getUser();
   return (
-    <Header
+    <Navbar
       isLoggedIn={!!user}
       userEmail={user?.email}
       userAvatar={user?.user_metadata?.avatar_url}
@@ -39,129 +74,101 @@ export default function AboutPage() {
     <div className="min-h-screen flex flex-col">
       <ForceLightTheme />
       <JsonLd data={breadcrumbSchema} />
-      <Suspense fallback={<Header />}>
-        <AuthHeader />
+      <Suspense fallback={<Navbar />}>
+        <AuthNavbar />
       </Suspense>
 
-      <main className="flex-1">
+      <main className="flex-1 pt-[72px]">
         {/* Hero */}
-        <section className="py-20 lg:py-32 border-b border-black">
-          <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h1 className="text-5xl md:text-8xl font-black text-black uppercase tracking-tighter mb-8 leading-[0.9]">
-              About <span className="text-primary">BandUp</span>
+        <section className="bg-secondary/50 py-20 md:py-28">
+          <div className="mx-auto max-w-[800px] px-6 text-center">
+            <p className="text-sm font-semibold uppercase tracking-wider text-accent">
+              About Us
+            </p>
+            <h1 className="mt-3 text-balance text-3xl font-bold tracking-tight text-foreground md:text-4xl">
+              Making IELTS prep free for everyone
             </h1>
-            <p className="text-xl md:text-2xl text-neutral-600 max-w-3xl font-normal leading-snug">
+            <p className="mt-4 text-pretty text-muted-foreground md:text-lg">
               BandUp is Uzbekistan&apos;s AI-powered IELTS preparation platform, built to make
-              high-quality test practice accessible to every student.
+              high-quality test practice accessible to every student — regardless of budget.
             </p>
           </div>
         </section>
 
         {/* Mission */}
-        <section className="py-20 lg:py-32 border-b border-black">
-          <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="mb-16">
-              <h2 className="text-4xl md:text-6xl font-black text-black uppercase tracking-tighter mb-4">
+        <section className="py-20 md:py-28">
+          <div className="mx-auto max-w-[800px] px-6">
+            <div className="rounded-2xl border border-border bg-card p-8 md:p-12">
+              <p className="text-sm font-semibold uppercase tracking-wider text-accent mb-4">
                 Our Mission
-              </h2>
-              <div className="h-3 w-24 bg-primary"></div>
+              </p>
+              <p className="text-foreground text-lg leading-relaxed">
+                Every year, over 50,000 people in Uzbekistan take the IELTS exam. Many pay
+                hundreds of dollars for mock tests and preparation materials. We believe that
+                quality IELTS practice should be free and accessible to everyone, regardless
+                of their financial situation.
+              </p>
+              <p className="text-muted-foreground text-lg leading-relaxed mt-4">
+                BandUp provides real exam-format mock tests with instant AI-powered scoring
+                and feedback — completely free.
+              </p>
             </div>
-            <p className="text-lg md:text-xl text-neutral-600 max-w-3xl font-normal leading-relaxed">
-              Every year, over 50,000 people in Uzbekistan take the IELTS exam. Many pay
-              hundreds of dollars for mock tests and preparation materials. We believe that
-              quality IELTS practice should be free and accessible to everyone, regardless
-              of their financial situation. BandUp provides real exam-format mock tests with
-              instant AI-powered scoring and feedback — completely free.
-            </p>
           </div>
         </section>
 
         {/* What We Offer */}
-        <section className="py-20 lg:py-32 border-b border-black">
-          <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="mb-16">
-              <h2 className="text-4xl md:text-6xl font-black text-black uppercase tracking-tighter mb-4">
+        <section className="bg-secondary/50 py-20 md:py-28">
+          <div className="mx-auto max-w-[800px] px-6">
+            <div className="text-center mb-12">
+              <p className="text-sm font-semibold uppercase tracking-wider text-accent">
                 What We Offer
+              </p>
+              <h2 className="mt-3 text-balance text-3xl font-bold tracking-tight text-foreground md:text-4xl">
+                Everything you need to prepare
               </h2>
-              <div className="h-3 w-24 bg-primary"></div>
             </div>
-            <div className="grid md:grid-cols-2 gap-8">
-              <div className="p-8 border border-black rounded-2xl">
-                <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center mb-6">
-                  <Target className="text-white w-5 h-5" />
+
+            <div className="grid sm:grid-cols-2 gap-6">
+              {offerings.map((item) => (
+                <div
+                  key={item.title}
+                  className="rounded-2xl border border-border bg-card p-6 md:p-8"
+                >
+                  <div className={`w-10 h-10 ${item.iconBg} rounded-lg flex items-center justify-center mb-5`}>
+                    <item.icon className={`w-5 h-5 ${item.iconColor}`} />
+                  </div>
+                  <h3 className="text-base font-semibold text-foreground mb-2">
+                    {item.title}
+                  </h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    {item.description}
+                  </p>
                 </div>
-                <h3 className="text-xl font-black uppercase tracking-tight mb-3">
-                  Real Exam Format
-                </h3>
-                <p className="text-neutral-600 font-normal leading-snug">
-                  Practice with tests that strictly follow the official IELTS format —
-                  Listening, Reading, Writing, and Speaking modules with authentic time
-                  constraints.
-                </p>
-              </div>
-              <div className="p-8 border border-black rounded-2xl">
-                <div className="w-10 h-10 bg-black rounded-lg flex items-center justify-center mb-6">
-                  <Zap className="text-white w-5 h-5" />
-                </div>
-                <h3 className="text-xl font-black uppercase tracking-tight mb-3">
-                  AI-Powered Scoring
-                </h3>
-                <p className="text-neutral-600 font-normal leading-snug">
-                  Get instant band score predictions with detailed breakdowns of your
-                  performance. Our AI models are trained on thousands of examiner-graded
-                  scripts.
-                </p>
-              </div>
-              <div className="p-8 border border-black rounded-2xl">
-                <div className="w-10 h-10 bg-black rounded-lg flex items-center justify-center mb-6">
-                  <Globe className="text-white w-5 h-5" />
-                </div>
-                <h3 className="text-xl font-black uppercase tracking-tight mb-3">
-                  Made for Uzbekistan
-                </h3>
-                <p className="text-neutral-600 font-normal leading-snug">
-                  Built locally with an understanding of the challenges Uzbek students face
-                  when preparing for international English exams.
-                </p>
-              </div>
-              <div className="p-8 border border-black rounded-2xl">
-                <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center mb-6">
-                  <Users className="text-white w-5 h-5" />
-                </div>
-                <h3 className="text-xl font-black uppercase tracking-tight mb-3">
-                  Free for Everyone
-                </h3>
-                <p className="text-neutral-600 font-normal leading-snug">
-                  No paywalls, no hidden fees. BandUp provides free access to mock tests so
-                  every student can prepare effectively.
-                </p>
-              </div>
+              ))}
             </div>
           </div>
         </section>
 
         {/* CTA */}
-        <section className="py-20 lg:py-32">
-          <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="border-[8px] border-primary p-8 md:p-16 text-center bg-white rounded-3xl">
-              <h2 className="text-4xl md:text-6xl font-black mb-6 tracking-tighter uppercase leading-[0.9]">
-                Start Preparing <span className="text-primary">Today</span>
-              </h2>
-              <p className="text-xl text-neutral-600 mb-10 max-w-xl mx-auto font-normal leading-snug">
-                Take your first free mock test and see where you stand.
-              </p>
-              <Link
-                href="/dashboard/reading"
-                className="inline-block bg-primary text-white px-12 py-5 font-black uppercase text-sm tracking-[0.2em] hover:bg-primary/90 transition-all rounded-xl"
-              >
-                Free Mock Test
-              </Link>
-            </div>
+        <section className="py-20 md:py-28">
+          <div className="mx-auto max-w-[800px] px-6 text-center">
+            <h2 className="text-2xl font-bold tracking-tight text-foreground md:text-3xl">
+              Ready to start preparing?
+            </h2>
+            <p className="mt-4 text-muted-foreground md:text-lg">
+              Take your first free mock test and see where you stand.
+            </p>
+            <Link
+              href="/dashboard/reading"
+              className="mt-8 inline-block bg-primary text-primary-foreground px-8 py-3 rounded-lg font-semibold hover:bg-primary/90 transition-colors"
+            >
+              Start Free Mock Test
+            </Link>
           </div>
         </section>
       </main>
 
-      <Footer />
+      <LandingFooter />
     </div>
   );
 }

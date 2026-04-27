@@ -91,7 +91,7 @@ const organizationSchema = {
   "@type": "EducationalOrganization",
   name: "BandUp",
   url: "https://bandup.uz",
-  // logo: "https://bandup.uz/logo.png", // TODO: add logo.png to /public and uncomment
+  logo: "https://bandup.uz/logo.jpg",
   description:
     "Free IELTS mock exams and practice tests with detailed AI-powered score analysis. Free reading and listening tests with answers included.",
   sameAs: ["https://t.me/bandup_ielts", "https://instagram.com/bandupuz"],

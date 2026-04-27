@@ -38,7 +38,7 @@ export function PartnerTimeline() {
             How It Works: Partnership Journey
           </h2>
           <p className="text-lg text-muted-foreground">
-            Get started in just 2-4 weeks
+            Get started in just 1 week
           </p>
         </div>
 

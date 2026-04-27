@@ -3,6 +3,8 @@ import { find } from "@/lib/strapi/api";
 
 const BASE = "https://bandup.uz";
 
+export const revalidate = 3600;
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const [readingPassages, listeningSections, writingTasks] = await Promise.all([
@@ -28,6 +30,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE}/faq`, lastModified: new Date(), changeFrequency: "monthly", priority: 0.6 },
     { url: `${BASE}/about`, lastModified: new Date(), changeFrequency: "monthly", priority: 0.6 },
     { url: `${BASE}/for-business`, lastModified: new Date(), changeFrequency: "monthly", priority: 0.5 },
+    { url: `${BASE}/ielts-tips`, lastModified: new Date(), changeFrequency: "monthly", priority: 0.7 },
+    { url: `${BASE}/privacy`, lastModified: new Date(), changeFrequency: "yearly", priority: 0.3 },
+    { url: `${BASE}/terms`, lastModified: new Date(), changeFrequency: "yearly", priority: 0.3 },
   ];
 
   const seen = new Set<string>();

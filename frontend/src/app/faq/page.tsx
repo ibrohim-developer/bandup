@@ -1,12 +1,17 @@
 import Link from "next/link";
-import { Header } from "@/components/layout/header";
-import { Footer } from "@/components/layout/footer";
+import { Navbar } from "@/components/landing/navbar";
+import { LandingFooter } from "@/components/landing/footer";
 import { ForceLightTheme } from "@/components/force-light-theme";
 import { JsonLd } from "@/components/json-ld";
-import { ChevronDown } from "lucide-react";
 import { getUser } from "@/actions/auth";
 import { Suspense } from "react";
 import type { Metadata } from "next";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 export const metadata: Metadata = {
   title: "FAQ - IELTS & BandUp",
@@ -14,6 +19,38 @@ export const metadata: Metadata = {
 };
 
 const faqs = [
+  // BandUp product questions
+  {
+    question: "Is there a free trial?",
+    answer:
+      "Everything on BandUp is free — Listening, Reading, Writing, and Speaking practice with AI feedback. The only paid part is full mock tests, and even there your first mock test is free so you can try it before paying.",
+  },
+  {
+    question: "How accurate is the AI scoring?",
+    answer:
+      "Our AI scoring uses the official IELTS band descriptors as its rubric to evaluate Writing and Speaking responses. Predicted band scores are typically within ~0.5–1 band of an examiner's score, and we keep refining the prompts and rubric checks to improve accuracy.",
+  },
+  {
+    question: "Can I practice just one module?",
+    answer:
+      "Absolutely! You can practice any individual module — Speaking, Writing, Reading, or Listening — as many times as you want. You don't have to take a full mock exam every time. Many students focus on their weakest module first.",
+  },
+  {
+    question: "What IELTS format do you cover — Academic or General?",
+    answer:
+      "We currently support the IELTS Academic format, which is the most common format for university admissions. General Training support is coming soon and will include all relevant question types and topics.",
+  },
+  {
+    question: "How is BandUp different from other IELTS prep apps?",
+    answer:
+      "BandUp is the only platform that provides instant AI feedback across all four IELTS modules with detailed band score predictions. Most apps only cover Reading and Listening. We also offer full mock exams under real conditions, progress tracking, and speaking practice with AI evaluation.",
+  },
+  {
+    question: "Can I use BandUp on my phone?",
+    answer:
+      "Yes, BandUp is fully responsive and works on mobile browsers, but we recommend using it on a computer or laptop for the best experience. For Speaking practice, you just need a working microphone.",
+  },
+  // General IELTS questions
   {
     question: "What is the difference between IELTS Academic and General Training?",
     answer:
@@ -25,24 +62,14 @@ const faqs = [
       "IELTS uses a 9-band system. You receive individual scores for Listening, Reading, Writing, and Speaking, plus an Overall Band Score that averages these four, rounded to the nearest whole or half band.",
   },
   {
+    question: "How long is the IELTS test?",
+    answer:
+      "The total IELTS test takes about 2 hours and 45 minutes: Listening (30 minutes), Reading (60 minutes), Writing (60 minutes), and Speaking (11–14 minutes, may be on a separate day).",
+  },
+  {
     question: "Can I retake just one section of IELTS?",
     answer:
       "Yes. IELTS One Skill Retake lets you retake a single section within 60 days of your original test date at participating centers.",
-  },
-  {
-    question: "How does BandUp's AI scoring work?",
-    answer:
-      "BandUp uses advanced AI models trained on examiner-graded scripts to evaluate your writing and provide instant band score predictions with detailed feedback on grammar, vocabulary, coherence, and task achievement.",
-  },
-  {
-    question: "Is BandUp free to use?",
-    answer:
-      "Yes! BandUp offers free IELTS mock exams for Reading, Listening, and Writing modules. You can practice with real exam-style questions and get instant AI-powered feedback at no cost.",
-  },
-  {
-    question: "How long is the IELTS test?",
-    answer:
-      "The total IELTS test takes about 2 hours and 45 minutes: Listening (30 minutes), Reading (60 minutes), Writing (60 minutes), and Speaking (11-14 minutes, may be on a separate day).",
   },
   {
     question: "Where can I take IELTS in Uzbekistan?",
@@ -50,14 +77,9 @@ const faqs = [
       "IELTS is available at British Council and IDP testing centers across Uzbekistan, including Tashkent, Samarkand, and other major cities. You can register through exams.uz (IDP) or britishcouncil.uz.",
   },
   {
-    question: "How accurate are BandUp's mock test scores?",
-    answer:
-      "Our AI scoring models are calibrated against thousands of examiner-graded scripts. While no prediction is perfect, our scores typically fall within +/- 0.5 bands of actual IELTS scores.",
-  },
-  {
     question: "How often should I practice with mock tests?",
     answer:
-      "For optimal preparation, we recommend taking at least 2-3 full mock tests per week, with daily practice on individual modules. Consistent practice over 4-8 weeks typically yields significant score improvements.",
+      "For optimal preparation, we recommend taking at least 2–3 full mock tests per week, with daily practice on individual modules. Consistent practice over 4–8 weeks typically yields significant score improvements.",
   },
 ];
 
@@ -83,10 +105,10 @@ const breadcrumbSchema = {
   ],
 };
 
-async function AuthHeader() {
+async function AuthNavbar() {
   const user = await getUser();
   return (
-    <Header
+    <Navbar
       isLoggedIn={!!user}
       userEmail={user?.email}
       userAvatar={user?.user_metadata?.avatar_url}
@@ -101,56 +123,75 @@ export default function FaqPage() {
       <ForceLightTheme />
       <JsonLd data={faqSchema} />
       <JsonLd data={breadcrumbSchema} />
-      <Suspense fallback={<Header />}>
-        <AuthHeader />
+      <Suspense fallback={<Navbar />}>
+        <AuthNavbar />
       </Suspense>
 
-      <main className="flex-1">
-        <section className="py-20 lg:py-32">
-          <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="mb-16">
-              <h1 className="text-5xl md:text-7xl font-black text-black uppercase tracking-tighter mb-4">
+      <main className="flex-1 pt-[72px]">
+        <section className="bg-secondary/50 py-20 md:py-28">
+          <div className="mx-auto max-w-[800px] px-6">
+            <div className="text-center">
+              <p className="text-sm font-semibold uppercase tracking-wider text-accent">
                 FAQ
+              </p>
+              <h1 className="mt-3 text-balance text-3xl font-bold tracking-tight text-foreground md:text-4xl">
+                Frequently asked questions
               </h1>
-              <div className="h-3 w-24 bg-primary"></div>
-              <p className="text-xl text-neutral-600 mt-6 font-normal leading-snug">
-                Frequently asked questions about IELTS and BandUp.
+              <p className="mt-4 text-pretty text-muted-foreground md:text-lg">
+                Everything you need to know about BandUp and IELTS
               </p>
             </div>
 
-            <div className="space-y-0 border border-black divide-y divide-black bg-white rounded-2xl overflow-hidden">
-              {faqs.map((faq, index) => (
-                <details key={index} className="group">
-                  <summary className="flex justify-between items-center p-6 md:p-8 cursor-pointer font-bold text-sm md:text-base select-none hover:bg-neutral-50 transition-colors">
-                    {faq.question}
-                    <ChevronDown className="w-5 h-5 shrink-0 ml-4 group-open:rotate-180 transition-transform group-open:text-primary" />
-                  </summary>
-                  <div className="px-6 md:px-8 pb-6 md:pb-8 text-neutral-600 text-base leading-relaxed font-normal">
-                    {faq.answer}
-                  </div>
-                </details>
-              ))}
+            <div className="mt-12 rounded-2xl border border-border bg-card p-6 md:p-8">
+              <Accordion type="single" collapsible className="w-full">
+                {faqs.map((faq, i) => (
+                  <AccordionItem key={i} value={`item-${i}`}>
+                    <AccordionTrigger className="text-left text-base font-semibold text-foreground hover:no-underline">
+                      {faq.question}
+                    </AccordionTrigger>
+                    <AccordionContent className="leading-relaxed text-muted-foreground">
+                      {faq.answer}
+                    </AccordionContent>
+                  </AccordionItem>
+                ))}
+              </Accordion>
             </div>
 
-            <div className="mt-16 border-[4px] border-primary p-8 md:p-12 text-center bg-white rounded-2xl">
-              <h2 className="text-2xl md:text-3xl font-black mb-4 uppercase tracking-tight">
-                Ready to Start Practicing?
-              </h2>
-              <p className="text-neutral-600 mb-8 font-normal">
-                Take a free IELTS mock test and get your band score instantly.
+            <div className="mt-12 text-center">
+              <p className="text-muted-foreground mb-4">
+                Still have questions?
               </p>
               <Link
-                href="/dashboard/reading"
-                className="inline-block bg-primary text-white px-10 py-4 font-black uppercase text-sm tracking-[0.2em] hover:bg-primary/90 transition-all rounded-lg"
+                href="https://t.me/bandup_admin"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-block bg-accent text-white px-8 py-3 rounded-lg font-semibold hover:bg-accent/90 transition-colors"
               >
-                Start Free Mock Test
+                Ask us on Telegram
               </Link>
             </div>
           </div>
         </section>
+
+        <section className="py-20 md:py-28">
+          <div className="mx-auto max-w-[800px] px-6 text-center">
+            <h2 className="text-2xl font-bold tracking-tight text-foreground md:text-3xl">
+              Ready to start practicing?
+            </h2>
+            <p className="mt-4 text-muted-foreground md:text-lg">
+              Take a free IELTS mock test and get your band score instantly.
+            </p>
+            <Link
+              href="/dashboard/reading"
+              className="mt-8 inline-block bg-primary text-primary-foreground px-8 py-3 rounded-lg font-semibold hover:bg-primary/90 transition-colors"
+            >
+              Start Free Mock Test
+            </Link>
+          </div>
+        </section>
       </main>
 
-      <Footer />
+      <LandingFooter />
     </div>
   );
 }

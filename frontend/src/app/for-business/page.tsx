@@ -15,7 +15,7 @@ export default function ForBusinessPage() {
         <ForBusinessesHero />
         <BenefitsGrid />
         <PartnerTimeline />
-        <PartnerPricing />
+        {/* <PartnerPricing /> */}
 
         <section id="application-form" className="bg-background py-16 md:py-24">
           <div className="mx-auto max-w-[900px] px-6">

@@ -31,7 +31,7 @@ const bandBreakdown = [
 
 export function AiDemo() {
   return (
-    <section className="bg-secondary/50 py-20 md:py-28">
+    <section id="ai-feedback" className="bg-secondary/50 py-20 md:py-28">
       <div className="mx-auto max-w-[1200px] px-6">
         <div className="text-center">
           <p className="text-sm font-semibold uppercase tracking-wider text-accent">

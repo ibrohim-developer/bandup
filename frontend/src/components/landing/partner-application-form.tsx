@@ -36,7 +36,7 @@ const formSchema = z.object({
   studentBase: z.enum(['under-100', '100-500', '500-1000', '1000-5000', 'over-5000'], {
     error: 'Please select your student base'
   }),
-  description: z.string().min(10, 'Tell us more about your center (minimum 10 characters)'),
+  description: z.string().optional(),
   agreeTerms: z.boolean().refine(val => val === true, {
     message: 'You must agree to our terms and conditions'
   })
@@ -101,7 +101,7 @@ export function PartnerApplicationForm() {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-      <FieldGroup>
+      <FieldGroup className="gap-4">
         <h3 className="text-lg font-semibold text-foreground">Center Information</h3>
 
         <Field>
@@ -167,7 +167,7 @@ export function PartnerApplicationForm() {
         </Field>
       </FieldGroup>
 
-      <FieldGroup>
+      <FieldGroup className="gap-4">
         <h3 className="text-lg font-semibold text-foreground">Contact Information</h3>
 
         <Field>
@@ -209,11 +209,11 @@ export function PartnerApplicationForm() {
         </Field>
       </FieldGroup>
 
-      <FieldGroup>
+      <FieldGroup className="gap-4">
         <h3 className="text-lg font-semibold text-foreground">Additional Details</h3>
 
         <Field>
-          <FieldLabel>Tell us about your center *</FieldLabel>
+          <FieldLabel>Tell us about your center</FieldLabel>
           <FieldContent>
             <Textarea
               placeholder="Share details about your center, current solutions, and why you're interested in partnering with BandUp..."
@@ -229,7 +229,7 @@ export function PartnerApplicationForm() {
         </Field>
       </FieldGroup>
 
-      <FieldGroup>
+      <FieldGroup className="gap-4">
         <Field>
           <FieldLabel>
             <div className="flex items-start gap-3">
@@ -256,7 +256,7 @@ export function PartnerApplicationForm() {
       </Button>
 
       <p className="text-center text-xs text-muted-foreground">
-        We&apos;ll review your application and reach out within 24-48 hours.
+        We&apos;ll review your application and reach out within 24 hours.
       </p>
     </form>
   )

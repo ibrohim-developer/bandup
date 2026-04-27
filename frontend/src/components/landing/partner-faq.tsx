@@ -38,7 +38,7 @@ const faqs = [
   },
   {
     question: 'How quickly can we get started?',
-    answer: 'Most partners go live in 2-4 weeks from application approval. This includes demo & training (3-5 days), setup & onboarding (1 week), and final testing. We work around your schedule to make the launch convenient for your center.'
+    answer: 'Most partners go live in about 1 week from application approval. This includes demo & training, setup & onboarding, and final testing. We work around your schedule to make the launch convenient for your center.'
   }
 ]
 

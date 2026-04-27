@@ -22,8 +22,7 @@ export function Hero() {
 
           {/* Headline */}
           <h1 className="max-w-4xl text-balance text-4xl font-extrabold leading-tight tracking-tight text-foreground md:text-6xl md:leading-tight lg:text-7xl lg:leading-tight">
-            Band Up Your IELTS Score with{" "}
-            <span className="text-accent">AI-Powered</span> Practice
+            The <span className="text-accent">Free</span> Way to Ace Your IELTS
           </h1>
 
           {/* Subheadline */}

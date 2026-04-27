@@ -14,7 +14,7 @@ import {
   Moon,
   PlayCircle,
   Layers,
-  TrendingUp,
+  LayoutDashboard,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -42,7 +42,7 @@ const testItems = [
   {
     title: "Dashboard",
     href: "/dashboard/progress",
-    icon: TrendingUp,
+    icon: LayoutDashboard,
   },
   {
     title: "Reading",

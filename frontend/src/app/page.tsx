@@ -21,9 +21,41 @@ const courseSchema = {
   name: "Free IELTS Mock Exams & Practice Tests",
   description:
     "Prepare for IELTS with free mock exams and get instant AI-powered band score predictions. Take a free reading test with answers, free listening test with answers, and try free writing and speaking practice with instant band score evaluation.",
+  url: "https://bandup.uz",
+  inLanguage: "en",
+  educationalLevel: "Intermediate to Advanced",
+  educationalCredentialAwarded: "IELTS Band Score Prediction",
+  teaches: [
+    "IELTS Reading",
+    "IELTS Listening",
+    "IELTS Writing",
+    "IELTS Speaking",
+  ],
+  about: {
+    "@type": "Thing",
+    name: "IELTS (International English Language Testing System)",
+  },
+  audience: {
+    "@type": "EducationalAudience",
+    educationalRole: "student",
+  },
+  offers: {
+    "@type": "Offer",
+    price: "0",
+    priceCurrency: "USD",
+    category: "Free",
+    availability: "https://schema.org/InStock",
+  },
+  hasCourseInstance: {
+    "@type": "CourseInstance",
+    courseMode: "Online",
+    courseWorkload: "PT3H",
+    inLanguage: "en",
+  },
   provider: {
-    "@type": "Organization",
+    "@type": "EducationalOrganization",
     name: "BandUp",
+    url: "https://bandup.uz",
     sameAs: "https://bandup.uz",
   },
 };
@@ -57,7 +89,7 @@ export default function HomePage() {
         <HowItWorks />
         <AiDemo />
         <DashboardPreview />
-        <Testimonials />
+        {/* <Testimonials /> */}
         {/* <Pricing /> */}
         <FAQ />
         <FinalCTA />

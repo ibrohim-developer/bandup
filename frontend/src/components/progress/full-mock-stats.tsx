@@ -88,15 +88,24 @@ export function FullMockStats({ attempts }: { attempts: FullMockAttempt[] }) {
         <div className="p-5 border-b lg:border-b-0 lg:border-r border-border flex flex-col">
           <p className="text-xs font-bold text-muted-foreground mb-3">Avg score by section</p>
           <ResponsiveContainer width="100%" height={220}>
-            <RadarChart data={radarData} margin={{ top: 10, right: 30, bottom: 10, left: 30 }}>
+            <RadarChart data={radarData} margin={{ top: 10, right: 60, bottom: 10, left: 60 }}>
               <PolarGrid className="stroke-border" />
               <PolarAngleAxis
                 dataKey="skill"
-                tick={({ x, y, payload }) => (
-                  <text x={x} y={y} textAnchor="middle" dominantBaseline="central" fontSize={11} fontWeight={700} fill={SECTION_COLORS[payload.value] ?? "currentColor"}>
-                    {payload.value}
-                  </text>
-                )}
+                tick={({ x, y, cx, cy, payload }) => {
+                  const dx = x - cx;
+                  const dy = y - cy;
+                  const pad = 10;
+                  const len = Math.hypot(dx, dy) || 1;
+                  const ox = x + (dx / len) * pad;
+                  const oy = y + (dy / len) * pad;
+                  const anchor = Math.abs(dx) < 1 ? "middle" : dx > 0 ? "start" : "end";
+                  return (
+                    <text x={ox} y={oy} textAnchor={anchor} dominantBaseline="central" fontSize={11} fontWeight={700} fill={SECTION_COLORS[payload.value] ?? "currentColor"}>
+                      {payload.value}
+                    </text>
+                  );
+                }}
               />
               <Tooltip content={<CustomTooltip />} />
               <Radar dataKey="score" stroke="#8b5cf6" fill="#8b5cf6" fillOpacity={0.25} strokeWidth={2} />

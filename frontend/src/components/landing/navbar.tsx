@@ -5,14 +5,14 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Menu, ChevronUp } from "lucide-react"
+import { Menu } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const navLinks = [
-  { label: "Features", href: "#features" },
-  { label: "How It Works", href: "#how-it-works" },
-  // { label: "Pricing", href: "#pricing" },
-  { label: "FAQ", href: "#faq" },
+  { label: "Features", href: "/#features" },
+  { label: "How It Works", href: "/#how-it-works" },
+  // { label: "Pricing", href: "/#pricing" },
+  { label: "FAQ", href: "/#faq" },
   { label: "For Businesses", href: "/for-business" },
 ]
 
@@ -49,10 +49,7 @@ export function Navbar({ isLoggedIn = false, userEmail, userAvatar, userName }: 
       )}
     >
       <nav className="mx-auto flex max-w-[1200px] items-center justify-between px-6 py-4">
-        <Link href="/" className="flex items-center gap-1.5">
-          <div className="flex size-8 items-center justify-center rounded-lg bg-foreground">
-            <ChevronUp className="size-5 text-background" strokeWidth={3} />
-          </div>
+        <Link href="/" className="flex items-center">
           <span className="text-xl font-bold tracking-tight text-foreground">
             BandUp
           </span>
