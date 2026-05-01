@@ -104,7 +104,15 @@ export function ReportIssueDialog({
         <DialogHeader>
           <DialogTitle>Report an Issue</DialogTitle>
           <DialogDescription>
-            Found a bug or problem? Let us know and we will fix it.
+            Found a bug or problem? Let us know and we will fix it. Or reach us directly on Telegram:{" "}
+            <a
+              href="https://t.me/bandup_admin"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium text-foreground underline underline-offset-2"
+            >
+              @bandup_admin
+            </a>
           </DialogDescription>
         </DialogHeader>
 
