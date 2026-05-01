@@ -171,7 +171,7 @@ export function FullMockVirtualList({ initialTests, hasMore: initialHasMore, fil
                                     <p className="font-semibold">How to pay:</p>
                                     <ol className="space-y-1.5 text-muted-foreground list-decimal list-inside">
                                         <li>Transfer <span className="font-bold text-foreground">49,000 UZS</span> to our admin via your bank app</li>
-                                        <li>Send the payment screenshot to Telegram: <span className="font-bold text-foreground">@test</span></li>
+                                        <li>Send the payment screenshot to Telegram: <span className="font-bold text-foreground">@bandup_admin</span></li>
                                         <li>We will activate your Premium as soon as we verify your payment</li>
                                     </ol>
                                 </div>
@@ -181,7 +181,7 @@ export function FullMockVirtualList({ initialTests, hasMore: initialHasMore, fil
 
                     <div className="flex flex-col gap-2 pt-2">
                         <a
-                            href="https://t.me/test"
+                            href="https://t.me/bandup_admin"
                             target="_blank"
                             rel="noopener noreferrer"
                             className="w-full flex items-center justify-center gap-2 bg-[#229ED9] hover:bg-[#1a8abf] text-white font-bold py-2.5 rounded-lg transition-colors text-sm"
@@ -189,7 +189,7 @@ export function FullMockVirtualList({ initialTests, hasMore: initialHasMore, fil
                             <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
                                 <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12L8.32 13.617l-2.96-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.828.942z"/>
                             </svg>
-                            Contact @test on Telegram
+                            Contact @bandup_admin on Telegram
                         </a>
                         <Button variant="ghost" className="w-full" onClick={() => setUpgradeOpen(false)}>
                             Maybe later
