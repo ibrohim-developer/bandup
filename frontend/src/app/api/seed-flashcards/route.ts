@@ -1,9 +1,5 @@
 import { NextResponse } from "next/server";
 
-if (process.env.NODE_ENV !== "development") {
-  throw new Error("seed-flashcards route is only available in development");
-}
-
 const STRAPI_URL = process.env.NEXT_PUBLIC_STRAPI_URL ?? "http://localhost:1337";
 const TOKEN = process.env.STRAPI_API_TOKEN;
 
@@ -75,6 +71,9 @@ const flashcards = [
 ];
 
 export async function GET() {
+  if (process.env.NODE_ENV !== "development") {
+    return NextResponse.json({ error: "Not available" }, { status: 403 });
+  }
   if (!TOKEN) {
     return NextResponse.json({ error: "STRAPI_API_TOKEN not set" }, { status: 500 });
   }
