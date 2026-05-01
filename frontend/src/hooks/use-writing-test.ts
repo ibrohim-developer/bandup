@@ -2,8 +2,10 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { useTestStore } from "@/stores/test-store";
 import { TEST_CONFIG } from "@/lib/constants/test-config";
+
 
 export interface WritingTask {
   id: string;
@@ -158,7 +160,7 @@ export function useWritingTest(
     setContents((prev) => ({ ...prev, [taskId]: value }));
   }, []);
 
-  const handleSubmit = useCallback(async () => {
+const handleSubmit = useCallback(async () => {
     if (!testId) return;
     setIsSubmitting(true);
 
@@ -191,6 +193,8 @@ export function useWritingTest(
       router.push(`/dashboard/results/${result.attemptId}`);
     } catch {
       setIsSubmitting(false);
+      setShowSubmitDialog(false);
+      toast.error("Couldn't submit your test. Your work is saved — please try again.");
     }
   }, [testId, tasks, contents, totalTime, timeRemaining, router]);
 

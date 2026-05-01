@@ -1,4 +1,5 @@
 import type { Core } from '@strapi/strapi';
+import { startTelegramBot } from './telegram-bot';
 
 export default {
   register({ strapi }: { strapi: Core.Strapi }) {
@@ -88,6 +89,9 @@ export default {
     await setPermissions(authenticatedRole.id, authenticatedPermissions);
 
     console.log('✅ Permissions configured');
+
+    // Start Telegram bot (long-polling)
+    startTelegramBot(strapi);
 
     // Seed reading test data (only if no tests exist)
     const existingTests = await strapi.query('api::test.test').count();

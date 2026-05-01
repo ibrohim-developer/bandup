@@ -27,7 +27,7 @@
     },
     "status": {
       "type": "enumeration",
-      "enum": ["in_progress", "completed", "abandoned", "evaluating"],
+      "enum": ["in_progress", "completed", "abandoned", "evaluating", "failed"],
       "default": "in_progress"
     },
     "started_at": {

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { cache } from "react";
 import { findOne } from "@/lib/strapi/api";
+import { TestContextMenu } from "@/components/test/common/test-context-menu";
 
 const getTest = cache(async (testId: string) => {
   return findOne("tests", testId);
@@ -36,5 +37,10 @@ export default function ReadingTestLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return <div style={{ fontFamily: 'Arial, sans-serif' }}>{children}</div>;
+  return (
+    <div style={{ fontFamily: 'Arial, sans-serif' }}>
+      {children}
+      <TestContextMenu module="reading" />
+    </div>
+  );
 }

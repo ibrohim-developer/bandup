@@ -19,6 +19,25 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Recording too short or silent" }, { status: 400 });
   }
 
+  const MAX_AUDIO_BYTES = 25 * 1024 * 1024; // 25 MB
+  if (file.size > MAX_AUDIO_BYTES) {
+    return NextResponse.json({ error: "Recording too large (max 25 MB)" }, { status: 400 });
+  }
+
+  const ALLOWED_AUDIO_MIMES = new Set([
+    "audio/webm",
+    "audio/ogg",
+    "audio/mpeg",
+    "audio/mp3",
+    "audio/mp4",
+    "audio/wav",
+    "audio/x-wav",
+    "audio/wave",
+  ]);
+  if (!file.type || !ALLOWED_AUDIO_MIMES.has(file.type)) {
+    return NextResponse.json({ error: "Unsupported audio format" }, { status: 400 });
+  }
+
   // Forward the upload to Strapi's upload API
   const strapiForm = new FormData();
   strapiForm.append("files", file, file.name || "recording.webm");

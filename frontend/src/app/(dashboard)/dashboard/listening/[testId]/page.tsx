@@ -384,7 +384,7 @@ function ListeningTestContent({ testId }: { testId: string }) {
               <Maximize2 className="h-6 w-6" />
             )}
           </button>
-          <TestOptionsMenu {...testOptions} />
+          <TestOptionsMenu {...testOptions} module="listening" />
         </div>
       </header>
 

@@ -1,0 +1,45 @@
+{
+  "kind": "collectionType",
+  "collectionName": "issue_reports",
+  "info": {
+    "singularName": "issue-report",
+    "pluralName": "issue-reports",
+    "displayName": "Issue Report"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "type": {
+      "type": "enumeration",
+      "enum": ["ui_bug", "audio_issue", "question_error", "content_mistake", "other"],
+      "required": true
+    },
+    "description": {
+      "type": "text",
+      "required": true
+    },
+    "page_url": {
+      "type": "string"
+    },
+    "module": {
+      "type": "string"
+    },
+    "status": {
+      "type": "enumeration",
+      "enum": ["open", "in_review", "resolved"],
+      "default": "open"
+    },
+    "image": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
+      "allowedTypes": ["images"]
+    },
+    "user": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user"
+    }
+  }
+}

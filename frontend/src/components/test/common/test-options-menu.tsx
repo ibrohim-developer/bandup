@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import {
   Menu,
   X,
@@ -8,8 +9,10 @@ import {
   Check,
   Contrast,
   Type,
+  Flag,
 } from "lucide-react";
 import type { ContrastMode, TextSizeMode } from "@/hooks/use-test-options";
+import { ReportIssueDialog } from "@/components/report-issue-dialog";
 
 interface TestOptionsMenuProps {
   optionsOpen: boolean;
@@ -23,6 +26,7 @@ interface TestOptionsMenuProps {
   menuButtonRef: React.RefObject<HTMLButtonElement | null>;
   toggleOptions: () => void;
   closeOptions: () => void;
+  module?: string;
 }
 
 export function TestOptionsMenu({
@@ -37,7 +41,10 @@ export function TestOptionsMenu({
   menuButtonRef,
   toggleOptions,
   closeOptions,
+  module,
 }: TestOptionsMenuProps) {
+  const [reportOpen, setReportOpen] = useState(false);
+
   return (
     <div className="relative">
       <button
@@ -84,6 +91,15 @@ export function TestOptionsMenu({
                     Text size
                   </span>
                   <ChevronRight className="h-4 w-4 text-gray-400" />
+                </button>
+                <button
+                  onClick={() => { closeOptions(); setReportOpen(true); }}
+                  className="w-full flex items-center gap-3 px-3 md:px-4 py-3 hover:bg-gray-50 transition-colors border-t border-gray-100"
+                >
+                  <Flag className="h-5 w-5 text-gray-700" />
+                  <span className="text-gray-900 flex-1 text-left">
+                    Report an issue
+                  </span>
                 </button>
               </div>
             </>
@@ -172,6 +188,12 @@ export function TestOptionsMenu({
           )}
         </div>
       )}
+
+      <ReportIssueDialog
+        open={reportOpen}
+        onOpenChange={setReportOpen}
+        module={module}
+      />
     </div>
   );
 }

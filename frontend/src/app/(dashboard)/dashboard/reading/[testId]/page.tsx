@@ -433,7 +433,7 @@ function ReadingTestContent({ testId }: { testId: string }) {
               <Maximize2 className="h-6 w-6" />
             )}
           </button>
-          <TestOptionsMenu {...testOptions} />
+          <TestOptionsMenu {...testOptions} module="reading" />
           <button
             onClick={() => setNotesDrawerOpen(true)}
             className="hidden md:block p-2 transition-opacity opacity-70 hover:opacity-100 relative"

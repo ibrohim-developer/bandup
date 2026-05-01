@@ -27,16 +27,28 @@ export function useNavigationProtection({
 
     window.addEventListener("beforeunload", handleBeforeUnload);
 
-    // Push a sentinel entry so the first back press lands on it instead of
-    // navigating away. When popstate fires we re-push so the user stays put,
-    // then show a native confirm. On confirm, run the consumer's nav callback.
+    // Push a sentinel entry so the first browser-back press lands on it
+    // instead of leaving the page. When popstate fires, the browser has
+    // already popped past the sentinel and we are back on the real page —
+    // from there we either re-arm the trap (cancel) or step back once more
+    // to actually leave (confirm).
     const sentinelState = { __examGuard: true, ts: Date.now() };
     window.history.pushState(sentinelState, "");
 
     const handlePopState = () => {
-      window.history.pushState(sentinelState, "");
       if (window.confirm(confirmMessage)) {
-        onBackAttempt?.();
+        // Remove listeners before navigating so they don't re-trigger.
+        window.removeEventListener("beforeunload", handleBeforeUnload);
+        window.removeEventListener("popstate", handlePopState);
+        if (onBackAttempt) {
+          onBackAttempt();
+        } else {
+          // We're already one step back (on the real page). One more goes past it.
+          window.history.back();
+        }
+      } else {
+        // Re-arm: push the sentinel again so the next back press is also caught.
+        window.history.pushState(sentinelState, "");
       }
     };
 

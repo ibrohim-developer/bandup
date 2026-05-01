@@ -1,41 +1,78 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
-import { Loader2, Sparkles } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { AlertTriangle, Loader2, Sparkles } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export function EvaluatingBanner({ attemptId }: { attemptId: string }) {
-  const router = useRouter();
-  const didTrigger = useRef(false);
+  const [failed, setFailed] = useState(false);
+  const [retryToken, setRetryToken] = useState(0);
+
+  // Prevents the request from firing twice in dev (React Strict Mode invokes
+  // effects twice on mount). One ref per attemptId — survives Strict Mode's
+  // simulated unmount/remount because refs aren't reset.
+  const inFlightRef = useRef(false);
 
   useEffect(() => {
-    if (didTrigger.current) return;
-    didTrigger.current = true;
+    if (inFlightRef.current) return;
+    inFlightRef.current = true;
 
-    // Fire evaluation in background — don't await, don't block
-    fetch("/api/writing/evaluate", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ attemptId }),
-    }).catch(() => {});
+    let cancelled = false;
 
-    // Poll status every 4 seconds until completed
-    const interval = setInterval(async () => {
+    (async () => {
       try {
-        const res = await fetch(`/api/writing/status?attemptId=${attemptId}`);
-        if (!res.ok) return;
-        const data = await res.json();
-        if (data.status === "completed") {
-          clearInterval(interval);
-          router.refresh();
+        const res = await fetch("/api/writing/evaluate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ attemptId }),
+        });
+        if (cancelled) return;
+
+        if (res.ok) {
+          // Hard reload: router.refresh() doesn't reliably re-render the same
+          // URL in App Router, and we need the server component to re-fetch the
+          // attempt's new status. A reload guarantees a fresh server render.
+          window.location.reload();
+        } else {
+          setFailed(true);
+          inFlightRef.current = false;
         }
       } catch {
-        // network hiccup — keep polling
+        if (cancelled) return;
+        setFailed(true);
+        inFlightRef.current = false;
       }
-    }, 4000);
+    })();
 
-    return () => clearInterval(interval);
-  }, [attemptId, router]);
+    return () => {
+      cancelled = true;
+    };
+  }, [attemptId, retryToken]);
+
+  if (failed) {
+    return (
+      <div className="min-h-screen flex items-center justify-center px-4">
+        <div className="flex flex-col items-center gap-6 text-center max-w-md">
+          <AlertTriangle className="h-12 w-12 text-amber-500" />
+          <div>
+            <h2 className="text-2xl font-bold">Evaluation failed</h2>
+            <p className="text-muted-foreground mt-2">
+              We couldn&apos;t score one or more of your responses. Your writing
+              is saved — please retry.
+            </p>
+          </div>
+          <Button
+            onClick={() => {
+              setFailed(false);
+              setRetryToken((n) => n + 1);
+            }}
+          >
+            Retry evaluation
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center">
@@ -45,9 +82,7 @@ export function EvaluatingBanner({ attemptId }: { attemptId: string }) {
           <Loader2 className="h-6 w-6 text-purple-500 animate-spin absolute -bottom-1 -right-1" />
         </div>
         <div>
-          <h2 className="text-2xl font-bold">
-            Evaluating your writing...
-          </h2>
+          <h2 className="text-2xl font-bold">Evaluating your writing...</h2>
           <p className="text-muted-foreground mt-2">
             This usually takes 15-30 seconds. Please wait.
           </p>

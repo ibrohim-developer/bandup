@@ -92,7 +92,7 @@ export function FullMockStats({ attempts }: { attempts: FullMockAttempt[] }) {
               <PolarGrid className="stroke-border" />
               <PolarAngleAxis
                 dataKey="skill"
-                tick={({ x, y, cx, cy, payload }) => {
+                tick={({ x, y, cx, cy, payload }: { x: number; y: number; cx: number; cy: number; payload: { value: string } }) => {
                   const dx = x - cx;
                   const dy = y - cy;
                   const pad = 10;

@@ -37,8 +37,13 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
   }
 
-  if (attempt.status !== "evaluating") {
+  if (attempt.status !== "evaluating" && attempt.status !== "failed") {
     return NextResponse.json({ error: "Already evaluated" }, { status: 400 });
+  }
+
+  // Flip a previously-failed attempt back to evaluating so the UI shows the spinner during retry.
+  if (attempt.status === "failed") {
+    await update("test-attempts", attemptId, { status: "evaluating" });
   }
 
   // Fetch writing submissions for this attempt
@@ -105,7 +110,16 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  // Update attempt to completed
+  // If any Gemini call failed, mark the attempt as failed so the UI can offer a clean retry
+  // instead of saving a partial result (or a fake band 0 when all failed).
+  if (scoredResults.length < submissions.length) {
+    await update("test-attempts", attemptId, { status: "failed" });
+    return NextResponse.json(
+      { error: "Evaluation failed for one or more submissions" },
+      { status: 502 }
+    );
+  }
+
   await update("test-attempts", attemptId, {
     status: "completed",
     band_score: bandScore,

@@ -240,7 +240,9 @@ function WritingResultsContent({ attempt, testTitle, tasks, submissions }: {
   tasks: any[];
   submissions: any[];
 }) {
-  if (attempt.status === "evaluating") return <EvaluatingBanner attemptId={attempt.id} />;
+  if (attempt.status === "evaluating" || attempt.status === "failed") {
+    return <EvaluatingBanner attemptId={attempt.id} />;
+  }
 
   const bandScore = attempt.band_score || 0;
   const formatTime = (seconds: number) => {

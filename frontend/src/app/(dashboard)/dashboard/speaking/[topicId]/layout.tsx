@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { cache } from "react";
 import { findOne } from "@/lib/strapi/api";
+import { ReportIssueButton } from "@/components/report-issue-button";
+import { TestContextMenu } from "@/components/test/common/test-context-menu";
 
 const getTopic = cache(async (topicId: string) => {
   return findOne("speaking-topics", topicId);
@@ -36,5 +38,11 @@ export default function SpeakingTestLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return children;
+  return (
+    <>
+      {children}
+      <ReportIssueButton module="speaking" />
+      <TestContextMenu module="speaking" />
+    </>
+  );
 }

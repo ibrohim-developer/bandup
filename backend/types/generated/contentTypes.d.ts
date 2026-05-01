@@ -585,6 +585,47 @@ export interface ApiFullMockTestAttemptFullMockTestAttempt
   };
 }
 
+export interface ApiIssueReportIssueReport extends Struct.CollectionTypeSchema {
+  collectionName: 'issue_reports';
+  info: {
+    displayName: 'Issue Report';
+    pluralName: 'issue-reports';
+    singularName: 'issue-report';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    description: Schema.Attribute.Text & Schema.Attribute.Required;
+    image: Schema.Attribute.Media<'images'>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::issue-report.issue-report'
+    > &
+      Schema.Attribute.Private;
+    module: Schema.Attribute.String;
+    page_url: Schema.Attribute.String;
+    publishedAt: Schema.Attribute.DateTime;
+    status: Schema.Attribute.Enumeration<['open', 'in_review', 'resolved']> &
+      Schema.Attribute.DefaultTo<'open'>;
+    type: Schema.Attribute.Enumeration<
+      ['ui_bug', 'audio_issue', 'question_error', 'content_mistake', 'other']
+    > &
+      Schema.Attribute.Required;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    user: Schema.Attribute.Relation<
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
+  };
+}
+
 export interface ApiListeningSectionListeningSection
   extends Struct.CollectionTypeSchema {
   collectionName: 'listening_sections';
@@ -944,7 +985,7 @@ export interface ApiTestAttemptTestAttempt extends Struct.CollectionTypeSchema {
     >;
     started_at: Schema.Attribute.DateTime;
     status: Schema.Attribute.Enumeration<
-      ['in_progress', 'completed', 'abandoned', 'evaluating']
+      ['in_progress', 'completed', 'abandoned', 'evaluating', 'failed']
     > &
       Schema.Attribute.DefaultTo<'in_progress'>;
     test: Schema.Attribute.Relation<'manyToOne', 'api::test.test'>;
@@ -1769,6 +1810,7 @@ declare module '@strapi/strapi' {
       'api::feature-notification.feature-notification': ApiFeatureNotificationFeatureNotification;
       'api::flashcard.flashcard': ApiFlashcardFlashcard;
       'api::full-mock-test-attempt.full-mock-test-attempt': ApiFullMockTestAttemptFullMockTestAttempt;
+      'api::issue-report.issue-report': ApiIssueReportIssueReport;
       'api::listening-section.listening-section': ApiListeningSectionListeningSection;
       'api::question-group.question-group': ApiQuestionGroupQuestionGroup;
       'api::question.question': ApiQuestionQuestion;

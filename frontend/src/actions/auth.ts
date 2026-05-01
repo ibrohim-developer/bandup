@@ -4,9 +4,11 @@ import { redirect } from 'next/navigation'
 import { setToken, clearToken, getCurrentUser, STRAPI_URL } from '@/lib/strapi/server'
 
 export async function signUp(formData: FormData) {
-  const email = formData.get('email') as string
   const password = formData.get('password') as string
   const fullName = formData.get('fullName') as string
+  const email = formData.get('email') as string
+
+  if (!email) return { error: 'Email is required' }
 
   try {
     const res = await fetch(`${STRAPI_URL}/api/auth/local/register`, {
@@ -16,7 +18,6 @@ export async function signUp(formData: FormData) {
         username: email.split('@')[0] + '_' + Date.now(),
         email,
         password,
-        full_name: fullName,
       }),
     })
 
@@ -28,16 +29,18 @@ export async function signUp(formData: FormData) {
 
     await setToken(data.jwt)
 
-    // Strapi register only saves username/email/password by default,
-    // so update the user's full_name via admin API token.
-    if (fullName && data.user?.id) {
+    // Strapi register only saves username/email/password by default —
+    // update full_name via admin token.
+    if (data.user?.id) {
       await fetch(`${STRAPI_URL}/api/users/${data.user.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${process.env.STRAPI_API_TOKEN}`,
         },
-        body: JSON.stringify({ full_name: fullName }),
+        body: JSON.stringify({
+          full_name: fullName,
+        }),
       })
     }
   } catch {
@@ -48,15 +51,15 @@ export async function signUp(formData: FormData) {
 }
 
 export async function signIn(formData: FormData) {
-  const email = formData.get('email') as string
   const password = formData.get('password') as string
   const redirectTo = formData.get('redirect') as string | null
+  const identifier = formData.get('email') as string
 
   try {
     const res = await fetch(`${STRAPI_URL}/api/auth/local`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ identifier: email, password }),
+      body: JSON.stringify({ identifier, password }),
     })
 
     const data = await res.json()
