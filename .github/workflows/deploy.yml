@@ -1,0 +1,52 @@
+name: Deploy to Droplet
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.DROPLET_HOST }}
+          username: ${{ secrets.DROPLET_USER }}
+          key: ${{ secrets.DROPLET_SSH_KEY }}
+          script: |
+            set -e
+            cd /var/www/bandup
+
+            git fetch origin main
+            CHANGED=$(git diff --name-only HEAD origin/main)
+            git pull origin main
+
+            BACKEND_CHANGED=false
+            FRONTEND_CHANGED=false
+
+            if echo "$CHANGED" | grep -q "^backend/"; then
+              BACKEND_CHANGED=true
+            fi
+            if echo "$CHANGED" | grep -q "^frontend/"; then
+              FRONTEND_CHANGED=true
+            fi
+
+            if [ "$BACKEND_CHANGED" = true ]; then
+              echo "🚀 Deploying backend..."
+              cd /var/www/bandup/backend
+              pnpm install --frozen-lockfile
+              pnpm run build
+              pm2 restart bandup-backend
+            fi
+
+            if [ "$FRONTEND_CHANGED" = true ]; then
+              echo "🚀 Deploying frontend..."
+              cd /var/www/bandup/frontend
+              pnpm install --frozen-lockfile
+              pnpm run build
+              pm2 restart bandup-frontend
+            fi
+
+            echo "✅ Deploy complete"
