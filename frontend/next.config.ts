@@ -14,6 +14,10 @@ const nextConfig: NextConfig = {
         port: "1337",
         pathname: "/uploads/**",
       },
+      {
+        protocol: "https",
+        hostname: "bandup-media.fra1.cdn.digitaloceanspaces.com",
+      },
     ],
     formats: ["image/avif", "image/webp"],
   },

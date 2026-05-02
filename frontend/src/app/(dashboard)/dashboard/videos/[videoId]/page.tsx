@@ -65,47 +65,35 @@ export default async function VideoLessonPage({
         Video Lessons
       </Link>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left: video + info */}
-        <div className="lg:col-span-2 space-y-4">
-          <VideoPlayer youtubeId={video.youtube_id} />
+      <div className="space-y-6">
+        <VideoPlayer youtubeId={video.youtube_id} />
 
-          <div className="space-y-2">
-            <div className="flex items-center gap-2 flex-wrap">
-              <span
-                className={cn(
-                  "text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full",
-                  difficultyColor[video.difficulty as keyof typeof difficultyColor] ??
-                    difficultyColor.intermediate,
-                )}
-              >
-                {video.difficulty}
-              </span>
-              <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
-                {video.category}
-              </span>
-              {video.channel_name && (
-                <span className="text-xs text-muted-foreground font-bold ml-1">
-                  {video.channel_name}
-                </span>
+        <div className="space-y-2">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span
+              className={cn(
+                "text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full",
+                difficultyColor[video.difficulty as keyof typeof difficultyColor] ??
+                  difficultyColor.intermediate,
               )}
-            </div>
-
-            <h1 className="text-xl md:text-2xl font-black leading-snug">
-              {video.title}
-            </h1>
-
-            {video.description && (
-              <div className="text-sm text-muted-foreground space-y-2">
-                {video.description.split("\n\n").map((para: string, i: number) => (
-                  <p key={i}>{para}</p>
-                ))}
-              </div>
+            >
+              {video.difficulty}
+            </span>
+            <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
+              {video.category}
+            </span>
+            {video.channel_name && (
+              <span className="text-xs text-muted-foreground font-bold ml-1">
+                {video.channel_name}
+              </span>
             )}
           </div>
+
+          <h1 className="text-xl md:text-2xl font-black leading-snug">
+            {video.title}
+          </h1>
         </div>
 
-        {/* Right: quiz */}
         <div className="bg-card border border-border rounded-xl p-5">
           <VideoQuiz videoId={videoId} initialQuestions={quizQuestions} />
         </div>
