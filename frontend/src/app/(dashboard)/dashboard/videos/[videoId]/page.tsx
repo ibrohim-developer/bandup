@@ -96,7 +96,11 @@ export default async function VideoLessonPage({
             </h1>
 
             {video.description && (
-              <p className="text-sm text-muted-foreground">{video.description}</p>
+              <div className="text-sm text-muted-foreground space-y-2">
+                {video.description.split("\n\n").map((para: string, i: number) => (
+                  <p key={i}>{para}</p>
+                ))}
+              </div>
             )}
           </div>
         </div>

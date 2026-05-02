@@ -70,8 +70,14 @@ const flashcards = [
   { word: "Inverted conditionals", definition: "Formal conditionals where 'if' is omitted and the auxiliary is fronted.", example_sentence: "Should you require further assistance, please contact us.", category: "grammar", difficulty: "c2" },
 ];
 
-export async function GET() {
-  if (process.env.NODE_ENV !== "development") {
+export async function GET(request: Request) {
+  const seedSecret = process.env.SEED_SECRET;
+  const headerSecret = request.headers.get("x-seed-secret");
+  const isAllowed =
+    process.env.NODE_ENV === "development" ||
+    (seedSecret && headerSecret === seedSecret);
+
+  if (!isAllowed) {
     return NextResponse.json({ error: "Not available" }, { status: 403 });
   }
   if (!TOKEN) {

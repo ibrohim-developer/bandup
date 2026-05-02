@@ -340,8 +340,9 @@ function WritingResultsContent({ attempt, testTitle, tasks, submissions }: {
             <CheckCircle className="h-8 w-8 text-primary" />
             <span className="text-lg font-semibold text-muted-foreground">Your Overall Score</span>
           </div>
-          <div className="mb-4 text-8xl md:text-9xl font-bold text-primary">{bandScore}</div>
-          <div className="mb-8 text-xl font-medium text-muted-foreground">/ 9.0 IELTS Band</div>
+          <div className="mb-2 text-8xl md:text-9xl font-bold text-primary">{bandScore}</div>
+          <div className="mb-2 text-xl font-medium text-muted-foreground">/ 9.0 IELTS Band</div>
+          <div className="mb-8 text-sm text-muted-foreground/60">±0.5 band (AI scoring accuracy)</div>
           {attempt.time_spent_seconds && (
             <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-6 py-2 text-sm font-medium text-primary">
               <Clock className="h-4 w-4" />
