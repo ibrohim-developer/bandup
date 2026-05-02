@@ -2,7 +2,6 @@ import Link from '@/components/no-prefetch-link'
 import { getCurrentUser } from '@/lib/strapi/server'
 import { find } from '@/lib/strapi/api'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import { History, Headphones, BookOpen, PenTool, Mic, ExternalLink } from 'lucide-react'
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -89,45 +88,51 @@ export default async function HistoryPage() {
         </div>
       ) : (
         <div className="rounded-2xl border overflow-hidden">
-          <div className="grid grid-cols-[auto_1fr_auto_auto] gap-4 px-5 py-3 bg-muted/40 text-xs font-semibold uppercase text-muted-foreground tracking-wide">
-            <span />
-            <span>Module</span>
-            <span className="text-right">Score</span>
-            <span />
-          </div>
-          <div className="divide-y">
-            {attempts.map((attempt) => {
-              const cfg = MODULE_CONFIG[attempt.module_type]
-              if (!cfg) return null
-              const score = attempt.band_score ?? attempt.raw_score
-              return (
-                <div
-                  key={attempt.documentId}
-                  className="grid grid-cols-[auto_1fr_auto_auto] items-center gap-4 px-5 py-4 hover:bg-muted/30 transition-colors"
-                >
-                  <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${cfg.bg}`}>
-                    {cfg.icon}
-                  </div>
-                  <div>
-                    <p className="font-medium capitalize text-sm">{attempt.module_type}</p>
-                    <p className="text-xs text-muted-foreground">{formatDate(attempt.createdAt)}</p>
-                  </div>
-                  <div className="text-right">
-                    {score != null ? (
-                      <span className={`text-xl font-bold ${cfg.text}`}>{score}</span>
-                    ) : (
-                      <Badge variant="secondary">—</Badge>
-                    )}
-                  </div>
-                  <Link href={cfg.resultHref(attempt.documentId)}>
-                    <Button variant="ghost" size="icon">
-                      <ExternalLink className="h-4 w-4" />
-                    </Button>
-                  </Link>
-                </div>
-              )
-            })}
-          </div>
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="bg-muted/40 text-xs font-semibold uppercase text-muted-foreground tracking-wide">
+                <th className="text-left px-5 py-3">Module</th>
+                <th className="text-right px-5 py-3">Score</th>
+                <th className="px-5 py-3 w-10" />
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border">
+              {attempts.map((attempt) => {
+                const cfg = MODULE_CONFIG[attempt.module_type]
+                if (!cfg) return null
+                const score = attempt.band_score ?? attempt.raw_score
+                return (
+                  <tr key={attempt.documentId} className="hover:bg-muted/30 transition-colors">
+                    <td className="px-5 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${cfg.bg}`}>
+                          {cfg.icon}
+                        </div>
+                        <div>
+                          <p className="font-medium capitalize">{attempt.module_type}</p>
+                          <p className="text-xs text-muted-foreground mt-0.5">{formatDate(attempt.createdAt)}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-5 py-4 text-right">
+                      {score != null ? (
+                        <span className={`text-xl font-bold ${cfg.text}`}>{score}</span>
+                      ) : (
+                        <span className="text-muted-foreground">—</span>
+                      )}
+                    </td>
+                    <td className="px-5 py-4 text-right">
+                      <Link href={cfg.resultHref(attempt.documentId)}>
+                        <Button variant="ghost" size="icon">
+                          <ExternalLink className="h-4 w-4" />
+                        </Button>
+                      </Link>
+                    </td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
         </div>
       )}
     </div>

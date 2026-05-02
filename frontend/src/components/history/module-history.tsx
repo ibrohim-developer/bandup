@@ -2,7 +2,6 @@ import Link from '@/components/no-prefetch-link'
 import { getCurrentUser } from '@/lib/strapi/server'
 import { find } from '@/lib/strapi/api'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import { ExternalLink } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
@@ -79,44 +78,47 @@ export async function ModuleHistory({ module }: { module: ModuleConfig }) {
         </div>
       ) : (
         <div className="rounded-2xl border overflow-hidden">
-          <div className="grid grid-cols-[1fr_auto_auto_auto] gap-4 px-5 py-3 bg-muted/40 text-xs font-semibold uppercase text-muted-foreground tracking-wide">
-            <span>Test</span>
-            <span className="text-right">Duration</span>
-            <span className="text-right">Score</span>
-            <span />
-          </div>
-          <div className="divide-y">
-            {attempts.map((attempt) => {
-              const score = attempt.band_score ?? attempt.raw_score
-              const title = attempt.test?.title ?? `${label} Test`
-              return (
-                <div
-                  key={attempt.documentId}
-                  className="grid grid-cols-[1fr_auto_auto_auto] items-center gap-4 px-5 py-4 hover:bg-muted/30 transition-colors"
-                >
-                  <div>
-                    <p className="text-sm font-medium">{title}</p>
-                    <p className="text-xs text-muted-foreground">{formatDate(attempt.createdAt)}</p>
-                  </div>
-                  <span className="text-sm text-muted-foreground text-right">
-                    {attempt.time_spent_seconds ? formatTime(attempt.time_spent_seconds) : '—'}
-                  </span>
-                  <div className="text-right">
-                    {score != null ? (
-                      <span className={`text-xl font-bold ${textLight} ${textDark}`}>{score}</span>
-                    ) : (
-                      <Badge variant="secondary">—</Badge>
-                    )}
-                  </div>
-                  <Link href={module.resultHref(attempt.documentId)}>
-                    <Button variant="ghost" size="icon">
-                      <ExternalLink className="h-4 w-4" />
-                    </Button>
-                  </Link>
-                </div>
-              )
-            })}
-          </div>
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="bg-muted/40 text-xs font-semibold uppercase text-muted-foreground tracking-wide">
+                <th className="text-left px-5 py-3">Test</th>
+                <th className="text-right px-5 py-3">Duration</th>
+                <th className="text-right px-5 py-3">Score</th>
+                <th className="px-5 py-3 w-10" />
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border">
+              {attempts.map((attempt) => {
+                const score = attempt.band_score ?? attempt.raw_score
+                const title = attempt.test?.title ?? `${label} Test`
+                return (
+                  <tr key={attempt.documentId} className="hover:bg-muted/30 transition-colors">
+                    <td className="px-5 py-4">
+                      <p className="font-medium">{title}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">{formatDate(attempt.createdAt)}</p>
+                    </td>
+                    <td className="px-5 py-4 text-right text-muted-foreground whitespace-nowrap">
+                      {attempt.time_spent_seconds ? formatTime(attempt.time_spent_seconds) : '—'}
+                    </td>
+                    <td className="px-5 py-4 text-right">
+                      {score != null ? (
+                        <span className={`text-xl font-bold ${textLight} ${textDark}`}>{score}</span>
+                      ) : (
+                        <span className="text-muted-foreground">—</span>
+                      )}
+                    </td>
+                    <td className="px-5 py-4 text-right">
+                      <Link href={module.resultHref(attempt.documentId)}>
+                        <Button variant="ghost" size="icon">
+                          <ExternalLink className="h-4 w-4" />
+                        </Button>
+                      </Link>
+                    </td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
         </div>
       )}
     </div>
