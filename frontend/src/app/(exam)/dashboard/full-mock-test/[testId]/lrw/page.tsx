@@ -89,6 +89,7 @@ function LRWExamContent({ testId }: { testId: string }) {
     const router = useRouter();
     const { isFullscreen, toggleFullscreen } = useFullscreen();
     const { resumeTimer, resetTest } = useTestStore();
+    const liveTimeRemaining = useTestStore((s) => s.timeRemaining);
 
     const abandonAndLeave = () => {
         resetTest();
@@ -254,6 +255,24 @@ function LRWExamContent({ testId }: { testId: string }) {
                     >
                         Back to Test
                     </Button>
+                </div>
+            </div>
+        );
+    }
+
+    // Submitting screen — covers the gap between "Submit" and the navigation that follows.
+    // Without this the user sees the test detail page with no acknowledgement that LRW saved.
+    if (isSubmitting) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-muted/30 px-4">
+                <div className="flex flex-col items-center gap-5 text-center max-w-md">
+                    <Loader2 className="h-10 w-10 animate-spin text-primary" />
+                    <div className="space-y-1.5">
+                        <p className="text-lg md:text-xl font-bold">Saving your test…</p>
+                        <p className="text-sm md:text-base text-muted-foreground">
+                            Submitting Listening, Reading and Writing. AI scoring for Writing will run in the background — you can move on to Speaking next.
+                        </p>
+                    </div>
                 </div>
             </div>
         );
@@ -466,7 +485,7 @@ function LRWExamContent({ testId }: { testId: string }) {
                 <div
                     className="h-full bg-red-500 transition-all duration-1000 ease-linear"
                     style={{
-                        width: `${(useTestStore.getState().timeRemaining / sectionTimers[activeModule]) * 100}%`,
+                        width: `${(liveTimeRemaining / sectionTimers[activeModule]) * 100}%`,
                     }}
                 />
             </div>

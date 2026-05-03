@@ -42,11 +42,11 @@ export function VideoLessonCard({ video }: { video: VideoLesson }) {
       </div>
 
       {/* Info */}
-      <div className="flex flex-col gap-2 p-4 flex-1">
-        <div className="flex items-center gap-2 flex-wrap">
+      <div className="flex flex-col gap-1.5 p-3 flex-1">
+        <div className="flex items-center gap-1.5 flex-wrap">
           <span
             className={cn(
-              "text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full",
+              "text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-full",
               difficultyColor[video.difficulty],
             )}
           >
@@ -54,7 +54,7 @@ export function VideoLessonCard({ video }: { video: VideoLesson }) {
           </span>
           <span
             className={cn(
-              "text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full",
+              "text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-full",
               categoryColor[video.category],
             )}
           >
@@ -62,22 +62,22 @@ export function VideoLessonCard({ video }: { video: VideoLesson }) {
           </span>
         </div>
 
-        <h3 className="text-sm font-black leading-snug line-clamp-2 group-hover:text-primary transition-colors">
+        <h3 className="text-base font-black leading-snug line-clamp-2 group-hover:text-primary transition-colors">
           {video.title}
         </h3>
 
         {video.description && (
-          <p className="text-xs text-muted-foreground line-clamp-2">
+          <p className="text-[11px] text-muted-foreground line-clamp-2 leading-snug">
             {video.description}
           </p>
         )}
 
-        <div className="flex items-center gap-3 mt-auto pt-2 text-xs text-muted-foreground font-bold">
-          {video.channel_name && <span>{video.channel_name}</span>}
+        <div className="flex items-center gap-2 mt-auto pt-1 text-[10px] text-muted-foreground font-bold">
+          {video.channel_name && <span className="truncate">{video.channel_name}</span>}
           {video.duration_minutes > 0 && (
-            <span className="flex items-center gap-1 ml-auto">
-              <Clock className="h-3 w-3" />
-              {video.duration_minutes} min
+            <span className="flex items-center gap-1 ml-auto whitespace-nowrap">
+              <Clock className="h-2.5 w-2.5" />
+              {video.duration_minutes}m
             </span>
           )}
         </div>

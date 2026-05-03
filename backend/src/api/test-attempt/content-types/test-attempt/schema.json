@@ -45,6 +45,9 @@
     "band_score": {
       "type": "decimal"
     },
+    "evaluation_started_at": {
+      "type": "datetime"
+    },
     "user_answers": {
       "type": "relation",
       "relation": "oneToMany",

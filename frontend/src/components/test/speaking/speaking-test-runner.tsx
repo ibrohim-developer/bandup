@@ -1,8 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
-import { useParams, useRouter } from "next/navigation";
-import Link from "next/link";
+import { useState, useEffect, useCallback, useRef, type ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { VoiceRecorder } from "@/components/test/speaking/voice-recorder";
 import {
@@ -12,11 +10,11 @@ import {
   Send,
   CheckCircle,
   Clock,
-  ArrowLeft,
-  Mic,
+  AlertTriangle,
+  Sparkles,
 } from "lucide-react";
 
-interface TopicData {
+export interface SpeakingTopic {
   documentId: string;
   topic: string;
   partNumber: number;
@@ -25,10 +23,14 @@ interface TopicData {
   questions: string[];
 }
 
-interface TestData {
-  documentId: string;
-  title: string;
-  topics: TopicData[];
+export interface UploadedTopic {
+  topicId: string;
+  partNumber: number;
+  recordings: {
+    questionIndex: number;
+    audioUrl: string;
+    durationSeconds: number;
+  }[];
 }
 
 interface Recording {
@@ -36,48 +38,45 @@ interface Recording {
   durationSeconds: number;
 }
 
-export default function SpeakingTestPage() {
-  const params = useParams();
-  const router = useRouter();
-  const testId = params.testId as string;
+export interface SpeakingTestRunnerProps {
+  topics: SpeakingTopic[];
+  /** Rendered above the part tabs — typically the test title or a "Full Mock Test" badge. */
+  headerLeft: ReactNode;
+  /** Back button handler — caller decides between a router push, an exit dialog, etc. */
+  onBack: () => void;
+  /**
+   * Called after audio uploads complete. Caller is responsible for the actual
+   * /api/speaking/submit + /api/speaking/evaluate calls and the post-eval redirect.
+   * The runner stays in the "evaluating" UI state until this promise resolves.
+   */
+  onSubmit: (uploadedTopics: UploadedTopic[], elapsedSeconds: number) => Promise<void>;
+  /** Label for the final submit button. Defaults to "Submit Test". */
+  submitLabel?: string;
+}
 
-  const [test, setTest] = useState<TestData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+const recordingKey = (topicId: string, qIndex: number) => `${topicId}:${qIndex}`;
 
-  // Navigation state
+export function SpeakingTestRunner({
+  topics,
+  headerLeft,
+  onBack,
+  onSubmit,
+  submitLabel = "Submit Test",
+}: SpeakingTestRunnerProps) {
   const [currentTopicIndex, setCurrentTopicIndex] = useState(0);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
 
-  // Recordings: key = "topicDocId:questionIndex"
-  const [recordings, setRecordings] = useState<Map<string, Recording>>(
-    new Map()
-  );
+  const [recordings, setRecordings] = useState<Map<string, Recording>>(new Map());
   const [isRecording, setIsRecording] = useState(false);
+
   const [submitting, setSubmitting] = useState(false);
   const [evaluating, setEvaluating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  // Timer
   const [elapsed, setElapsed] = useState(0);
   const startTimeRef = useRef(Date.now());
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // Load test data
-  useEffect(() => {
-    fetch(`/api/speaking/start-test?testId=${testId}`)
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.error) {
-          setError(data.error);
-        } else {
-          setTest(data.test);
-        }
-      })
-      .catch(() => setError("Failed to load test"))
-      .finally(() => setLoading(false));
-  }, [testId]);
-
-  // Timer
   useEffect(() => {
     startTimeRef.current = Date.now();
     timerRef.current = setInterval(() => {
@@ -88,13 +87,9 @@ export default function SpeakingTestPage() {
     };
   }, []);
 
-  const recordingKey = (topicId: string, qIndex: number) =>
-    `${topicId}:${qIndex}`;
-
   const handleRecordingComplete = useCallback(
     (blob: Blob, durationSeconds: number) => {
-      if (!test) return;
-      const topic = test.topics[currentTopicIndex];
+      const topic = topics[currentTopicIndex];
       const key = recordingKey(topic.documentId, currentQuestionIndex);
       setRecordings((prev) => {
         const next = new Map(prev);
@@ -102,11 +97,20 @@ export default function SpeakingTestPage() {
         return next;
       });
     },
-    [test, currentTopicIndex, currentQuestionIndex]
+    [topics, currentTopicIndex, currentQuestionIndex],
   );
 
-  // Count recordings per topic
-  const getTopicRecordingCount = (topic: TopicData) => {
+  const handleRecordingCleared = useCallback(() => {
+    const topic = topics[currentTopicIndex];
+    const key = recordingKey(topic.documentId, currentQuestionIndex);
+    setRecordings((prev) => {
+      const next = new Map(prev);
+      next.delete(key);
+      return next;
+    });
+  }, [topics, currentTopicIndex, currentQuestionIndex]);
+
+  const getTopicRecordingCount = (topic: SpeakingTopic) => {
     let count = 0;
     for (let i = 0; i < topic.questions.length; i++) {
       if (recordings.has(recordingKey(topic.documentId, i))) count++;
@@ -114,77 +118,52 @@ export default function SpeakingTestPage() {
     return count;
   };
 
-  const isTopicComplete = (topic: TopicData) =>
+  const isTopicComplete = (topic: SpeakingTopic) =>
     getTopicRecordingCount(topic) === topic.questions.length;
 
-  const allComplete =
-    test !== null && test.topics.every((t) => isTopicComplete(t));
+  const allComplete = topics.every((t) => isTopicComplete(t));
 
-  const totalQuestions =
-    test?.topics.reduce((sum, t) => sum + t.questions.length, 0) ?? 0;
+  const totalQuestions = topics.reduce((sum, t) => sum + t.questions.length, 0);
   const totalRecorded = recordings.size;
 
-  // Navigation
-  const currentTopic = test?.topics[currentTopicIndex];
-  const currentQuestion = currentTopic?.questions[currentQuestionIndex];
-  const currentKey = currentTopic
-    ? recordingKey(currentTopic.documentId, currentQuestionIndex)
-    : "";
+  const currentTopic = topics[currentTopicIndex];
+  const currentQuestion = currentTopic.questions[currentQuestionIndex];
+  const currentKey = recordingKey(currentTopic.documentId, currentQuestionIndex);
   const hasCurrentRecording = recordings.has(currentKey);
 
   const isLastQuestionInTopic =
-    currentTopic &&
     currentQuestionIndex === currentTopic.questions.length - 1;
-  const isLastTopic = test && currentTopicIndex === test.topics.length - 1;
+  const isLastTopic = currentTopicIndex === topics.length - 1;
 
   const goToNextQuestion = () => {
-    if (!currentTopic) return;
     if (currentQuestionIndex < currentTopic.questions.length - 1) {
       setCurrentQuestionIndex((q) => q + 1);
     }
   };
-
   const goToPrevQuestion = () => {
-    if (currentQuestionIndex > 0) {
-      setCurrentQuestionIndex((q) => q - 1);
-    }
+    if (currentQuestionIndex > 0) setCurrentQuestionIndex((q) => q - 1);
   };
-
   const goToNextPart = () => {
-    if (!test || currentTopicIndex >= test.topics.length - 1) return;
+    if (currentTopicIndex >= topics.length - 1) return;
     setCurrentTopicIndex((t) => t + 1);
     setCurrentQuestionIndex(0);
   };
-
   const goToPrevPart = () => {
     if (currentTopicIndex <= 0) return;
     setCurrentTopicIndex((t) => t - 1);
     setCurrentQuestionIndex(0);
   };
 
-  // Submit all
   const handleSubmit = async () => {
-    if (!test || !allComplete) return;
+    if (!allComplete) return;
     setSubmitting(true);
     setError(null);
 
     try {
-      // 1. Upload all audio files, grouped by topic
-      const topics: {
-        topicId: string;
-        recordings: {
-          questionIndex: number;
-          audioUrl: string;
-          durationSeconds: number;
-        }[];
-      }[] = [];
+      const uploaded: UploadedTopic[] = [];
 
-      for (const topic of test.topics) {
-        const topicRecordings: {
-          questionIndex: number;
-          audioUrl: string;
-          durationSeconds: number;
-        }[] = [];
+      for (const topic of topics) {
+        const topicRecordings: UploadedTopic["recordings"] = [];
 
         for (let qIdx = 0; qIdx < topic.questions.length; qIdx++) {
           const key = recordingKey(topic.documentId, qIdx);
@@ -195,17 +174,16 @@ export default function SpeakingTestPage() {
           formData.append(
             "file",
             rec.blob,
-            `speaking-p${topic.partNumber}-q${qIdx + 1}.webm`
+            `speaking-p${topic.partNumber}-q${qIdx + 1}.webm`,
           );
 
           const uploadRes = await fetch("/api/speaking/upload", {
             method: "POST",
             body: formData,
           });
-
           if (!uploadRes.ok) {
             throw new Error(
-              `Failed to upload recording for Part ${topic.partNumber} Q${qIdx + 1}`
+              `Failed to upload recording for Part ${topic.partNumber} Q${qIdx + 1}`,
             );
           }
 
@@ -217,44 +195,19 @@ export default function SpeakingTestPage() {
           });
         }
 
-        topics.push({ topicId: topic.documentId, recordings: topicRecordings });
+        uploaded.push({
+          topicId: topic.documentId,
+          partNumber: topic.partNumber,
+          recordings: topicRecordings,
+        });
       }
 
-      // 2. Submit all
-      const submitRes = await fetch("/api/speaking/submit", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          testId: test.documentId,
-          topics,
-          timeSpentSeconds: elapsed,
-        }),
-      });
-
-      if (!submitRes.ok) {
-        const data = await submitRes.json();
-        throw new Error(data.error || "Submit failed");
-      }
-
-      const { attemptId } = await submitRes.json();
-
-      // 3. Evaluate
+      // Hand off to the caller for submit + eval + redirect.
       setSubmitting(false);
       setEvaluating(true);
-
-      const evalRes = await fetch("/api/speaking/evaluate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ attemptId }),
-      });
-
-      if (!evalRes.ok) {
-        const data = await evalRes.json();
-        throw new Error(data.error || "Evaluation failed");
-      }
-
-      // 4. Redirect to results
-      router.push(`/dashboard/speaking/result/${attemptId}`);
+      await onSubmit(uploaded, elapsed);
+      // Caller will navigate away on success; if it returns without navigating,
+      // we surface the evaluating state until the page unmounts.
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Something went wrong");
       setSubmitting(false);
@@ -268,47 +221,78 @@ export default function SpeakingTestPage() {
     return `${m}:${sec.toString().padStart(2, "0")}`;
   };
 
-  if (loading) {
+  if (submitting || evaluating) {
+    if (error) {
+      return (
+        <div className="min-h-screen flex items-center justify-center px-4">
+          <div className="flex flex-col items-center gap-6 text-center max-w-md">
+            <AlertTriangle className="h-12 w-12 text-amber-500" />
+            <div>
+              <h2 className="text-2xl font-bold">Submission failed</h2>
+              <p className="text-muted-foreground mt-2">{error}</p>
+            </div>
+            <Button
+              onClick={() => {
+                setError(null);
+                setSubmitting(false);
+                setEvaluating(false);
+              }}
+            >
+              Try again
+            </Button>
+          </div>
+        </div>
+      );
+    }
+
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="flex flex-col items-center gap-8 text-center">
+          <div className="relative">
+            <Sparkles className="h-20 w-20 text-purple-500" />
+            <Loader2 className="h-9 w-9 text-purple-500 animate-spin absolute -bottom-2 -right-2" />
+          </div>
+          <div>
+            <h2 className="text-4xl font-bold">
+              {submitting
+                ? "Uploading your recordings..."
+                : "Evaluating your speaking..."}
+            </h2>
+            <p className="text-muted-foreground mt-3 text-lg">
+              {submitting
+                ? "Please wait while we upload your audio files."
+                : "This usually takes 15-30 seconds. Please wait."}
+            </p>
+          </div>
+        </div>
       </div>
     );
   }
-
-  if (error && !test) {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <p className="text-destructive">{error}</p>
-      </div>
-    );
-  }
-
-  if (!test || !currentTopic) return null;
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6 pb-12">
+    <div className="w-full max-w-3xl mx-auto space-y-6 pt-6 px-4 pb-12 md:pt-8 md:px-8">
       {/* Back */}
-      <Link
-        href="/dashboard/speaking/questions"
+      <button
+        type="button"
+        onClick={onBack}
         className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground text-sm font-medium"
       >
-        <ArrowLeft className="h-4 w-4" /> Back to Speaking Tests
-      </Link>
+        <ChevronLeft className="h-4 w-4" /> Back
+      </button>
 
-      {/* Test header */}
+      {/* Header */}
       <div className="bg-card border border-border rounded-xl p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h1 className="text-lg font-bold truncate">{test.title}</h1>
-          <div className="flex items-center gap-2 text-sm font-mono text-muted-foreground">
+        <div className="flex items-center justify-between mb-4 gap-3">
+          <div className="min-w-0">{headerLeft}</div>
+          <div className="flex items-center gap-2 text-sm font-mono text-muted-foreground shrink-0">
             <Clock className="h-4 w-4" />
             {formatTime(elapsed)}
           </div>
         </div>
 
-        {/* Part progress */}
-        <div className="flex items-center gap-2">
-          {test.topics.map((topic, idx) => {
+        {/* Part tabs */}
+        <div className="flex items-center gap-2 flex-wrap">
+          {topics.map((topic, idx) => {
             const complete = isTopicComplete(topic);
             const isCurrent = idx === currentTopicIndex;
             return (
@@ -362,14 +346,13 @@ export default function SpeakingTestPage() {
           <h2 className="text-sm font-bold text-muted-foreground uppercase tracking-wider mb-2">
             {currentTopic.topic}
           </h2>
-          <p className="text-lg font-medium leading-relaxed">
-            {currentQuestion}
-          </p>
+          <p className="text-lg font-medium leading-relaxed">{currentQuestion}</p>
         </div>
 
         <VoiceRecorder
           key={currentKey}
           onRecordingComplete={handleRecordingComplete}
+          onRecordingCleared={handleRecordingCleared}
           onRecordingStateChange={setIsRecording}
           disabled={submitting || evaluating}
         />
@@ -425,7 +408,7 @@ export default function SpeakingTestPage() {
               className="gap-2"
             >
               <ChevronLeft className="h-4 w-4" />
-              Part {test.topics[currentTopicIndex - 1].partNumber}
+              Part {topics[currentTopicIndex - 1].partNumber}
             </Button>
           ) : (
             <div />
@@ -444,39 +427,18 @@ export default function SpeakingTestPage() {
               <ChevronRight className="h-4 w-4" />
             </Button>
           ) : !isLastTopic ? (
-            <Button
-              onClick={goToNextPart}
-              disabled={isRecording}
-              className="gap-2"
-            >
-              Continue to Part{" "}
-              {test.topics[currentTopicIndex + 1].partNumber}
+            <Button onClick={goToNextPart} disabled={isRecording} className="gap-2">
+              Continue to Part {topics[currentTopicIndex + 1].partNumber}
               <ChevronRight className="h-4 w-4" />
             </Button>
           ) : (
             <Button
               onClick={handleSubmit}
-              disabled={
-                !allComplete || submitting || evaluating || isRecording
-              }
+              disabled={!allComplete || submitting || evaluating || isRecording}
               className="gap-2"
             >
-              {submitting ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Uploading...
-                </>
-              ) : evaluating ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Evaluating...
-                </>
-              ) : (
-                <>
-                  <Send className="h-4 w-4" />
-                  Submit Test
-                </>
-              )}
+              <Send className="h-4 w-4" />
+              {submitLabel}
             </Button>
           )}
         </div>
@@ -492,7 +454,7 @@ export default function SpeakingTestPage() {
       {/* Progress */}
       <div className="text-center text-xs text-muted-foreground">
         {totalRecorded} of {totalQuestions} questions recorded across{" "}
-        {test.topics.length} {test.topics.length === 1 ? "part" : "parts"}
+        {topics.length} {topics.length === 1 ? "part" : "parts"}
       </div>
     </div>
   );

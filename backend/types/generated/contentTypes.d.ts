@@ -963,6 +963,7 @@ export interface ApiTestAttemptTestAttempt extends Struct.CollectionTypeSchema {
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+    evaluation_started_at: Schema.Attribute.DateTime;
     full_mock_test_attempt: Schema.Attribute.Relation<
       'manyToOne',
       'api::full-mock-test-attempt.full-mock-test-attempt'
@@ -1235,6 +1236,8 @@ export interface ApiWritingSubmissionWritingSubmission
     > &
       Schema.Attribute.Private;
     overall_band_score: Schema.Attribute.Decimal;
+    paste_suspected: Schema.Attribute.Boolean &
+      Schema.Attribute.DefaultTo<false>;
     publishedAt: Schema.Attribute.DateTime;
     submitted_at: Schema.Attribute.DateTime;
     task_achievement_score: Schema.Attribute.Decimal;
@@ -1242,6 +1245,7 @@ export interface ApiWritingSubmissionWritingSubmission
       'manyToOne',
       'api::test-attempt.test-attempt'
     >;
+    typed_chars: Schema.Attribute.Integer;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;

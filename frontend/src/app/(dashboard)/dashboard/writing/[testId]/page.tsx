@@ -76,6 +76,7 @@ function WritingTestContent({ testId }: { testId: string }) {
     setActiveTaskId,
     contents,
     setContent,
+    addTypedChars,
     totalTime,
     showSubmitDialog,
     setShowSubmitDialog,
@@ -301,15 +302,15 @@ function WritingTestContent({ testId }: { testId: string }) {
                 </div>
 
                 {activeTask.imageUrl && (
-                  <div className="flex justify-center">
-                    <div className="relative aspect-video rounded-lg overflow-hidden mb-4 border w-full md:w-250">
-                      <Image
-                        src={activeTask.imageUrl}
-                        alt={`Task ${activeTask.taskNumber} image`}
-                        className="object-contain"
-                        fill
-                      />
-                    </div>
+                  <div className="flex justify-center mb-4">
+                    <Image
+                      src={activeTask.imageUrl}
+                      alt={`Task ${activeTask.taskNumber} image`}
+                      width={0}
+                      height={0}
+                      sizes="100vw"
+                      className="rounded-lg border w-full h-auto"
+                    />
                   </div>
                 )}
               </div>
@@ -326,6 +327,7 @@ function WritingTestContent({ testId }: { testId: string }) {
                   <WritingEditor
                     value={contents[activeTask.id] || ""}
                     onChange={(value) => setContent(activeTask.id, value)}
+                    onTypedDelta={(delta) => addTypedChars(activeTask.id, delta)}
                     minWords={activeTask.minWords}
                     placeholder={`Write your Task ${activeTask.taskNumber} response here...`}
                     disabled={isReviewMode}

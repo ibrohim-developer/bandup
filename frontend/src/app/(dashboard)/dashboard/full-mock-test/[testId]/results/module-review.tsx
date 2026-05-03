@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { WritingFeedback } from "@/components/test/writing/writing-feedback";
+import { SpeakingQuestionFeedback } from "@/components/test/speaking/speaking-question-feedback";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -230,46 +231,64 @@ function SpeakingReview({ submissions }: { submissions: any[] }) {
             </div>
         );
     }
+
+    // Group by topic so each part gets its own SpeakingQuestionFeedback block.
+    // submissions are already sorted by question_index from the server query.
+    const groups = new Map<string, { topic: any; subs: any[] }>();
+    for (const s of submissions) {
+        const topicId = s.speaking_topic?.documentId ?? `unknown-${s.documentId}`;
+        if (!groups.has(topicId)) {
+            groups.set(topicId, { topic: s.speaking_topic, subs: [] });
+        }
+        groups.get(topicId)!.subs.push(s);
+    }
+
+    const ordered = Array.from(groups.values()).sort(
+        (a, b) => (a.topic?.part_number ?? 0) - (b.topic?.part_number ?? 0),
+    );
+
     return (
-        <div className="divide-y divide-border">
-            {submissions.map((s) => (
-                <div key={s.documentId} className="p-5 md:p-6 space-y-3">
-                    <div className="flex items-center justify-between gap-3">
-                        <div>
-                            <h4 className="font-bold text-sm">
-                                Part {s.speaking_topic?.part_number} · Question {s.question_index + 1}
-                            </h4>
-                            <p className="text-sm text-muted-foreground">{s.speaking_topic?.topic}</p>
-                        </div>
-                        {s.overall_band_score !== null && (
-                            <div className="text-right shrink-0">
-                                <p className="text-xs text-muted-foreground">Band</p>
-                                <p className="text-xl font-black text-amber-500">{s.overall_band_score}</p>
-                            </div>
-                        )}
-                    </div>
-                    {s.transcript && (
-                        <div>
-                            <h5 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1">
-                                Transcript
-                            </h5>
-                            <div className="p-3 rounded-lg bg-muted/30 border text-sm whitespace-pre-line">
-                                {s.transcript}
-                            </div>
-                        </div>
-                    )}
-                    {s.feedback && (
-                        <div>
-                            <h5 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1">
-                                Feedback
-                            </h5>
-                            <div className="p-3 rounded-lg bg-amber-500/5 border border-amber-500/20 text-sm">
-                                {s.feedback}
-                            </div>
-                        </div>
-                    )}
-                </div>
-            ))}
+        <div className="p-5 md:p-6 space-y-8">
+            {ordered.map(({ topic, subs }, groupIdx) => {
+                const questions = Array.isArray(topic?.questions) ? topic.questions : [];
+                const mapped = subs.map((s) => {
+                    let feedback: any = null;
+                    if (s.feedback) {
+                        if (typeof s.feedback === "string") {
+                            try {
+                                feedback = JSON.parse(s.feedback);
+                            } catch {
+                                feedback = null;
+                            }
+                        } else {
+                            feedback = s.feedback;
+                        }
+                    }
+                    return {
+                        questionIndex: s.question_index ?? 0,
+                        questionText:
+                            questions[s.question_index] ??
+                            `Question ${(s.question_index ?? 0) + 1}`,
+                        transcript: s.transcript ?? null,
+                        overallBandScore: s.overall_band_score ?? null,
+                        fluencyScore: s.fluency_score ?? null,
+                        lexicalScore: s.lexical_score ?? null,
+                        grammarScore: s.grammar_score ?? null,
+                        pronunciationScore: s.pronunciation_score ?? null,
+                        durationSeconds: s.duration_seconds ?? null,
+                        feedback,
+                    };
+                });
+
+                return (
+                    <SpeakingQuestionFeedback
+                        key={topic?.documentId ?? topic?.id ?? `group-${groupIdx}`}
+                        submissions={mapped}
+                        topicName={topic?.topic ?? ""}
+                        partNumber={topic?.part_number ?? 1}
+                    />
+                );
+            })}
         </div>
     );
 }

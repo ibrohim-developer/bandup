@@ -33,6 +33,24 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Already evaluated" }, { status: 400 });
   }
 
+  // Lock against concurrent re-fires (e.g. results page reload while audio scoring is still running).
+  // Cap the lock at maxDuration so a crashed eval doesn't freeze the attempt forever.
+  const LOCK_MS = 120 * 1000;
+  const startedAt = (attempt as any).evaluation_started_at
+    ? new Date((attempt as any).evaluation_started_at).getTime()
+    : 0;
+  if (startedAt && Date.now() - startedAt < LOCK_MS) {
+    return NextResponse.json(
+      { error: "Evaluation in progress" },
+      { status: 409 }
+    );
+  }
+
+  // Claim the lock immediately so a parallel request bounces off the check above.
+  await update("test-attempts", attemptId, {
+    evaluation_started_at: new Date().toISOString(),
+  });
+
   // Fetch submissions
   const submissions = await find("speaking-submissions", {
     filters: { test_attempt: { documentId: { $eq: attemptId } } },

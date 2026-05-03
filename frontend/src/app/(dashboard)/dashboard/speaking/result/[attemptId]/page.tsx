@@ -162,12 +162,11 @@ export default async function SpeakingResultPage({
   // Deduplicate and take top 5
   const uniqueActions = [...new Set(allActions)].slice(0, 5);
 
-  // For "Try Again" button — link to test if available, else first topic
+  // For "Try Again" button — link to the parent test if available.
+  // (Single-topic practice flow was removed; speaking is always a full 3-part test.)
   const retryHref = attempt.test?.documentId
-    ? `/dashboard/speaking/test/${attempt.test.documentId}`
-    : topicGroups[0]?.topic?.documentId
-      ? `/dashboard/speaking/${topicGroups[0].topic.documentId}`
-      : null;
+    ? `/dashboard/speaking/${attempt.test.documentId}`
+    : null;
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);

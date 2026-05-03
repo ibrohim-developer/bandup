@@ -54,6 +54,7 @@ export function useWritingTest(
   const [hasStarted, setHasStarted] = useState(false);
   const [activeTaskId, setActiveTaskId] = useState("");
   const [contents, setContents] = useState<Record<string, string>>({});
+  const typedCharsRef = useRef<Record<string, number>>({});
   const [reviewSubmissions, setReviewSubmissions] = useState<
     ReviewSubmission[]
   >([]);
@@ -160,6 +161,10 @@ export function useWritingTest(
     setContents((prev) => ({ ...prev, [taskId]: value }));
   }, []);
 
+  const addTypedChars = useCallback((taskId: string, delta: number) => {
+    typedCharsRef.current[taskId] = (typedCharsRef.current[taskId] ?? 0) + delta;
+  }, []);
+
 const handleSubmit = useCallback(async () => {
     if (!testId) return;
     setIsSubmitting(true);
@@ -168,6 +173,7 @@ const handleSubmit = useCallback(async () => {
       const submissions = tasks.map((task) => ({
         taskId: task.id,
         content: contents[task.id] || "",
+        typedChars: typedCharsRef.current[task.id] ?? 0,
       }));
 
       const timeSpentSeconds = totalTime - timeRemaining;
@@ -214,6 +220,7 @@ const handleSubmit = useCallback(async () => {
     setActiveTaskId,
     contents,
     setContent,
+    addTypedChars,
     reviewSubmissions,
     totalTime,
     showSubmitDialog,

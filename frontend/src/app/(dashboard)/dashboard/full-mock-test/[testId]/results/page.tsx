@@ -14,6 +14,7 @@ import {
     Trophy,
 } from "lucide-react";
 import { ModuleReview } from "./module-review";
+import { WritingEvalTrigger } from "./writing-eval-trigger";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -112,8 +113,11 @@ async function fetchLROAnswers(attemptId: string, testDocId: string, moduleType:
         .sort((a, b) => a.questionNumber - b.questionNumber);
 }
 
-// Convert listening/reading raw score (out of 40) to IELTS band (approx)
+// Convert listening/reading raw score (out of 40) to IELTS band (approx).
+// Returns 0 for zero correct so the UI can show "—" instead of awarding band 2.5
+// to a candidate who didn't answer anything.
 function rawToBand(raw: number): number {
+    if (raw <= 0) return 0;
     if (raw >= 39) return 9;
     if (raw >= 37) return 8.5;
     if (raw >= 35) return 8;
@@ -291,7 +295,19 @@ export default async function FullMockResultsPage({
                         AI evaluation is still in progress — scores may update shortly.
                     </div>
                 )}
+                {overallBand > 0 && (
+                    <p className="relative mt-4 text-xs text-muted-foreground leading-relaxed">
+                        AI scoring is an estimate and may differ from a human examiner by roughly ±0.5 band.
+                        Use it as practice feedback, not a final IELTS prediction.
+                    </p>
+                )}
             </div>
+
+            {/* Trigger writing evaluation if it hasn't run yet. Renders nothing visible;
+                hard-reloads the page once Gemini scoring completes so the new band shows up. */}
+            {writingAttempt.status === "evaluating" && (
+                <WritingEvalTrigger attemptId={writingAttempt.documentId} />
+            )}
 
             {/* Module band bars */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-10">

@@ -28,6 +28,13 @@
     "word_count": {
       "type": "integer"
     },
+    "typed_chars": {
+      "type": "integer"
+    },
+    "paste_suspected": {
+      "type": "boolean",
+      "default": false
+    },
     "task_achievement_score": {
       "type": "decimal"
     },

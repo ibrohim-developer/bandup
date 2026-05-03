@@ -90,17 +90,24 @@ export async function fetchFullMockTests(
   if (token) {
     const user = await getCurrentUser();
     if (user) {
-      // Must use admin token: Strapi 5 rejects `user` as a filter key with user JWT.
-      const attempts = await find("full-mock-test-attempts", {
+      // Get all sessions sorted newest-first. A test is "completed" only if
+      // its MOST RECENT session is completed — so an in-progress retake
+      // correctly removes the "Completed" badge.
+      const allSessions = await find("full-mock-test-attempts", {
         filters: {
           user: { id: { $eq: user.id } },
-          status: { $eq: "completed" },
         },
+        sort: ["createdAt:desc"],
         populate: ["test"],
         fields: ["status"],
       });
-      attempts?.forEach((a: any) => {
-        if (a.test?.documentId) completedTestIds.add(a.test.documentId);
+      const seenTests = new Set<string>();
+      allSessions?.forEach((a: any) => {
+        const tid = a.test?.documentId;
+        if (tid && !seenTests.has(tid)) {
+          seenTests.add(tid);
+          if (a.status === "completed") completedTestIds.add(tid);
+        }
       });
     }
   }

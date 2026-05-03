@@ -41,10 +41,28 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Already evaluated" }, { status: 400 });
   }
 
-  // Flip a previously-failed attempt back to evaluating so the UI shows the spinner during retry.
-  if (attempt.status === "failed") {
-    await update("test-attempts", attemptId, { status: "evaluating" });
+  // Lock against concurrent re-fires (e.g. results page reload while Gemini is still running).
+  // Only applies while status is still "evaluating" — a "failed" attempt is known to be idle,
+  // so user retries should not be blocked. Cap the lock at maxDuration so a crashed eval
+  // doesn't freeze the attempt forever.
+  const LOCK_MS = 120 * 1000;
+  if (attempt.status === "evaluating") {
+    const startedAt = (attempt as any).evaluation_started_at
+      ? new Date((attempt as any).evaluation_started_at).getTime()
+      : 0;
+    if (startedAt && Date.now() - startedAt < LOCK_MS) {
+      return NextResponse.json(
+        { error: "Evaluation in progress" },
+        { status: 409 }
+      );
+    }
   }
+
+  // Claim the lock and (if retrying) flip status back to "evaluating" so the UI shows a spinner.
+  await update("test-attempts", attemptId, {
+    status: "evaluating",
+    evaluation_started_at: new Date().toISOString(),
+  });
 
   // Fetch writing submissions for this attempt
   const submissions = await find("writing-submissions", {

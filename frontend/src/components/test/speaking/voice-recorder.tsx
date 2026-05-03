@@ -10,12 +10,13 @@ const SILENCE_RMS_THRESHOLD = 0.01; // RMS amplitude threshold for speech detect
 
 interface VoiceRecorderProps {
   onRecordingComplete: (blob: Blob, durationSeconds: number) => void;
+  onRecordingCleared?: () => void;
   onRecordingRejected?: (reason: string) => void;
   onRecordingStateChange?: (recording: boolean) => void;
   disabled?: boolean;
 }
 
-export function VoiceRecorder({ onRecordingComplete, onRecordingRejected, onRecordingStateChange, disabled }: VoiceRecorderProps) {
+export function VoiceRecorder({ onRecordingComplete, onRecordingCleared, onRecordingRejected, onRecordingStateChange, disabled }: VoiceRecorderProps) {
   const [state, setState] = useState<"idle" | "recording" | "recorded">("idle");
   const [elapsed, setElapsed] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -191,7 +192,8 @@ export function VoiceRecorder({ onRecordingComplete, onRecordingRejected, onReco
     setState("idle");
     setElapsed(0);
     setWarning(null);
-  }, []);
+    onRecordingCleared?.();
+  }, [onRecordingCleared]);
 
   const togglePlayback = useCallback(() => {
     if (!blobRef.current) return;
@@ -224,10 +226,9 @@ export function VoiceRecorder({ onRecordingComplete, onRecordingRejected, onReco
             onClick={startRecording}
             disabled={disabled}
             variant="outline"
-            size="sm"
-            className="gap-2"
+            className="group gap-2 px-5 h-11 text-base hover:bg-red-500 hover:text-white hover:border-red-500"
           >
-            <Mic className="h-4 w-4 text-red-500" />
+            <Mic className="h-5 w-5 text-red-500 group-hover:text-white transition-colors" />
             Record
           </Button>
         )}

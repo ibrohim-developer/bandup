@@ -10,7 +10,7 @@ export async function POST(request: NextRequest) {
 
   const { testId, submissions, timeSpentSeconds, fullMockAttemptId } = (await request.json()) as {
     testId: string;
-    submissions: Array<{ taskId: string; content: string }>;
+    submissions: Array<{ taskId: string; content: string; typedChars?: number }>;
     timeSpentSeconds: number;
     fullMockAttemptId?: string;
   };
@@ -47,11 +47,19 @@ export async function POST(request: NextRequest) {
       .split(/\s+/)
       .filter((w: string) => w).length;
 
+    const typedChars = sub.typedChars ?? 0;
+    // Treat as paste-suspected when the final content is materially longer
+    // than what was actually typed. The 32-char cushion absorbs IME quirks
+    // and small autocomplete replacements that bypass the typed counter.
+    const pasteSuspected = sub.content.length > typedChars + 32;
+
     await create("writing-submissions", {
       test_attempt: attempt.documentId,
       writing_task: sub.taskId,
       content: sub.content,
       word_count: wordCount,
+      typed_chars: typedChars,
+      paste_suspected: pasteSuspected,
     });
   }
 

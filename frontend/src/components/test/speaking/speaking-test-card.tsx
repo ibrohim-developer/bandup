@@ -26,7 +26,7 @@ export function SpeakingTestCard({ test }: { test: SpeakingTestItem }) {
         </div>
       </div>
       <LoginRequiredLink
-        href={`/dashboard/speaking/test/${test.id}`}
+        href={`/dashboard/speaking/${test.id}`}
         className="flex items-center justify-center gap-2 bg-primary text-primary-foreground px-8 py-3 rounded-lg font-black text-xs tracking-widest hover:opacity-90 transition-all uppercase w-full md:w-auto"
       >
         <Mic className="h-3.5 w-3.5" />

@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { ScrollContainerContext } from '@/components/test/common/scroll-container-context'
 
-const testRoutePattern = /^\/dashboard\/((reading|listening|writing)\/(?!history)[^/]+|speaking\/(mock-exam|history)\/[^/]+|results\/[^/]+)$/
+const testRoutePattern = /^\/dashboard\/((reading|listening|writing)\/(?!history)[^/]+|speaking\/(?!(test|result|history|mock-exam|questions)$)[^/]+|speaking\/(mock-exam|history|test)\/[^/]+|results\/[^/]+)$/
 
 export function DashboardMain({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()

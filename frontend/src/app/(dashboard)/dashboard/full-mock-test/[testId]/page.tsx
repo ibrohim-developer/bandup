@@ -9,6 +9,7 @@ import {
     ArrowLeft,
     ArrowRight,
     CheckCircle,
+    RotateCcw,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { fetchFullMockTestDetail } from "./actions";
@@ -43,7 +44,10 @@ export default async function FullMockTestDetailPage({
             {/* Back link */}
             <div>
                 <Link href="/dashboard/full-mock-test">
-                    <Button variant="ghost" className="gap-2 text-muted-foreground hover:text-foreground -ml-3">
+                    <Button
+                        variant="ghost"
+                        className="gap-2 -ml-3 border border-transparent text-muted-foreground hover:bg-transparent hover:text-foreground hover:border-primary"
+                    >
                         <ArrowLeft className="h-4 w-4" />
                         Back
                     </Button>
@@ -68,12 +72,20 @@ export default async function FullMockTestDetailPage({
                                 Academic
                             </div>
                             {test.lrwCompleted && test.speakingCompleted && (
-                                <Link href={`/dashboard/full-mock-test/${testId}/results`}>
-                                    <Button className="gap-2">
-                                        <CheckCircle className="h-4 w-4" />
-                                        View Full Results
-                                    </Button>
-                                </Link>
+                                <>
+                                    <Link href={`/dashboard/full-mock-test/${testId}/results`}>
+                                        <Button className="gap-2">
+                                            <CheckCircle className="h-4 w-4" />
+                                            View Full Results
+                                        </Button>
+                                    </Link>
+                                    <Link href={`/dashboard/full-mock-test/${testId}/lrw`}>
+                                        <Button variant="outline" className="gap-2">
+                                            <RotateCcw className="h-4 w-4" />
+                                            Retake Full Mock Test
+                                        </Button>
+                                    </Link>
+                                </>
                             )}
                         </div>
                     </div>

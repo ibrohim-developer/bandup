@@ -65,7 +65,7 @@ export default async function VideoLessonPage({
         Video Lessons
       </Link>
 
-      <div className="space-y-6">
+      <div className="space-y-6 max-w-4xl mx-auto">
         <VideoPlayer youtubeId={video.youtube_id} />
 
         <div className="space-y-2">
