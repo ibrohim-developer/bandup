@@ -8,16 +8,16 @@ export function EvaluatingBanner({ attemptId }: { attemptId: string }) {
   const [failed, setFailed] = useState(false);
   const [retryToken, setRetryToken] = useState(0);
 
-  // Prevents the request from firing twice in dev (React Strict Mode invokes
-  // effects twice on mount). One ref per attemptId — survives Strict Mode's
-  // simulated unmount/remount because refs aren't reset.
+  // Prevents the request from firing twice in dev (Strict Mode runs effects
+  // twice). Ref persists across the simulated unmount/remount, so the second
+  // pass short-circuits. No `cancelled` flag — if we set one in cleanup, the
+  // first pass's resolved fetch would see cancelled=true and skip the reload,
+  // leaving the spinner stuck forever.
   const inFlightRef = useRef(false);
 
   useEffect(() => {
     if (inFlightRef.current) return;
     inFlightRef.current = true;
-
-    let cancelled = false;
 
     (async () => {
       try {
@@ -26,7 +26,6 @@ export function EvaluatingBanner({ attemptId }: { attemptId: string }) {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ attemptId }),
         });
-        if (cancelled) return;
 
         if (res.ok) {
           // Hard reload: router.refresh() doesn't reliably re-render the same
@@ -38,15 +37,10 @@ export function EvaluatingBanner({ attemptId }: { attemptId: string }) {
           inFlightRef.current = false;
         }
       } catch {
-        if (cancelled) return;
         setFailed(true);
         inFlightRef.current = false;
       }
     })();
-
-    return () => {
-      cancelled = true;
-    };
   }, [attemptId, retryToken]);
 
   if (failed) {

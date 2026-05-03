@@ -13,6 +13,7 @@ interface WritingTest {
   difficulty: string;
   duration: number;
   tasks: number;
+  taskNumbers: number[];
 }
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -40,6 +41,7 @@ const getWritingTests = unstable_cache(
         difficulty: test.difficulty_level ?? "medium",
         duration: 60,
         tasks: tasks.length,
+        taskNumbers: tasks.map((t: any) => t.task_number as number).sort(),
       };
     });
   },

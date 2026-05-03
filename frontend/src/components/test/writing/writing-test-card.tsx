@@ -8,6 +8,7 @@ export interface WritingTestItem {
   difficulty: string;
   duration: number;
   tasks: number;
+  taskNumbers: number[];
   isCompleted: boolean;
 }
 
@@ -27,7 +28,7 @@ export function WritingTestCard({ test }: { test: WritingTestItem }) {
           )}
         </div>
         <p className="text-[11px] text-muted-foreground font-bold uppercase mb-3 md:mb-4">
-          {test.tasks} {test.tasks === 1 ? "Task" : "Tasks"}
+          {test.taskNumbers.map((n) => `Task ${n}`).join(" · ")}
         </p>
         <div className="flex items-center gap-4 md:gap-6 text-xs font-bold text-muted-foreground">
           <DifficultyDots difficulty={test.difficulty} />
@@ -39,6 +40,7 @@ export function WritingTestCard({ test }: { test: WritingTestItem }) {
             <FileText className="h-4 w-4" />
             {test.tasks} {test.tasks === 1 ? "task" : "tasks"}
           </span>
+
         </div>
       </div>
       <LoginRequiredLink
