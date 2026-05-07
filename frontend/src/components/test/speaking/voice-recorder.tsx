@@ -15,8 +15,39 @@ const PART_LIMITS: Record<number, { min: number; max: number | null }> = {
   3: { min: 5, max: null },
 };
 
+// Pick the first MIME type the browser actually supports.
+// iOS Safari only supports mp4; Chrome/Firefox/Edge support webm/opus.
+function pickRecorderMime(): string | undefined {
+  if (typeof MediaRecorder === "undefined") return undefined;
+  const candidates = [
+    "audio/webm;codecs=opus",
+    "audio/webm",
+    "audio/mp4;codecs=mp4a.40.2",
+    "audio/mp4",
+  ];
+  for (const m of candidates) {
+    if (MediaRecorder.isTypeSupported(m)) return m;
+  }
+  return undefined;
+}
+
+function extensionFor(mime: string): string {
+  if (mime.includes("webm")) return "webm";
+  if (mime.includes("mp4")) return "m4a";
+  if (mime.includes("ogg")) return "ogg";
+  if (mime.includes("wav")) return "wav";
+  return "bin";
+}
+
+export interface RecordingResult {
+  blob: Blob;
+  durationSeconds: number;
+  mimeType: string;
+  extension: string;
+}
+
 interface VoiceRecorderProps {
-  onRecordingComplete: (blob: Blob, durationSeconds: number) => void;
+  onRecordingComplete: (blob: Blob, durationSeconds: number, meta: { mimeType: string; extension: string }) => void;
   onRecordingCleared?: () => void;
   onRecordingRejected?: (reason: string) => void;
   onRecordingStateChange?: (recording: boolean) => void;
@@ -83,11 +114,13 @@ export function VoiceRecorder({ onRecordingComplete, onRecordingCleared, onRecor
     try {
       setWarning(null);
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mediaRecorder = new MediaRecorder(stream, {
-        mimeType: MediaRecorder.isTypeSupported("audio/webm;codecs=opus")
-          ? "audio/webm;codecs=opus"
-          : "audio/webm",
-      });
+      const pickedMime = pickRecorderMime();
+      // If the browser supports nothing we recognise, let it pick — passing an unsupported
+      // mimeType to MediaRecorder throws on iOS Safari, which is what was breaking uploads.
+      const mediaRecorder = pickedMime
+        ? new MediaRecorder(stream, { mimeType: pickedMime })
+        : new MediaRecorder(stream);
+      const actualMime = mediaRecorder.mimeType || pickedMime || "audio/webm";
 
       chunksRef.current = [];
       mediaRecorderRef.current = mediaRecorder;
@@ -130,8 +163,9 @@ export function VoiceRecorder({ onRecordingComplete, onRecordingCleared, onRecor
         stream.getTracks().forEach((t) => t.stop());
         cleanupAudioAnalysis();
 
-        const blob = new Blob(chunksRef.current, { type: "audio/webm" });
+        const blob = new Blob(chunksRef.current, { type: actualMime });
         const duration = Math.round((Date.now() - startTimeRef.current) / 1000);
+        const extension = extensionFor(actualMime);
 
         // Validate recording
         if (duration < minDuration) {
@@ -171,7 +205,7 @@ export function VoiceRecorder({ onRecordingComplete, onRecordingCleared, onRecor
         setState("recorded");
         setWarning(null);
         onRecordingStateChange?.(false);
-        onRecordingComplete(blob, duration);
+        onRecordingComplete(blob, duration, { mimeType: actualMime, extension });
       };
 
       startTimeRef.current = Date.now();

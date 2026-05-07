@@ -85,12 +85,16 @@ export async function POST(request: NextRequest) {
       }
 
       const audioBuffer = await audioRes.arrayBuffer();
+      // Strapi serves files with the proper Content-Type based on extension. iOS uploads as
+      // audio/mp4, Chrome as audio/webm — pass the actual type to Gemini, not a guess.
+      const audioMime = (audioRes.headers.get("content-type") || "audio/webm").split(";")[0].trim();
       const evaluation = await evaluateSpeaking(
         questionText,
         topic?.topic || "",
         topic?.part_number || 1,
         Buffer.from(audioBuffer),
-        user.id
+        user.id,
+        audioMime
       );
 
       if (evaluation) {

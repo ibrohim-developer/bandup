@@ -73,8 +73,6 @@ function CustomTooltip({ active, payload, isBandMode }: TooltipProps) {
 export function BandScoreChart({ data }: { data: AttemptPoint[] }) {
   const [active, setActive] = useState<string>("all");
 
-  if (!data.length) return null;
-
   const isBandMode = BAND_SCORE_MODULES.has(active);
   const filtered = (active === "all" ? data : data.filter((d) => d.module_type === active))
     .map((d) => ({ ...d, display_score: getDisplayScore(d, isBandMode) }));
@@ -150,8 +148,41 @@ export function BandScoreChart({ data }: { data: AttemptPoint[] }) {
           </LineChart>
         </ResponsiveContainer>
       ) : (
-        <div className="flex items-center justify-center h-[220px] text-xs text-muted-foreground font-bold">
-          No data for this filter yet
+        <div className="relative">
+          <ResponsiveContainer width="100%" height={220}>
+            <LineChart data={[]} margin={{ top: 8, right: 8, left: -20, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+              <XAxis
+                dataKey="date"
+                tick={{ fontSize: 11, fontWeight: 700 }}
+                className="fill-muted-foreground"
+                tickLine={false}
+                axisLine={false}
+              />
+              <YAxis
+                domain={yDomain}
+                ticks={yTicks}
+                tickFormatter={yFormatter}
+                tick={{ fontSize: 11, fontWeight: 700 }}
+                className="fill-muted-foreground"
+                tickLine={false}
+                axisLine={false}
+              />
+              {isBandMode && (
+                <ReferenceLine
+                  y={6.5}
+                  stroke="#10b981"
+                  strokeDasharray="4 4"
+                  label={{ value: "6.5", fontSize: 10, fill: "#10b981", position: "right" }}
+                />
+              )}
+            </LineChart>
+          </ResponsiveContainer>
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <p className="text-xs font-bold text-muted-foreground bg-card/80 px-3 py-1.5 rounded-md">
+              {data.length === 0 ? "No tests yet" : "No data for this filter yet"}
+            </p>
+          </div>
         </div>
       )}
     </div>

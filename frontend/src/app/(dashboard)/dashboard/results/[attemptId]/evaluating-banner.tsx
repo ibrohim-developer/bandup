@@ -69,7 +69,7 @@ export function EvaluatingBanner({ attemptId }: { attemptId: string }) {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center">
+    <div className="min-h-screen flex items-center justify-center px-4">
       <div className="flex flex-col items-center gap-6 text-center">
         <div className="relative">
           <Sparkles className="h-12 w-12 text-purple-500" />

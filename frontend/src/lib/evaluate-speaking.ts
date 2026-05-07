@@ -105,7 +105,8 @@ export async function evaluateSpeaking(
   topicName: string,
   partNumber: number,
   audioBuffer: Buffer,
-  userId?: number | string | null
+  userId?: number | string | null,
+  audioMimeType: string = "audio/webm"
 ): Promise<SpeakingEvaluation | null> {
   if (audioBuffer.byteLength > MAX_AUDIO_BYTES_FOR_EVAL) {
     console.error(
@@ -216,7 +217,7 @@ Return ONLY JSON.`;
           parts: [
             {
               inlineData: {
-                mimeType: "audio/webm",
+                mimeType: audioMimeType,
                 data: base64Audio,
               },
             },

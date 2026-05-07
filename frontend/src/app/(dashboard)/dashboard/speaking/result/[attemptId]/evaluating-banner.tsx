@@ -26,7 +26,7 @@ export function SpeakingEvaluatingBanner({
   }, [attemptId, router]);
 
   return (
-    <div className="min-h-[60vh] flex items-center justify-center">
+    <div className="min-h-[60vh] flex items-center justify-center px-4">
       <div className="flex flex-col items-center gap-6 text-center">
         <div className="relative">
           <Mic className="h-12 w-12 text-orange-500" />

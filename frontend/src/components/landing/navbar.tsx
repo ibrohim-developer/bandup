@@ -33,6 +33,9 @@ export function Navbar({ isLoggedIn = false, userEmail, userAvatar, userName }: 
     return "U"
   }
 
+  const isPlaceholderEmail = userEmail?.endsWith("@telegram.bandup.uz") ?? false
+  const displayEmail = isPlaceholderEmail ? null : userEmail
+
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20)
     window.addEventListener("scroll", handleScroll)
@@ -99,7 +102,7 @@ export function Navbar({ isLoggedIn = false, userEmail, userAvatar, userName }: 
           </SheetTrigger>
           <SheetContent side="right" className="w-[300px] bg-card">
             <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
-            <div className="flex flex-col gap-6 pt-8">
+            <div className="flex flex-col gap-6 px-6 pt-8">
               {navLinks.map((link) => (
                 <Link
                   key={link.href}
@@ -120,7 +123,9 @@ export function Navbar({ isLoggedIn = false, userEmail, userAvatar, userName }: 
                       </Avatar>
                       <div className="flex flex-col text-xs">
                         <span className="font-bold">{userName || "User"}</span>
-                        <span className="text-muted-foreground">{userEmail}</span>
+                        {displayEmail && (
+                          <span className="text-muted-foreground">{displayEmail}</span>
+                        )}
                       </div>
                     </div>
                     <Button asChild className="w-full rounded-full bg-accent font-semibold text-accent-foreground hover:bg-accent/90">

@@ -36,6 +36,7 @@ export interface UploadedTopic {
 interface Recording {
   blob: Blob;
   durationSeconds: number;
+  extension: string;
 }
 
 export interface SpeakingTestRunnerProps {
@@ -88,12 +89,12 @@ export function SpeakingTestRunner({
   }, []);
 
   const handleRecordingComplete = useCallback(
-    (blob: Blob, durationSeconds: number) => {
+    (blob: Blob, durationSeconds: number, meta: { mimeType: string; extension: string }) => {
       const topic = topics[currentTopicIndex];
       const key = recordingKey(topic.documentId, currentQuestionIndex);
       setRecordings((prev) => {
         const next = new Map(prev);
-        next.set(key, { blob, durationSeconds });
+        next.set(key, { blob, durationSeconds, extension: meta.extension });
         return next;
       });
     },
@@ -174,7 +175,7 @@ export function SpeakingTestRunner({
           formData.append(
             "file",
             rec.blob,
-            `speaking-p${topic.partNumber}-q${qIdx + 1}.webm`,
+            `speaking-p${topic.partNumber}-q${qIdx + 1}.${rec.extension}`,
           );
 
           const uploadRes = await fetch("/api/speaking/upload", {
@@ -246,19 +247,19 @@ export function SpeakingTestRunner({
     }
 
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="flex flex-col items-center gap-8 text-center">
+      <div className="min-h-screen flex items-center justify-center px-4">
+        <div className="flex flex-col items-center gap-6 text-center md:gap-8">
           <div className="relative">
-            <Sparkles className="h-20 w-20 text-purple-500" />
-            <Loader2 className="h-9 w-9 text-purple-500 animate-spin absolute -bottom-2 -right-2" />
+            <Sparkles className="h-14 w-14 text-purple-500 md:h-20 md:w-20" />
+            <Loader2 className="h-7 w-7 md:h-9 md:w-9 text-purple-500 animate-spin absolute -bottom-2 -right-2" />
           </div>
           <div>
-            <h2 className="text-4xl font-bold">
+            <h2 className="text-2xl font-bold md:text-4xl">
               {submitting
                 ? "Uploading your recordings..."
                 : "Evaluating your speaking..."}
             </h2>
-            <p className="text-muted-foreground mt-3 text-lg">
+            <p className="text-muted-foreground mt-2 text-sm md:mt-3 md:text-lg">
               {submitting
                 ? "Please wait while we upload your audio files."
                 : "This usually takes 15-30 seconds. Please wait."}
@@ -270,7 +271,7 @@ export function SpeakingTestRunner({
   }
 
   return (
-    <div className="w-full max-w-3xl mx-auto space-y-6 pt-6 px-4 pb-12 md:pt-8 md:px-8">
+    <div className="w-full max-w-3xl mx-auto space-y-6 pt-20 px-4 pb-12 md:pt-8 md:px-8">
       {/* Back */}
       <button
         type="button"

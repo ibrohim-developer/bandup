@@ -55,10 +55,10 @@ export function FullMockStats({ attempts }: { attempts: FullMockAttempt[] }) {
   const isDummy = attempts.length === 0;
 
   const radarData = [
-    { skill: "Listening", score: calcAvg(data, "listening"), fullMark: 9 },
-    { skill: "Reading",   score: calcAvg(data, "reading"),   fullMark: 9 },
-    { skill: "Writing",   score: calcAvg(data, "writing"),   fullMark: 9 },
-    { skill: "Speaking",  score: calcAvg(data, "speaking"),  fullMark: 9 },
+    { skill: "Listening", score: isDummy ? 0 : calcAvg(data, "listening"), fullMark: 9 },
+    { skill: "Reading",   score: isDummy ? 0 : calcAvg(data, "reading"),   fullMark: 9 },
+    { skill: "Writing",   score: isDummy ? 0 : calcAvg(data, "writing"),   fullMark: 9 },
+    { skill: "Speaking",  score: isDummy ? 0 : calcAvg(data, "speaking"),  fullMark: 9 },
   ];
 
 
@@ -87,35 +87,42 @@ export function FullMockStats({ attempts }: { attempts: FullMockAttempt[] }) {
         {/* Radar */}
         <div className="p-5 border-b lg:border-b-0 lg:border-r border-border flex flex-col">
           <p className="text-xs font-bold text-muted-foreground mb-3">Avg score by section</p>
-          <ResponsiveContainer width="100%" height={220}>
-            <RadarChart data={radarData} margin={{ top: 10, right: 60, bottom: 10, left: 60 }}>
-              <PolarGrid className="stroke-border" />
-              <PolarAngleAxis
-                dataKey="skill"
-                tick={(props: any) => { const { x, y, cx, cy, payload } = props;
-                  const dx = x - cx;
-                  const dy = y - cy;
-                  const pad = 10;
-                  const len = Math.hypot(dx, dy) || 1;
-                  const ox = x + (dx / len) * pad;
-                  const oy = y + (dy / len) * pad;
-                  const anchor = Math.abs(dx) < 1 ? "middle" : dx > 0 ? "start" : "end";
-                  return (
-                    <text x={ox} y={oy} textAnchor={anchor} dominantBaseline="central" fontSize={11} fontWeight={700} fill={SECTION_COLORS[payload.value] ?? "currentColor"}>
-                      {payload.value}
-                    </text>
-                  );
-                }}
-              />
-              <Tooltip content={<CustomTooltip />} />
-              <Radar dataKey="score" stroke="#8b5cf6" fill="#8b5cf6" fillOpacity={0.25} strokeWidth={2} />
-            </RadarChart>
-          </ResponsiveContainer>
+          <div className="relative">
+            <ResponsiveContainer width="100%" height={220}>
+              <RadarChart data={radarData} margin={{ top: 10, right: 60, bottom: 10, left: 60 }}>
+                <PolarGrid className="stroke-border" />
+                <PolarAngleAxis
+                  dataKey="skill"
+                  tick={(props: any) => { const { x, y, cx, cy, payload } = props;
+                    const dx = x - cx;
+                    const dy = y - cy;
+                    const pad = 10;
+                    const len = Math.hypot(dx, dy) || 1;
+                    const ox = x + (dx / len) * pad;
+                    const oy = y + (dy / len) * pad;
+                    const anchor = Math.abs(dx) < 1 ? "middle" : dx > 0 ? "start" : "end";
+                    return (
+                      <text x={ox} y={oy} textAnchor={anchor} dominantBaseline="central" fontSize={11} fontWeight={700} fill={SECTION_COLORS[payload.value] ?? "currentColor"}>
+                        {payload.value}
+                      </text>
+                    );
+                  }}
+                />
+                {!isDummy && <Tooltip content={<CustomTooltip />} />}
+                <Radar dataKey="score" stroke="#8b5cf6" fill="#8b5cf6" fillOpacity={isDummy ? 0 : 0.25} strokeWidth={2} />
+              </RadarChart>
+            </ResponsiveContainer>
+            {isDummy && (
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <p className="text-xs font-bold text-muted-foreground bg-card/80 px-3 py-1.5 rounded-md">No data yet</p>
+              </div>
+            )}
+          </div>
           <p className="text-[10px] text-muted-foreground text-center mt-1">Target: 6.5 per section</p>
         </div>
 
         {/* Table */}
-        {data.length > 0 ? (
+        {!isDummy ? (
           <div className="overflow-x-auto">
             <table className="w-full text-xs">
               <thead>
@@ -128,7 +135,7 @@ export function FullMockStats({ attempts }: { attempts: FullMockAttempt[] }) {
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
-                {data.map((a) => (
+                {attempts.map((a) => (
                   <tr key={a.id} className="hover:bg-muted/40 transition-colors">
                     <td className="px-4 py-3 pl-5 text-muted-foreground whitespace-nowrap">{a.date}</td>
                     <td className="px-4 py-3 font-bold whitespace-nowrap max-w-[180px] truncate">{a.testTitle}</td>
