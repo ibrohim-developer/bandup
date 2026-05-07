@@ -143,5 +143,13 @@ export async function POST(request: NextRequest) {
     band_score: bandScore,
   });
 
+  // Propagate writing band to the parent full-mock session, if this attempt is part of one.
+  const fullMockDocId = (attempt as any).full_mock_test_attempt?.documentId;
+  if (fullMockDocId && bandScore != null) {
+    await update("full-mock-test-attempts", fullMockDocId, {
+      writing_score: bandScore,
+    });
+  }
+
   return NextResponse.json({ success: true, bandScore });
 }

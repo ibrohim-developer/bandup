@@ -53,13 +53,13 @@ export function AudioPlayer({ audioUrl, onEnded, allowReplay = false, autoPlay =
   const canToggle = isLoaded && (allowReplay || !hasEnded)
 
   return (
-    <div className="flex items-center gap-4 rounded-full border bg-card px-4 py-3 shadow-sm">
+    <div className="flex items-center gap-2 sm:gap-4 rounded-full border bg-card px-2 sm:px-4 py-2 sm:py-3 shadow-sm">
       <Button
         size="icon"
         variant="ghost"
         onClick={toggle}
         disabled={!canToggle}
-        className="h-12 w-12 rounded-full shrink-0"
+        className="h-10 w-10 sm:h-12 sm:w-12 rounded-full shrink-0"
         aria-label={isPlaying ? 'Pause' : 'Play'}
       >
         {isPlaying ? (
@@ -70,18 +70,18 @@ export function AudioPlayer({ audioUrl, onEnded, allowReplay = false, autoPlay =
       </Button>
 
       {isPlaying && (
-        <div className="flex items-end gap-0.5 h-5 shrink-0" aria-hidden>
+        <div className="hidden sm:flex items-end gap-0.5 h-5 shrink-0" aria-hidden>
           <span className="w-1 bg-primary rounded-full animate-[equalizer_0.9s_ease-in-out_infinite]" style={{ height: '60%', animationDelay: '0ms' }} />
           <span className="w-1 bg-primary rounded-full animate-[equalizer_0.9s_ease-in-out_infinite]" style={{ height: '100%', animationDelay: '150ms' }} />
           <span className="w-1 bg-primary rounded-full animate-[equalizer_0.9s_ease-in-out_infinite]" style={{ height: '70%', animationDelay: '300ms' }} />
         </div>
       )}
 
-      <span className="text-sm tabular-nums text-muted-foreground shrink-0 w-12 text-right">
+      <span className="text-xs sm:text-sm tabular-nums text-muted-foreground shrink-0 w-10 sm:w-12 text-right">
         {formatTime(currentTime)}
       </span>
 
-      <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
+      <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden min-w-0">
         <div
           className={cn(
             'h-full bg-primary transition-[width] duration-150',
@@ -91,7 +91,7 @@ export function AudioPlayer({ audioUrl, onEnded, allowReplay = false, autoPlay =
         />
       </div>
 
-      <span className="text-sm tabular-nums text-muted-foreground shrink-0 w-12">
+      <span className="hidden sm:inline text-sm tabular-nums text-muted-foreground shrink-0 w-12">
         {formatTime(duration)}
       </span>
 
@@ -99,7 +99,7 @@ export function AudioPlayer({ audioUrl, onEnded, allowReplay = false, autoPlay =
         variant="ghost"
         size="icon"
         onClick={handleMuteToggle}
-        className="h-11 w-11 rounded-full shrink-0"
+        className="h-10 w-10 sm:h-11 sm:w-11 rounded-full shrink-0"
         aria-label={isMuted ? 'Unmute' : 'Mute'}
       >
         {isMuted ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}

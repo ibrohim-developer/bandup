@@ -211,7 +211,7 @@ function WritingTestContent({ testId }: { testId: string }) {
   const { theme, rootStyle } = testOptions;
 
   return (
-    <div className="h-screen flex flex-col overflow-hidden" style={rootStyle}>
+    <div className="h-dvh flex flex-col overflow-hidden" style={rootStyle}>
       {/* Top Header Bar */}
       <header
         className="shrink-0 h-12 md:h-16 flex items-center px-2 md:px-6 justify-between"

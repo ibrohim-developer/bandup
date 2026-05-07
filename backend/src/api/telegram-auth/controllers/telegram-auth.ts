@@ -79,6 +79,10 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
       });
       userId = existing.id;
     } else {
+      if (!record.phone) {
+        return ctx.badRequest('Phone number required. Open the bot and tap Start to share your phone.');
+      }
+
       const authenticatedRole = await strapi
         .query('plugin::users-permissions.role')
         .findOne({ where: { type: 'authenticated' } });
@@ -96,6 +100,7 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
         telegram_id: telegramId,
         full_name: fullName,
         avatar_url: record.photo_url || null,
+        phone: record.phone,
       });
 
       userId = created.id;

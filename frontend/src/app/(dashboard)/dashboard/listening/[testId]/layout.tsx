@@ -2,19 +2,23 @@ import type { Metadata } from "next";
 import { cache } from "react";
 import { findOne } from "@/lib/strapi/api";
 import { TestContextMenu } from "@/components/test/common/test-context-menu";
+import { JsonLd } from "@/components/json-ld";
 
 const getTest = cache(async (testId: string) => {
   return findOne("tests", testId);
 });
 
-type Props = { params: Promise<{ testId: string }> };
+type Props = {
+  params: Promise<{ testId: string }>;
+  children: React.ReactNode;
+};
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { testId } = await params;
   const test = await getTest(testId);
   if (!test) return { title: "Test Not Found" };
 
-  const title = `Free IELTS Listening Practice Test: ${test.title || "Practice Exam"} with Audio & Answers (${new Date().getFullYear()}) – BandUp`;
+  const title = `Free IELTS Listening Practice Test: ${test.title || "Practice Exam"} with Audio & Answers`;
   const description =
     `Practice IELTS Listening for free with our '${test.title || "Practice Exam"}' mock test. Includes high-quality audio, full transcript answers, and instant band scoring.`;
 
@@ -32,13 +36,43 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default function ListeningTestLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default async function ListeningTestLayout({ params, children }: Props) {
+  const { testId } = await params;
+  const test = await getTest(testId);
+  const testName = test?.title || "Practice Exam";
+  const url = `https://bandup.uz/dashboard/listening/${testId}`;
+
+  const quizSchema = {
+    "@context": "https://schema.org",
+    "@type": "Quiz",
+    name: `IELTS Listening Practice Test: ${testName}`,
+    url,
+    educationalLevel: "Intermediate to Advanced",
+    learningResourceType: "Practice Test",
+    inLanguage: "en",
+    timeRequired: "PT30M",
+    about: { "@type": "Thing", name: "IELTS Listening" },
+    provider: {
+      "@type": "EducationalOrganization",
+      name: "BandUp",
+      url: "https://bandup.uz",
+    },
+  };
+
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: "https://bandup.uz" },
+      { "@type": "ListItem", position: 2, name: "Listening", item: "https://bandup.uz/dashboard/listening" },
+      { "@type": "ListItem", position: 3, name: testName, item: url },
+    ],
+  };
+
   return (
     <div style={{ fontFamily: 'Arial, sans-serif' }}>
+      <JsonLd data={quizSchema} />
+      <JsonLd data={breadcrumbSchema} />
       {children}
       <TestContextMenu module="listening" />
     </div>

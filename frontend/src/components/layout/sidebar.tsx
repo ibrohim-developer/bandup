@@ -2,6 +2,7 @@
 
 import Link from "@/components/no-prefetch-link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import {
   BookOpenCheck,
@@ -84,12 +85,17 @@ const learnItems = [
   },
 ];
 
+const mobileTestItems = testItems.filter((i) => i.href !== "/dashboard/progress");
+
 const testRoutePattern =
   /^\/dashboard\/((reading|listening|writing)\/(?!history)[^/]+|speaking\/(mock-exam|test)\/[^/]+|full-mock-test\/(?!history)[^/]+|results\/[^/]+)$/;
 
 export function Sidebar({ user }: SidebarProps) {
   const pathname = usePathname();
-  const { theme, setTheme } = useTheme();
+  const { resolvedTheme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  const isDark = mounted && resolvedTheme === "dark";
 
   // Hide sidebar on test pages
   if (testRoutePattern.test(pathname)) {
@@ -105,6 +111,9 @@ export function Sidebar({ user }: SidebarProps) {
       .slice(0, 2) ||
     user?.email?.[0]?.toUpperCase() ||
     "U";
+
+  const isPlaceholderEmail = user?.email?.endsWith("@telegram.bandup.uz") ?? false;
+  const displayEmail = isPlaceholderEmail ? null : user?.email;
 
   return (
     <>
@@ -166,11 +175,12 @@ export function Sidebar({ user }: SidebarProps) {
         {/* Theme Toggle */}
         <div className="px-4 pb-2">
           <button
-            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+            onClick={() => setTheme(isDark ? "light" : "dark")}
             className="flex items-center gap-3 px-4 py-3 text-sm font-bold transition-all rounded-lg w-full text-muted-foreground hover:bg-muted"
           >
-            <Sun className="h-5 w-5 shrink-0 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-            <Moon className="absolute h-5 w-5 shrink-0 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+            <span className="h-5 w-5 shrink-0" suppressHydrationWarning>
+              {mounted && (isDark ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />)}
+            </span>
             <span>Toggle Theme</span>
           </button>
         </div>
@@ -216,9 +226,9 @@ export function Sidebar({ user }: SidebarProps) {
                     <span className="text-sm font-bold">
                       {user?.user_metadata?.full_name || "User"}
                     </span>
-                    {user?.email && (
+                    {displayEmail && (
                       <span className="text-xs text-muted-foreground truncate max-w-full">
-                        {user.email}
+                        {displayEmail}
                       </span>
                     )}
                   </div>
@@ -285,22 +295,40 @@ export function Sidebar({ user }: SidebarProps) {
                     <span className="text-sm font-bold">
                       {user?.user_metadata?.full_name || "User"}
                     </span>
-                    {user?.email && (
+                    {displayEmail && (
                       <span className="text-xs text-muted-foreground truncate max-w-full">
-                        {user.email}
+                        {displayEmail}
                       </span>
                     )}
                   </div>
                   <DropdownMenuSeparator className="w-full" />
+                  <DropdownMenuItem asChild className="cursor-pointer w-full justify-center">
+                    <Link href="/dashboard/progress">
+                      <LayoutDashboard className="mr-2 h-4 w-4" />
+                      <span>Dashboard</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  {learnItems.map((item) => (
+                    <DropdownMenuItem
+                      key={item.href}
+                      asChild
+                      className="cursor-pointer w-full justify-center"
+                    >
+                      <Link href={item.href}>
+                        <item.icon className="mr-2 h-4 w-4" />
+                        <span>{item.title}</span>
+                      </Link>
+                    </DropdownMenuItem>
+                  ))}
+                  <DropdownMenuSeparator className="w-full" />
                   <DropdownMenuItem
                     className="cursor-pointer w-full justify-center"
-                    onClick={() =>
-                      setTheme(theme === "dark" ? "light" : "dark")
-                    }
+                    onClick={() => setTheme(isDark ? "light" : "dark")}
                   >
-                    <Sun className="mr-2 h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-                    <Moon className="absolute -ml-2 h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-                    <span className="ml-4">Toggle Theme</span>
+                    <span className="mr-2 h-4 w-4" suppressHydrationWarning>
+                      {mounted && (isDark ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />)}
+                    </span>
+                    <span>Toggle Theme</span>
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     className="cursor-pointer w-full justify-center group"
@@ -326,7 +354,7 @@ export function Sidebar({ user }: SidebarProps) {
       {/* Mobile Bottom Navigation */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-card border-t border-border">
         <div className="flex items-center justify-around px-2 py-2 safe-bottom">
-          {[...testItems, ...learnItems].map((item) => {
+          {mobileTestItems.map((item) => {
             const isActive =
               item.href === "/dashboard"
                 ? pathname === "/dashboard"

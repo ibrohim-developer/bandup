@@ -68,7 +68,9 @@ function TestFiltersContent({
           }}
         />
       </div>
-      <div className="grid grid-cols-2 md:flex gap-3 w-full md:w-auto">
+      <div
+        className={`grid ${filters.length === 1 ? "grid-cols-1" : "grid-cols-2"} md:flex gap-3 w-full md:w-auto`}
+      >
         {filters.map((filter) => (
           <Select
             key={filter.key}
@@ -104,7 +106,9 @@ function TestFiltersFallback({ filters }: { filters: FilterConfig[] }) {
           disabled
         />
       </div>
-      <div className="grid grid-cols-2 md:flex gap-3 w-full md:w-auto">
+      <div
+        className={`grid ${filters.length === 1 ? "grid-cols-1" : "grid-cols-2"} md:flex gap-3 w-full md:w-auto`}
+      >
         {filters.map((filter) => (
           <div
             key={filter.key}

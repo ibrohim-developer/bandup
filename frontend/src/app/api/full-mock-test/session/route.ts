@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAuthUser, create, update, find } from "@/lib/strapi/api";
+import { getAuthUser, create, update, find, findOne } from "@/lib/strapi/api";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -47,14 +47,23 @@ export async function PATCH(request: NextRequest) {
     if (body.complete) {
         patch.status = "completed";
         patch.completed_at = new Date().toISOString();
-        const bands = [
-            body.listeningScore ?? patch.listening_score,
-            body.readingScore ?? patch.reading_score,
-            body.writingScore ?? patch.writing_score,
-            body.speakingScore ?? patch.speaking_score,
-        ].filter((b): b is number => typeof b === "number" && b > 0);
+
+        const existing = await findOne("full-mock-test-attempts", body.sessionId, {
+            fields: ["listening_score", "reading_score", "writing_score", "speaking_score"],
+        });
+
+        const merged = {
+            listening: patch.listening_score ?? existing?.listening_score,
+            reading: patch.reading_score ?? existing?.reading_score,
+            writing: patch.writing_score ?? existing?.writing_score,
+            speaking: patch.speaking_score ?? existing?.speaking_score,
+        };
+        const bands = Object.values(merged).filter(
+            (b): b is number => typeof b === "number" && b > 0,
+        );
         if (bands.length === 4) {
-            patch.overall_band_score = Math.round((bands.reduce((a, b) => a + b, 0) / 4) * 2) / 2;
+            patch.overall_band_score =
+                Math.round((bands.reduce((a, b) => a + b, 0) / 4) * 2) / 2;
         }
     }
 

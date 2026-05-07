@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
+import Script from "next/script";
 import { Plus_Jakarta_Sans, Geist_Mono } from "next/font/google";
 import { QueryProvider } from "@/components/query-provider";
 import { GoogleAnalytics } from "@/components/google-analytics";
@@ -82,7 +83,7 @@ export const metadata: Metadata = {
     apple: "/apple-touch-icon.png",
   },
   alternates: { canonical: "https://bandup.uz" },
-  verification: { google: "google-site-verification=mGZCMSg3RtjuODnMsT5gmZUg1vK2SX0HAnOkHIvD_6Y" },
+  verification: { google: "mGZCMSg3RtjuODnMsT5gmZUg1vK2SX0HAnOkHIvD_6Y" },
 };
 
 const organizationSchema = {
@@ -137,12 +138,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning className="scroll-smooth">
-      <head>
-        <script src="https://telegram.org/js/telegram-web-app.js" />
-      </head>
       <body
         className={`${plusJakartaSans.variable} ${geistMono.variable} antialiased`}
       >
+        <Script
+          src="https://telegram.org/js/telegram-web-app.js"
+          strategy="lazyOnload"
+        />
         <JsonLd data={organizationSchema} />
         <JsonLd data={websiteSchema} />
         <JsonLd data={softwareSchema} />

@@ -1,9 +1,10 @@
 "use client";
 
-import { Fragment, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 
-const WEEKS = 52;
+const WEEKS_DESKTOP = 52;
+const WEEKS_MOBILE = 16;
 const DAYS = 7; // Mon–Sun
 const DAY_LABELS = ["Mon", "", "Wed", "", "Fri", "", "Sun"];
 
@@ -27,18 +28,17 @@ function toISO(d: Date) {
   return d.toISOString().slice(0, 10);
 }
 
-function buildGrid(activityMap: Record<string, number>) {
-  // End = today, start = 52 weeks ago (Monday-aligned)
+function buildGrid(activityMap: Record<string, number>, weekCount: number) {
+  // End = today, start = N weeks ago (Monday-aligned)
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  // Go back to the most recent Monday 52 weeks ago
   const startDay = new Date(today);
-  startDay.setDate(today.getDate() - WEEKS * 7 - ((today.getDay() + 6) % 7));
+  startDay.setDate(today.getDate() - weekCount * 7 - ((today.getDay() + 6) % 7));
 
   const weeks: { date: string; count: number; isFuture: boolean }[][] = [];
 
-  for (let w = 0; w < WEEKS + 1; w++) {
+  for (let w = 0; w < weekCount + 1; w++) {
     const week: { date: string; count: number; isFuture: boolean }[] = [];
     for (let d = 0; d < DAYS; d++) {
       const date = new Date(startDay);
@@ -76,19 +76,38 @@ interface Props {
 
 export function ActivityHeatmap({ activityMap, totalActive }: Props) {
   const [tooltip, setTooltip] = useState<{ text: string; x: number; y: number } | null>(null);
-  const weeks = buildGrid(activityMap);
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const mql = window.matchMedia("(max-width: 767px)");
+    setIsMobile(mql.matches);
+    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
+    mql.addEventListener("change", handler);
+    return () => mql.removeEventListener("change", handler);
+  }, []);
+
+  const weekCount = isMobile ? WEEKS_MOBILE : WEEKS_DESKTOP;
+  const weeks = buildGrid(activityMap, weekCount);
   const monthLabels = getMonthLabels(weeks);
+  const activeInRange = weeks.reduce(
+    (sum, week) => sum + week.reduce((s, c) => s + (c.count > 0 && !c.isFuture ? 1 : 0), 0),
+    0,
+  );
+  const rangeLabel = isMobile
+    ? `last ${Math.round(WEEKS_MOBILE / 4)} months`
+    : "last year";
+  const displayActive = isMobile ? activeInRange : totalActive;
 
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <h3 className="font-black text-base">Activity</h3>
         <span className="text-xs font-bold text-foreground bg-muted px-2.5 py-1 rounded-full">
-          {totalActive} active day{totalActive !== 1 ? "s" : ""} in the last year
+          {displayActive} active day{displayActive !== 1 ? "s" : ""} in the {rangeLabel}
         </span>
       </div>
 
-      {/* Single CSS grid: label col + 1fr per week, auto month row + 7 day rows */}
+      {/* Single fluid grid: label col + 1fr per week. Mobile renders fewer weeks
+          so cells stay readable without horizontal scroll. */}
       <div
         className="grid gap-0.5 w-full"
         style={{ gridTemplateColumns: `2rem repeat(${weeks.length}, minmax(0, 1fr))` }}
@@ -121,22 +140,22 @@ export function ActivityHeatmap({ activityMap, totalActive }: Props) {
                       ? "opacity-0 pointer-events-none"
                       : levelClass[getLevel(cell.count)],
                   )}
-                  onMouseEnter={(e) => {
-                    const rect = (e.target as HTMLElement).getBoundingClientRect();
-                    const dateLabel = new Date(cell.date).toLocaleDateString("en-US", {
-                      weekday: "short",
-                      month: "short",
-                      day: "numeric",
-                    });
-                    setTooltip({
-                      text: cell.count === 0
-                        ? `No activity on ${dateLabel}`
-                        : `${cell.count} session${cell.count > 1 ? "s" : ""} on ${dateLabel}`,
-                      x: rect.left + rect.width / 2,
-                      y: rect.top,
-                    });
-                  }}
-                  onMouseLeave={() => setTooltip(null)}
+                    onMouseEnter={(e) => {
+                      const rect = (e.target as HTMLElement).getBoundingClientRect();
+                      const dateLabel = new Date(cell.date).toLocaleDateString("en-US", {
+                        weekday: "short",
+                        month: "short",
+                        day: "numeric",
+                      });
+                      setTooltip({
+                        text: cell.count === 0
+                          ? `No activity on ${dateLabel}`
+                          : `${cell.count} session${cell.count > 1 ? "s" : ""} on ${dateLabel}`,
+                        x: rect.left + rect.width / 2,
+                        y: rect.top,
+                      });
+                    }}
+                    onMouseLeave={() => setTooltip(null)}
                 />
               );
             })}

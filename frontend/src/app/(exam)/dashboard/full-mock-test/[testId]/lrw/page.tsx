@@ -439,7 +439,7 @@ function LRWExamContent({ testId }: { testId: string }) {
                 : writingTasks.length;
 
     return (
-        <div className="h-screen flex flex-col overflow-hidden" style={rootStyle}>
+        <div className="h-dvh flex flex-col overflow-hidden" style={rootStyle}>
             {/* Row 1 — Utility header */}
             <header
                 className="shrink-0 h-12 md:h-14 flex items-center px-2 md:px-6 justify-between"
@@ -875,7 +875,7 @@ function LRWExamContent({ testId }: { testId: string }) {
                                     </div>
                                     {activeTask.imageUrl && (
                                         <div className="flex justify-center">
-                                            <div className="relative aspect-video rounded-lg overflow-hidden mb-4 border w-full md:w-250">
+                                            <div className="relative aspect-video rounded-lg overflow-hidden mb-4 border w-full md:max-w-[1000px]">
                                                 <Image
                                                     src={activeTask.imageUrl}
                                                     alt={`Task ${activeTask.taskNumber} image`}

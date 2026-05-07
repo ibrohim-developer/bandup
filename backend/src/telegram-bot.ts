@@ -11,11 +11,19 @@ interface TelegramUser {
   username?: string;
 }
 
+interface TelegramContact {
+  phone_number: string;
+  user_id?: number;
+  first_name?: string;
+  last_name?: string;
+}
+
 interface TelegramMessage {
   message_id: number;
   from?: TelegramUser;
   chat: { id: number };
   text?: string;
+  contact?: TelegramContact;
 }
 
 interface TelegramUpdate {
@@ -68,10 +76,13 @@ async function generateUniqueCode(strapi: Core.Strapi): Promise<string> {
   throw new Error('Could not generate unique code');
 }
 
-async function handleStart(strapi: Core.Strapi, token: string, msg: TelegramMessage) {
-  const user = msg.from;
-  if (!user) return;
-
+async function sendLoginCode(
+  strapi: Core.Strapi,
+  token: string,
+  msg: TelegramMessage,
+  user: TelegramUser,
+  phone: string | null
+) {
   const code = await generateUniqueCode(strapi);
   const expiresAt = new Date(Date.now() + CODE_TTL_MS).toISOString();
 
@@ -82,6 +93,7 @@ async function handleStart(strapi: Core.Strapi, token: string, msg: TelegramMess
       first_name: user.first_name || null,
       last_name: user.last_name || null,
       username: user.username || null,
+      phone: phone || null,
       used: false,
       expires_at: expiresAt,
       publishedAt: new Date(),
@@ -100,12 +112,69 @@ async function handleStart(strapi: Core.Strapi, token: string, msg: TelegramMess
     chat_id: msg.chat.id,
     text,
     parse_mode: 'Markdown',
+    reply_markup: { remove_keyboard: true },
   });
+}
+
+async function handleStart(strapi: Core.Strapi, token: string, msg: TelegramMessage) {
+  const user = msg.from;
+  if (!user) return;
+
+  const existing = await strapi.query('plugin::users-permissions.user').findOne({
+    where: { telegram_id: String(user.id) },
+  });
+
+  if (existing) {
+    await sendLoginCode(strapi, token, msg, user, null);
+    return;
+  }
+
+  await tg(token, 'sendMessage', {
+    chat_id: msg.chat.id,
+    text: [
+      `Hi ${user.first_name || 'there'}!`,
+      '',
+      'To create your BandUp account, please share your phone number by tapping the button below.',
+    ].join('\n'),
+    reply_markup: {
+      keyboard: [[{ text: '📱 Share my phone number', request_contact: true }]],
+      resize_keyboard: true,
+      one_time_keyboard: true,
+    },
+  });
+}
+
+async function handleContact(strapi: Core.Strapi, token: string, msg: TelegramMessage) {
+  const user = msg.from;
+  const contact = msg.contact;
+  if (!user || !contact) return;
+
+  if (contact.user_id !== user.id) {
+    await tg(token, 'sendMessage', {
+      chat_id: msg.chat.id,
+      text: 'Please share your own phone number, not someone else\'s. Tap /start to try again.',
+      reply_markup: { remove_keyboard: true },
+    });
+    return;
+  }
+
+  const phone = contact.phone_number.startsWith('+')
+    ? contact.phone_number
+    : `+${contact.phone_number}`;
+
+  await sendLoginCode(strapi, token, msg, user, phone);
 }
 
 async function handleUpdate(strapi: Core.Strapi, token: string, update: TelegramUpdate) {
   const msg = update.message;
-  if (!msg || !msg.text) return;
+  if (!msg) return;
+
+  if (msg.contact) {
+    await handleContact(strapi, token, msg);
+    return;
+  }
+
+  if (!msg.text) return;
 
   const text = msg.text.trim();
   if (text === '/start' || text.startsWith('/start ')) {
