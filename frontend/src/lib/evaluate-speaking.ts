@@ -58,13 +58,14 @@ Band 3: Some Band 2 features and some (but not all) Band 4 features. Frequently 
 
 === CRITICAL SCORING RULES ===
 - ACCENT IS NOT PENALISED. A strong L1 accent (Russian, Chinese, Indian, Arabic, etc.) is fine as long as it does not impede intelligibility. Score on whether you can understand, not on whether the accent is "neutral".
-- MEMORISED RESPONSES: if the speech sounds rehearsed/scripted (unnaturally smooth, off-topic-ish, doesn't quite answer the question), cap Lexical Resource at Band 5 and note this.
-- OFF-TOPIC: if the candidate does not address the question, cap Fluency & Coherence at Band 4.
-- VERY SHORT ANSWERS: if Part 2 monologue is under 60 seconds, or any Part 1/3 answer is one-word, this signals a Fluency problem — score accordingly.
+- INSUFFICIENT CONTENT RULE: A candidate must produce enough language to BE assessed. If the response is just a few words or a few seconds long, the candidate has not demonstrated the features required for Band 5 or higher in ANY criterion — including Pronunciation. A clearly-spoken 8-word sentence is NOT Band 5 pronunciation; it is Band 3 because there is not enough speech to assess range or sustained control. The same logic applies to Lexical Resource and Grammar — you cannot judge "range" from one sentence.
+- OFF-TOPIC: if the candidate does not address the question (e.g. answers "I tested one thing" to a question about hobbies), there is no on-topic language to grade. Score all four criteria at Band 3 or below. Do NOT assign Band 5 pronunciation just because the few off-topic words were clearly spoken.
+- MEMORISED RESPONSES: if the speech sounds rehearsed/scripted, cap Lexical Resource at Band 5 and note this.
+- VERY SHORT ANSWERS: Part 2 monologue under 60 seconds, or Part 1/3 answers under ~15 words, indicate the candidate cannot sustain speech — this is Band 4 or below across all criteria.
 - SILENCE / NO AUDIO: if the recording is silent, unintelligible, or contains no candidate speech, return all bands as 0 and note "No audible response."
 - Do NOT inflate. If you find yourself wanting to give Band 7 across the board, ask: does this speech actually demonstrate "frequent error-free sentences" and "less common vocabulary with awareness of collocation"? If not, it is Band 6 or below.
 - Bands 8-9 require near-native ease. Be very strict.
-- Score each criterion INDEPENDENTLY. A candidate with great pronunciation can still have weak grammar.
+- Score each criterion INDEPENDENTLY based on its own descriptor. BUT remember: every criterion needs sustained evidence. Five seconds of speech cannot earn Band 5+ in any criterion, no matter how clean.
 `.trim();
 
 const SYSTEM_PROMPT = `You are a certified IELTS Speaking examiner with 10+ years of experience. You receive an audio recording of a candidate's response and grade strictly using the official IELTS public band descriptors.
@@ -236,27 +237,77 @@ Return ONLY JSON.`;
     let grammarScore = Number(parsed.criterion_scores?.grammatical_range_and_accuracy) || 0;
     let pronunciationScore = Number(parsed.criterion_scores?.pronunciation) || 0;
 
+    const transcript: string = parsed.transcript || "";
+    const transcriptWords = transcript
+      .replace(/\([^)]*\)/g, "") // strip parenthetical notes like "(no audible response)"
+      .trim()
+      .split(/\s+/)
+      .filter(Boolean).length;
+    const durationSec = Number(parsed.duration_estimate_seconds) || 0;
+
+    // Minimum content thresholds — below these, there is not enough testable language
+    // to demonstrate features required for higher bands. Cap all criteria at Band 4.
+    const minWords = partNumber === 2 ? 50 : 20;
+    const minSeconds = partNumber === 2 ? 45 : 15;
+    const insufficientContent =
+      transcriptWords < minWords || (durationSec > 0 && durationSec < minSeconds);
+
+    const applyCap = (
+      cap: number,
+      key: "fluency_and_coherence" | "lexical_resource" | "grammatical_range_and_accuracy" | "pronunciation",
+      note: string
+    ) => {
+      const current = {
+        fluency_and_coherence: fluencyScore,
+        lexical_resource: lexicalScore,
+        grammatical_range_and_accuracy: grammarScore,
+        pronunciation: pronunciationScore,
+      }[key];
+      if (current <= cap) return;
+      const newVal = cap;
+      if (key === "fluency_and_coherence") fluencyScore = newVal;
+      if (key === "lexical_resource") lexicalScore = newVal;
+      if (key === "grammatical_range_and_accuracy") grammarScore = newVal;
+      if (key === "pronunciation") pronunciationScore = newVal;
+      if (parsed.criterion_feedback?.[key]) {
+        parsed.criterion_feedback[key].band = newVal;
+        parsed.criterion_feedback[key].feedback = [
+          note,
+          ...(parsed.criterion_feedback[key].feedback || []).slice(0, 1),
+        ];
+      }
+    };
+
     // Enforce caps in code based on flags from the model.
-    if (parsed.on_topic === false && fluencyScore > 4) {
-      fluencyScore = 4;
-      if (parsed.criterion_feedback?.fluency_and_coherence) {
-        parsed.criterion_feedback.fluency_and_coherence.band = 4;
-        parsed.criterion_feedback.fluency_and_coherence.feedback = [
-          "Response did not address the question — Fluency & Coherence capped at Band 4 per IELTS rules.",
-          ...(parsed.criterion_feedback.fluency_and_coherence.feedback || []).slice(0, 1),
-        ];
-      }
+    if (parsed.on_topic === false) {
+      // Off-topic responses cannot demonstrate any criterion at higher bands —
+      // there is no relevant language to grade. Cap all four at Band 3.
+      const note =
+        "Response did not address the question. With no on-topic language to assess, all criteria are capped at Band 3.";
+      applyCap(3, "fluency_and_coherence", note);
+      applyCap(3, "lexical_resource", note);
+      applyCap(3, "grammatical_range_and_accuracy", note);
+      applyCap(3, "pronunciation", note);
+    } else if (insufficientContent) {
+      // On-topic but too short to demonstrate Band 5+ features.
+      const note = `Response is too short (${transcriptWords} words${
+        durationSec ? `, ~${durationSec}s` : ""
+      }) to demonstrate the features required for higher bands. All criteria capped at Band 4.`;
+      applyCap(4, "fluency_and_coherence", note);
+      applyCap(4, "lexical_resource", note);
+      applyCap(4, "grammatical_range_and_accuracy", note);
+      applyCap(4, "pronunciation", note);
     }
-    if (parsed.sounds_memorised === true && lexicalScore > 5) {
-      lexicalScore = 5;
-      if (parsed.criterion_feedback?.lexical_resource) {
-        parsed.criterion_feedback.lexical_resource.band = 5;
-        parsed.criterion_feedback.lexical_resource.feedback = [
-          "Response sounds memorised/rehearsed — Lexical Resource capped at Band 5.",
-          ...(parsed.criterion_feedback.lexical_resource.feedback || []).slice(0, 1),
-        ];
-      }
+
+    if (parsed.sounds_memorised === true) {
+      applyCap(
+        5,
+        "lexical_resource",
+        "Response sounds memorised/rehearsed — Lexical Resource capped at Band 5."
+      );
     }
+
+    parsed.transcript_word_count = transcriptWords;
 
     // Recompute overall band from (possibly capped) criterion scores.
     const overallBandScore = roundToNearestHalf(
