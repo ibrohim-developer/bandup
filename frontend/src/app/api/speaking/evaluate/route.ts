@@ -89,7 +89,8 @@ export async function POST(request: NextRequest) {
         questionText,
         topic?.topic || "",
         topic?.part_number || 1,
-        Buffer.from(audioBuffer)
+        Buffer.from(audioBuffer),
+        user.id
       );
 
       if (evaluation) {

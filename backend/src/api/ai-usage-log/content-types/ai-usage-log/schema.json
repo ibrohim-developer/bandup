@@ -1,0 +1,50 @@
+{
+  "kind": "collectionType",
+  "collectionName": "ai_usage_logs",
+  "info": {
+    "singularName": "ai-usage-log",
+    "pluralName": "ai-usage-logs",
+    "displayName": "AI Usage Log"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "user": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user"
+    },
+    "module": {
+      "type": "enumeration",
+      "enum": ["writing", "speaking", "quiz"],
+      "required": true
+    },
+    "model": {
+      "type": "string",
+      "required": true
+    },
+    "input_tokens": {
+      "type": "integer",
+      "default": 0
+    },
+    "output_tokens": {
+      "type": "integer",
+      "default": 0
+    },
+    "audio_seconds": {
+      "type": "integer"
+    },
+    "cost_usd": {
+      "type": "decimal",
+      "required": true
+    },
+    "success": {
+      "type": "boolean",
+      "default": true
+    },
+    "context": {
+      "type": "json"
+    }
+  }
+}

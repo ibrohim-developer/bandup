@@ -1,4 +1,5 @@
-import { geminiFlash } from "./gemini";
+import { vertexAI, MODEL_PRO } from "./gemini";
+import { logAIUsage } from "./ai-usage";
 
 export interface EssayEvaluation {
   taskAchievementScore: number;
@@ -76,8 +77,10 @@ export async function evaluateEssay(
   taskPrompt: string,
   taskType: string | null,
   essayContent: string,
-  minWords: number
+  minWords: number,
+  userId?: number | string | null
 ): Promise<EssayEvaluation | null> {
+  let ieltsTaskTypeForLog = "task2";
   try {
     let ieltsTaskType: string;
     let ieltsModule: string;
@@ -92,6 +95,7 @@ export async function evaluateEssay(
       ieltsTaskType = "task2";
       ieltsModule = "academic";
     }
+    ieltsTaskTypeForLog = ieltsTaskType;
 
     const wordCount = countWords(essayContent);
     const underWordLimit = wordCount < minWords;
@@ -211,16 +215,27 @@ ADDITIONAL RULES:
 
 Return ONLY JSON.`;
 
-    const result = await geminiFlash.generateContent({
+    const result = await vertexAI.models.generateContent({
+      model: MODEL_PRO,
       contents: [{ role: "user", parts: [{ text: userPrompt }] }],
-      systemInstruction: { role: "model", parts: [{ text: SYSTEM_PROMPT }] },
-      generationConfig: {
+      config: {
+        systemInstruction: SYSTEM_PROMPT,
         temperature: 0,
         responseMimeType: "application/json",
       },
     });
 
-    const content = result.response.text();
+    const content = result.text;
+
+    await logAIUsage({
+      userId: userId ?? null,
+      module: "writing",
+      model: MODEL_PRO,
+      usage: result.usageMetadata,
+      success: !!content,
+      context: { task_type: ieltsTaskType, module: ieltsModule, word_count: wordCount },
+    });
+
     if (!content) return null;
 
     const parsed = JSON.parse(content);
@@ -271,6 +286,14 @@ Return ONLY JSON.`;
     };
   } catch (error) {
     console.error("Essay evaluation failed:", error);
+    await logAIUsage({
+      userId: userId ?? null,
+      module: "writing",
+      model: MODEL_PRO,
+      usage: undefined,
+      success: false,
+      context: { task_type: ieltsTaskTypeForLog, error: String(error) },
+    });
     return null;
   }
 }

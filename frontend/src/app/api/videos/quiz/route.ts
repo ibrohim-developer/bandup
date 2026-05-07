@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { YoutubeTranscript } from "youtube-transcript";
-import { geminiFlash } from "@/lib/gemini";
-import { findOne, update, find } from "@/lib/strapi/api";
+import { vertexAI, MODEL_FLASH } from "@/lib/gemini";
+import { logAIUsage } from "@/lib/ai-usage";
+import { findOne, update, find, getAuthUser } from "@/lib/strapi/api";
 
 export interface QuizQuestion {
   question: string;
@@ -10,7 +11,11 @@ export interface QuizQuestion {
   explanation: string;
 }
 
-async function generateQuiz(transcript: string): Promise<QuizQuestion[]> {
+async function generateQuiz(
+  transcript: string,
+  userId: number | string | null,
+  videoId: string
+): Promise<QuizQuestion[]> {
   const truncated = transcript.slice(0, 12000);
 
   const prompt = `You are an IELTS preparation assistant. Based on the following video transcript, generate exactly 5 multiple-choice quiz questions that test comprehension and IELTS-relevant skills.
@@ -35,10 +40,23 @@ Rules:
 - Make questions relevant to IELTS skills (vocabulary, main idea, inference, detail, tone)
 - Return ONLY valid JSON, no markdown or extra text`;
 
-  const result = await geminiFlash.generateContent(prompt);
-  const text = result.response.text().trim();
+  const result = await vertexAI.models.generateContent({
+    model: MODEL_FLASH,
+    contents: [{ role: "user", parts: [{ text: prompt }] }],
+  });
+  const text = (result.text ?? "").trim();
 
   const jsonMatch = text.match(/\[[\s\S]*\]/);
+
+  await logAIUsage({
+    userId,
+    module: "quiz",
+    model: MODEL_FLASH,
+    usage: result.usageMetadata,
+    success: !!jsonMatch,
+    context: { video_id: videoId },
+  });
+
   if (!jsonMatch) throw new Error("No JSON array found in Gemini response");
 
   return JSON.parse(jsonMatch[0]) as QuizQuestion[];
@@ -46,6 +64,7 @@ Rules:
 
 export async function POST(request: NextRequest) {
   try {
+    const user = await getAuthUser(request);
     const { videoId } = await request.json();
     if (!videoId) {
       return NextResponse.json({ error: "videoId is required" }, { status: 400 });
@@ -80,7 +99,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Generate quiz with Gemini
-    const questions = await generateQuiz(transcript);
+    const questions = await generateQuiz(transcript, user?.id ?? null, videoId);
 
     // Cache quiz in Strapi
     await update("video-lessons", lesson.documentId, { quiz_questions: questions });

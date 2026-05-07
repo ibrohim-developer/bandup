@@ -1,4 +1,5 @@
-import { geminiFlash } from "./gemini";
+import { vertexAI, MODEL_PRO } from "./gemini";
+import { logAIUsage } from "./ai-usage";
 
 export interface SpeakingEvaluation {
   transcript: string;
@@ -98,7 +99,8 @@ export async function evaluateSpeaking(
   questionText: string,
   topicName: string,
   partNumber: number,
-  audioBuffer: Buffer
+  audioBuffer: Buffer,
+  userId?: number | string | null
 ): Promise<SpeakingEvaluation | null> {
   try {
     const base64Audio = audioBuffer.toString("base64");
@@ -181,7 +183,8 @@ ADDITIONAL RULES:
 
 Return ONLY JSON.`;
 
-    const result = await geminiFlash.generateContent({
+    const result = await vertexAI.models.generateContent({
+      model: MODEL_PRO,
       contents: [
         {
           role: "user",
@@ -196,17 +199,37 @@ Return ONLY JSON.`;
           ],
         },
       ],
-      systemInstruction: { role: "model", parts: [{ text: SYSTEM_PROMPT }] },
-      generationConfig: {
+      config: {
+        systemInstruction: SYSTEM_PROMPT,
         temperature: 0,
         responseMimeType: "application/json",
       },
     });
 
-    const content = result.response.text();
-    if (!content) return null;
+    const content = result.text;
+    if (!content) {
+      await logAIUsage({
+        userId: userId ?? null,
+        module: "speaking",
+        model: MODEL_PRO,
+        usage: result.usageMetadata,
+        success: false,
+        context: { part_number: partNumber, topic: topicName },
+      });
+      return null;
+    }
 
     const parsed = JSON.parse(content);
+
+    await logAIUsage({
+      userId: userId ?? null,
+      module: "speaking",
+      model: MODEL_PRO,
+      usage: result.usageMetadata,
+      audioSeconds: Number(parsed.duration_estimate_seconds) || undefined,
+      success: true,
+      context: { part_number: partNumber, topic: topicName },
+    });
 
     let fluencyScore = Number(parsed.criterion_scores?.fluency_and_coherence) || 0;
     let lexicalScore = Number(parsed.criterion_scores?.lexical_resource) || 0;
@@ -259,6 +282,14 @@ Return ONLY JSON.`;
     };
   } catch (error) {
     console.error("Speaking evaluation failed:", error);
+    await logAIUsage({
+      userId: userId ?? null,
+      module: "speaking",
+      model: MODEL_PRO,
+      usage: undefined,
+      success: false,
+      context: { part_number: partNumber, topic: topicName, error: String(error) },
+    });
     return null;
   }
 }

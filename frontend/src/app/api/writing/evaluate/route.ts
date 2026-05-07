@@ -86,7 +86,8 @@ export async function POST(request: NextRequest) {
       task.prompt,
       task.task_type,
       sub.content,
-      task.min_words
+      task.min_words,
+      user.id
     );
 
     return { submissionDocId: sub.documentId, evaluation, task };

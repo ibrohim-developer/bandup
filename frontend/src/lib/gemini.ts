@@ -1,9 +1,10 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenAI } from "@google/genai";
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
-
-export const geminiFlash = genAI.getGenerativeModel({
-  model: "gemini-3.1-flash-lite-preview",
+export const vertexAI = new GoogleGenAI({
+  vertexai: true,
+  project: process.env.GOOGLE_CLOUD_PROJECT!,
+  location: process.env.GOOGLE_CLOUD_LOCATION || "us-central1",
 });
 
-export default genAI;
+export const MODEL_PRO = "gemini-2.5-pro";
+export const MODEL_FLASH = "gemini-2.5-flash";

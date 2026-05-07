@@ -66,7 +66,8 @@ export async function POST(request: NextRequest) {
     prompt,
     taskType || "essay",
     content,
-    minWords || 250
+    minWords || 250,
+    user.id
   );
 
   if (!evaluation) {
