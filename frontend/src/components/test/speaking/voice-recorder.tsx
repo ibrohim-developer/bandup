@@ -4,9 +4,16 @@ import { useState, useRef, useCallback, useEffect } from "react";
 import { Mic, Square, Play, Pause, RotateCcw, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-const MIN_DURATION_SECONDS = 5;
 const MIN_BLOB_SIZE = 5000; // 5KB — silent webm is typically 2-5KB
 const SILENCE_RMS_THRESHOLD = 0.01; // RMS amplitude threshold for speech detection
+
+// Official IELTS Part 2 monologue: 1–2 minutes, examiner stops at exactly 2 minutes.
+// We auto-stop at 2:05 to give a small buffer.
+const PART_LIMITS: Record<number, { min: number; max: number | null }> = {
+  1: { min: 5, max: null },
+  2: { min: 30, max: 125 },
+  3: { min: 5, max: null },
+};
 
 interface VoiceRecorderProps {
   onRecordingComplete: (blob: Blob, durationSeconds: number) => void;
@@ -14,9 +21,13 @@ interface VoiceRecorderProps {
   onRecordingRejected?: (reason: string) => void;
   onRecordingStateChange?: (recording: boolean) => void;
   disabled?: boolean;
+  partNumber?: number;
 }
 
-export function VoiceRecorder({ onRecordingComplete, onRecordingCleared, onRecordingRejected, onRecordingStateChange, disabled }: VoiceRecorderProps) {
+export function VoiceRecorder({ onRecordingComplete, onRecordingCleared, onRecordingRejected, onRecordingStateChange, disabled, partNumber = 1 }: VoiceRecorderProps) {
+  const limits = PART_LIMITS[partNumber] ?? PART_LIMITS[1];
+  const minDuration = limits.min;
+  const maxDuration = limits.max;
   const [state, setState] = useState<"idle" | "recording" | "recorded">("idle");
   const [elapsed, setElapsed] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -123,8 +134,10 @@ export function VoiceRecorder({ onRecordingComplete, onRecordingCleared, onRecor
         const duration = Math.round((Date.now() - startTimeRef.current) / 1000);
 
         // Validate recording
-        if (duration < MIN_DURATION_SECONDS) {
-          const reason = `Recording too short. Please speak for at least ${MIN_DURATION_SECONDS} seconds.`;
+        if (duration < minDuration) {
+          const reason = partNumber === 2
+            ? `Part 2 requires a 1–2 minute monologue. Please speak for at least ${minDuration} seconds.`
+            : `Recording too short. Please speak for at least ${minDuration} seconds.`;
           setWarning(reason);
           setState("idle");
           setElapsed(0);
@@ -168,12 +181,16 @@ export function VoiceRecorder({ onRecordingComplete, onRecordingCleared, onRecor
       onRecordingStateChange?.(true);
 
       timerRef.current = setInterval(() => {
-        setElapsed(Math.round((Date.now() - startTimeRef.current) / 1000));
+        const seconds = Math.round((Date.now() - startTimeRef.current) / 1000);
+        setElapsed(seconds);
+        if (maxDuration !== null && seconds >= maxDuration) {
+          stopRecordingRef.current();
+        }
       }, 500);
     } catch {
       alert("Microphone access is required to record your answer.");
     }
-  }, [onRecordingComplete, onRecordingRejected, onRecordingStateChange, cleanupAudioAnalysis]);
+  }, [onRecordingComplete, onRecordingRejected, onRecordingStateChange, cleanupAudioAnalysis, minDuration, maxDuration, partNumber]);
 
   const stopRecording = useCallback(() => {
     clearTimer();
@@ -181,6 +198,11 @@ export function VoiceRecorder({ onRecordingComplete, onRecordingCleared, onRecor
       mediaRecorderRef.current.stop();
     }
   }, [clearTimer]);
+
+  const stopRecordingRef = useRef(stopRecording);
+  useEffect(() => {
+    stopRecordingRef.current = stopRecording;
+  }, [stopRecording]);
 
   const reRecord = useCallback(() => {
     if (audioRef.current) {
@@ -239,6 +261,9 @@ export function VoiceRecorder({ onRecordingComplete, onRecordingCleared, onRecor
               <span className="h-2.5 w-2.5 rounded-full bg-red-500 animate-pulse" />
               <span className="text-sm font-mono font-bold text-red-500">
                 {formatTime(elapsed)}
+                {maxDuration !== null && (
+                  <span className="text-muted-foreground font-normal"> / {formatTime(maxDuration)}</span>
+                )}
               </span>
             </div>
             <Button

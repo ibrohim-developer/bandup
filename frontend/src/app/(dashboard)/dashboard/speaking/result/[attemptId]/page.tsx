@@ -246,10 +246,19 @@ export default async function SpeakingResultPage({
 
       {/* Tabs */}
       <Tabs defaultValue="breakdown" className="mb-12">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="breakdown">Score Breakdown</TabsTrigger>
-          <TabsTrigger value="feedback">Question Feedback</TabsTrigger>
-          <TabsTrigger value="recommendations">Recommendations</TabsTrigger>
+        <TabsList className="grid h-auto w-full grid-cols-3">
+          <TabsTrigger value="breakdown" className="px-1 text-xs sm:text-sm">
+            <span className="sm:hidden">Scores</span>
+            <span className="hidden sm:inline">Score Breakdown</span>
+          </TabsTrigger>
+          <TabsTrigger value="feedback" className="px-1 text-xs sm:text-sm">
+            <span className="sm:hidden">Feedback</span>
+            <span className="hidden sm:inline">Question Feedback</span>
+          </TabsTrigger>
+          <TabsTrigger value="recommendations" className="px-1 text-xs sm:text-sm">
+            <span className="sm:hidden">Tips</span>
+            <span className="hidden sm:inline">Recommendations</span>
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="breakdown" className="mt-8">

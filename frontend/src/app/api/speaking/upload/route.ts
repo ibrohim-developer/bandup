@@ -19,9 +19,11 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Recording too short or silent" }, { status: 400 });
   }
 
-  const MAX_AUDIO_BYTES = 25 * 1024 * 1024; // 25 MB
+  // 3 MB is ~3× the size of a 2-minute opus webm at typical bitrate.
+  // Tight enough to block "upload an hour of audio" abuse, loose enough to never reject a legit IELTS recording.
+  const MAX_AUDIO_BYTES = 3 * 1024 * 1024;
   if (file.size > MAX_AUDIO_BYTES) {
-    return NextResponse.json({ error: "Recording too large (max 25 MB)" }, { status: 400 });
+    return NextResponse.json({ error: "Recording too large. Speaking answers must be under 2 minutes." }, { status: 400 });
   }
 
   const ALLOWED_AUDIO_MIMES = new Set([

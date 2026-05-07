@@ -96,6 +96,10 @@ function getPartGuidance(partNumber: number): string {
 - Look for: ability to handle abstract ideas, justify and develop opinions, use of complex structures, hedging language ("I would argue...", "It depends on...").`;
 }
 
+// Final cost guard before calling Gemini. If anything slipped past upload (admin imports, future
+// API entry points, etc.), we still refuse to spend money on suspiciously large audio.
+const MAX_AUDIO_BYTES_FOR_EVAL = 3 * 1024 * 1024;
+
 export async function evaluateSpeaking(
   questionText: string,
   topicName: string,
@@ -103,6 +107,26 @@ export async function evaluateSpeaking(
   audioBuffer: Buffer,
   userId?: number | string | null
 ): Promise<SpeakingEvaluation | null> {
+  if (audioBuffer.byteLength > MAX_AUDIO_BYTES_FOR_EVAL) {
+    console.error(
+      `[evaluateSpeaking] Audio too large (${audioBuffer.byteLength} bytes) — refusing to call Gemini.`
+    );
+    await logAIUsage({
+      userId: userId ?? null,
+      module: "speaking",
+      model: MODEL_PRO,
+      usage: undefined,
+      success: false,
+      context: {
+        part_number: partNumber,
+        topic: topicName,
+        error: "audio_too_large",
+        bytes: audioBuffer.byteLength,
+      },
+    });
+    return null;
+  }
+
   try {
     const base64Audio = audioBuffer.toString("base64");
 

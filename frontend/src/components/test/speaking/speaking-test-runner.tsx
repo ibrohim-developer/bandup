@@ -351,6 +351,7 @@ export function SpeakingTestRunner({
 
         <VoiceRecorder
           key={currentKey}
+          partNumber={currentTopic.partNumber}
           onRecordingComplete={handleRecordingComplete}
           onRecordingCleared={handleRecordingCleared}
           onRecordingStateChange={setIsRecording}
