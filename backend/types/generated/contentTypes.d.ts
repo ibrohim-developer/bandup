@@ -430,6 +430,46 @@ export interface AdminUser extends Struct.CollectionTypeSchema {
   };
 }
 
+export interface ApiAiUsageLogAiUsageLog extends Struct.CollectionTypeSchema {
+  collectionName: 'ai_usage_logs';
+  info: {
+    displayName: 'AI Usage Log';
+    pluralName: 'ai-usage-logs';
+    singularName: 'ai-usage-log';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    audio_seconds: Schema.Attribute.Integer;
+    context: Schema.Attribute.JSON;
+    cost_usd: Schema.Attribute.Decimal & Schema.Attribute.Required;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    input_tokens: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::ai-usage-log.ai-usage-log'
+    > &
+      Schema.Attribute.Private;
+    model: Schema.Attribute.String & Schema.Attribute.Required;
+    module: Schema.Attribute.Enumeration<['writing', 'speaking', 'quiz']> &
+      Schema.Attribute.Required;
+    output_tokens: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
+    publishedAt: Schema.Attribute.DateTime;
+    success: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    user: Schema.Attribute.Relation<
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
+  };
+}
+
 export interface ApiBusinessInquiryBusinessInquiry
   extends Struct.CollectionTypeSchema {
   collectionName: 'business_inquiries';
@@ -1810,6 +1850,7 @@ declare module '@strapi/strapi' {
       'admin::transfer-token': AdminTransferToken;
       'admin::transfer-token-permission': AdminTransferTokenPermission;
       'admin::user': AdminUser;
+      'api::ai-usage-log.ai-usage-log': ApiAiUsageLogAiUsageLog;
       'api::business-inquiry.business-inquiry': ApiBusinessInquiryBusinessInquiry;
       'api::feature-notification.feature-notification': ApiFeatureNotificationFeatureNotification;
       'api::flashcard.flashcard': ApiFlashcardFlashcard;
