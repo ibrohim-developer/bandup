@@ -8,7 +8,7 @@ export function SpeakingTestCard({ test }: { test: SpeakingTestItem }) {
   return (
     <div className="bg-card border border-border p-4 md:p-6 rounded-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
       <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-3 mb-1 md:mb-2">
+        <div className="flex items-center gap-3 mb-1">
           <h3 className="text-lg md:text-xl font-bold truncate">{test.title}</h3>
           {test.isCompleted && (
             <span className="flex items-center gap-1 text-xs font-bold text-green-600 dark:text-green-400 shrink-0">
@@ -17,7 +17,10 @@ export function SpeakingTestCard({ test }: { test: SpeakingTestItem }) {
             </span>
           )}
         </div>
-        <div className="flex items-center gap-4 md:gap-6 text-xs font-bold text-muted-foreground mt-3">
+        <p className="text-[11px] text-muted-foreground font-bold uppercase mb-3 md:mb-4">
+          {test.topics.map((t) => `Part ${t.partNumber}`).join(" · ")}
+        </p>
+        <div className="flex items-center gap-4 md:gap-6 text-xs font-bold text-muted-foreground">
           <DifficultyDots difficulty={test.difficulty} />
           <span className="flex items-center gap-1.5">
             <Layers className="h-4 w-4" />
