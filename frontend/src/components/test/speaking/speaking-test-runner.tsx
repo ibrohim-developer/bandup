@@ -21,6 +21,7 @@ export interface SpeakingTopic {
   preparationTime: number;
   speakingTime: number;
   questions: string[];
+  cuePoints?: string[];
 }
 
 export interface UploadedTopic {
@@ -271,7 +272,7 @@ export function SpeakingTestRunner({
   }
 
   return (
-    <div className="w-full max-w-3xl mx-auto space-y-6 pt-20 px-4 pb-12 md:pt-8 md:px-8">
+    <div className="w-full max-w-3xl mx-auto space-y-6 pt-6 px-4 pb-12 md:pt-8 md:px-8">
       {/* Back */}
       <button
         type="button"
@@ -348,6 +349,20 @@ export function SpeakingTestRunner({
             {currentTopic.topic}
           </h2>
           <p className="text-lg font-medium leading-relaxed">{currentQuestion}</p>
+
+          {currentTopic.partNumber === 2 && currentTopic.cuePoints && currentTopic.cuePoints.length > 0 && (
+            <div className="mt-4 pt-4 border-t border-border">
+              <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">You should say:</p>
+              <ul className="space-y-1.5">
+                {currentTopic.cuePoints.map((point, i) => (
+                  <li key={i} className="flex items-center gap-2 text-sm leading-none">
+                    <span className="h-1.5 w-1.5 rounded-full bg-primary shrink-0" />
+                    {point}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
 
         <VoiceRecorder

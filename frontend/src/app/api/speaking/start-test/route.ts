@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
     fields: ["title"],
     populate: {
       speaking_topics: {
-        fields: ["topic", "part_number", "preparation_time_seconds", "speaking_time_seconds", "questions"],
+        fields: ["topic", "part_number", "preparation_time_seconds", "speaking_time_seconds", "questions", "cue_points"],
       },
     },
   });
@@ -30,6 +30,7 @@ export async function GET(request: NextRequest) {
       preparationTime: t.preparation_time_seconds,
       speakingTime: t.speaking_time_seconds,
       questions: Array.isArray(t.questions) ? t.questions : [],
+      cuePoints: Array.isArray(t.cue_points) ? t.cue_points : [],
     }));
 
   return NextResponse.json({

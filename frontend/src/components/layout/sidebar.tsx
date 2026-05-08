@@ -88,7 +88,7 @@ const learnItems = [
 const mobileTestItems = testItems.filter((i) => i.href !== "/dashboard/progress");
 
 const testRoutePattern =
-  /^\/dashboard\/((reading|listening|writing)\/(?!history)[^/]+|speaking\/(mock-exam|test)\/[^/]+|full-mock-test\/(?!history)[^/]+|results\/[^/]+)$/;
+  /^\/dashboard\/((reading|listening|writing)\/(?!history)[^/]+|speaking\/(?!(test|result|history|mock-exam|questions)$)[^/]+|speaking\/(mock-exam|test)\/[^/]+|full-mock-test\/(?!history)[^/]+|results\/[^/]+)$/;
 
 export function Sidebar({ user }: SidebarProps) {
   const pathname = usePathname();

@@ -13,6 +13,7 @@ export interface SpeakingTopicItem {
   preparationTime: number;
   speakingTime: number;
   questions: unknown;
+  cuePoints: string[];
 }
 
 export interface SpeakingTestItem {
@@ -34,7 +35,7 @@ const getSpeakingTests = unstable_cache(
       fields: ["title", "difficulty_level"],
       populate: {
         speaking_topics: {
-          fields: ["topic", "part_number", "preparation_time_seconds", "speaking_time_seconds", "questions"],
+          fields: ["topic", "part_number", "preparation_time_seconds", "speaking_time_seconds", "questions", "cue_points"],
         },
       },
     });
@@ -52,6 +53,7 @@ const getSpeakingTests = unstable_cache(
         preparationTime: t.preparation_time_seconds,
         speakingTime: t.speaking_time_seconds,
         questions: t.questions,
+        cuePoints: Array.isArray(t.cue_points) ? t.cue_points : [],
       })),
     }));
   },

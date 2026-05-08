@@ -928,6 +928,7 @@ export interface ApiSpeakingTopicSpeakingTopic
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+    cue_points: Schema.Attribute.JSON;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       'oneToMany',
@@ -939,7 +940,8 @@ export interface ApiSpeakingTopicSpeakingTopic
       Schema.Attribute.DefaultTo<0>;
     publishedAt: Schema.Attribute.DateTime;
     questions: Schema.Attribute.JSON;
-    speaking_time_seconds: Schema.Attribute.Integer & Schema.Attribute.Required;
+    speaking_time_seconds: Schema.Attribute.Integer &
+      Schema.Attribute.DefaultTo<120>;
     test: Schema.Attribute.Relation<'manyToOne', 'api::test.test'>;
     topic: Schema.Attribute.Text & Schema.Attribute.Required;
     updatedAt: Schema.Attribute.DateTime;

@@ -10,21 +10,25 @@ export async function POST(request: NextRequest) {
   }
 
   const body = await request.json()
-  const { message, attemptId } = body
+  const { message, rating, attemptId } = body
 
-  if (!message || !message.trim()) {
+  if (!rating && (!message || !message.trim())) {
     return NextResponse.json(
-      { error: 'Please enter your feedback.' },
+      { error: 'Please provide a rating or feedback.' },
       { status: 400 }
     )
   }
-  if (message.length > MAX_MESSAGE_LEN) {
+  if (rating && (typeof rating !== 'number' || rating < 1 || rating > 5)) {
+    return NextResponse.json({ error: 'Invalid rating.' }, { status: 400 })
+  }
+  if (message && message.length > MAX_MESSAGE_LEN) {
     return NextResponse.json({ error: 'Feedback too long' }, { status: 400 })
   }
 
   try {
     await create('test-feedbacks', {
-      message: message.trim(),
+      message: message?.trim() || null,
+      rating: rating || null,
       test_attempt: attemptId || null,
       user_id: String(user.id),
     })

@@ -1,5 +1,6 @@
 import Link from "@/components/no-prefetch-link";
 import { find } from "@/lib/strapi/api";
+import { getCurrentUser } from "@/lib/strapi/server";
 import { Button } from "@/components/ui/button";
 import {
   PenTool,
@@ -15,7 +16,8 @@ import { WritingTaskFeedback } from "@/components/test/writing/writing-task-feed
 import { WritingRecommendations } from "@/components/test/writing/writing-recommendations";
 import { AnswerToggle } from "./answer-toggle";
 import { EvaluatingBanner } from "./evaluating-banner";
-import { FeedbackForm } from "./feedback-form";
+import { FeedbackForm } from "./feedback-form"
+import { FeedbackModal } from "@/components/test/common/feedback-modal";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 interface ResultsPageProps {
@@ -34,12 +36,23 @@ interface AnswerResult {
 export default async function ResultsPage({ params }: ResultsPageProps) {
   const { attemptId } = await params;
 
-  const attempts = await find("test-attempts", {
-    filters: { documentId: { $eq: attemptId } },
-    populate: ["test", "user"],
-  });
+  const [attempts, user] = await Promise.all([
+    find("test-attempts", {
+      filters: { documentId: { $eq: attemptId } },
+      populate: ["test", "user"],
+    }),
+    getCurrentUser(),
+  ]);
 
   const attempt = attempts?.[0];
+
+  const userAttempts = user
+    ? await find("test-attempts", {
+        filters: { user: { id: { $eq: user.id } }, status: { $eq: "completed" } },
+        pagination: { pageSize: 2 },
+      })
+    : [];
+  const attemptCount = userAttempts?.length ?? 0;
   if (!attempt) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -150,6 +163,7 @@ export default async function ResultsPage({ params }: ResultsPageProps) {
           id: s.documentId,
           task_id: s.writing_task?.documentId,
         }))}
+        attemptCount={attemptCount}
       />
     );
   }
@@ -169,14 +183,16 @@ export default async function ResultsPage({ params }: ResultsPageProps) {
       }}
       testTitle={testTitle}
       answerResults={answerResults}
+      attemptCount={attemptCount}
     />
   );
 }
 
-function ResultsContent({ attempt, testTitle, answerResults }: {
+function ResultsContent({ attempt, testTitle, answerResults, attemptCount }: {
   attempt: { id: string; test_id: string; module_type: string; status: string; raw_score: number | null; band_score: number | null; time_spent_seconds: number | null; created_at: string; completed_at: string | null };
   testTitle: string;
   answerResults: AnswerResult[];
+  attemptCount: number;
 }) {
   const rawScore = attempt.raw_score || 0;
   const totalQuestions = answerResults.length || 40;
@@ -226,6 +242,7 @@ function ResultsContent({ attempt, testTitle, answerResults }: {
 
       <div id="review" className="border-1 border-border rounded-xl overflow-hidden mb-12"><AnswerToggle answerResults={answerResults} /></div>
       <FeedbackForm attemptId={attempt.id} />
+      <FeedbackModal attemptId={attempt.id} attemptCount={attemptCount} />
       {/* <div className="flex flex-col items-center justify-center gap-6 pb-20 pt-4 text-center">
         <p className="text-base md:text-xl font-bold text-muted-foreground uppercase tracking-tight">Support our mission to keep IELTS practice free for everyone.</p>
         <Button size="lg" className="flex items-center gap-3 px-8 md:px-12 py-6 rounded-xl font-bold text-sm tracking-widest uppercase"><Heart className="h-5 w-5" />Donate to Support</Button>
@@ -234,11 +251,12 @@ function ResultsContent({ attempt, testTitle, answerResults }: {
   );
 }
 
-function WritingResultsContent({ attempt, testTitle, tasks, submissions }: {
+function WritingResultsContent({ attempt, testTitle, tasks, submissions, attemptCount }: {
   attempt: { id: string; test_id: string; module_type: string; status: string; raw_score: number | null; band_score: number | null; time_spent_seconds: number | null; created_at: string; completed_at: string | null };
   testTitle: string;
   tasks: any[];
   submissions: any[];
+  attemptCount: number;
 }) {
   if (attempt.status === "evaluating" || attempt.status === "failed") {
     return <EvaluatingBanner attemptId={attempt.id} />;
@@ -385,6 +403,7 @@ function WritingResultsContent({ attempt, testTitle, tasks, submissions }: {
       </Tabs>
 
       <FeedbackForm attemptId={attempt.id} />
+      <FeedbackModal attemptId={attempt.id} attemptCount={attemptCount} />
     </div>
   );
 }

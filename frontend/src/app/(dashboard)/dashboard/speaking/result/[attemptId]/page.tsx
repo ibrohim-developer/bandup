@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { find } from "@/lib/strapi/api";
+import { getCurrentUser } from "@/lib/strapi/server";
 import { Button } from "@/components/ui/button";
 import {
   Mic,
@@ -14,6 +15,7 @@ import { SpeakingScoreBreakdown } from "@/components/test/speaking/speaking-scor
 import { SpeakingQuestionFeedback } from "@/components/test/speaking/speaking-question-feedback";
 import { SpeakingRecommendations } from "@/components/test/speaking/speaking-recommendations";
 import { SpeakingEvaluatingBanner } from "./evaluating-banner";
+import { FeedbackModal } from "@/components/test/common/feedback-modal";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 interface ResultsPageProps {
@@ -25,10 +27,21 @@ export default async function SpeakingResultPage({
 }: ResultsPageProps) {
   const { attemptId } = await params;
 
-  const attempts = await find("test-attempts", {
-    filters: { documentId: { $eq: attemptId } },
-    populate: ["test", "user"],
-  });
+  const [attempts, user] = await Promise.all([
+    find("test-attempts", {
+      filters: { documentId: { $eq: attemptId } },
+      populate: ["test", "user"],
+    }),
+    getCurrentUser(),
+  ]);
+
+  const userAttempts = user
+    ? await find("test-attempts", {
+        filters: { user: { id: { $eq: user.id } }, status: { $eq: "completed" } },
+        pagination: { pageSize: 2 },
+      })
+    : [];
+  const attemptCount = userAttempts?.length ?? 0;
 
   const attempt = attempts?.[0];
   if (!attempt) {
@@ -286,6 +299,7 @@ export default async function SpeakingResultPage({
           <SpeakingRecommendations actions={uniqueActions} />
         </TabsContent>
       </Tabs>
+      <FeedbackModal attemptId={attemptId} attemptCount={attemptCount} />
     </div>
   );
 }

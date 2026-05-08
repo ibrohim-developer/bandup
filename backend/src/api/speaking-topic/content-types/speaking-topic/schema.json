@@ -27,13 +27,16 @@
     "questions": {
       "type": "json"
     },
+    "cue_points": {
+      "type": "json"
+    },
     "preparation_time_seconds": {
       "type": "integer",
       "default": 0
     },
     "speaking_time_seconds": {
       "type": "integer",
-      "required": true
+      "default": 120
     }
   }
 }
