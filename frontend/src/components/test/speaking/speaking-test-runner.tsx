@@ -345,15 +345,17 @@ export function SpeakingTestRunner({
               </span>
             )}
           </div>
-          <h2 className="text-sm font-bold text-muted-foreground uppercase tracking-wider mb-2">
-            {currentTopic.topic}
-          </h2>
+          {currentTopic.partNumber !== 2 && (
+            <h2 className="text-sm font-bold text-muted-foreground uppercase tracking-wider mb-2">
+              {currentTopic.topic}
+            </h2>
+          )}
           <p className="text-lg font-medium leading-relaxed">{currentQuestion}</p>
 
           {currentTopic.partNumber === 2 && currentTopic.cuePoints && currentTopic.cuePoints.length > 0 && (
             <div className="mt-4 pt-4 border-t border-border">
               <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">You should say:</p>
-              <ul className="space-y-1.5">
+              <ul className="space-y-3">
                 {currentTopic.cuePoints.map((point, i) => (
                   <li key={i} className="flex items-center gap-2 text-sm leading-none">
                     <span className="h-1.5 w-1.5 rounded-full bg-primary shrink-0" />
