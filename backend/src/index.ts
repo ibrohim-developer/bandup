@@ -90,6 +90,20 @@ export default {
 
     console.log('✅ Permissions configured');
 
+    // One-time backfill: mark all pre-existing users as having fired the pixel,
+    // so the next login of a legacy user doesn't get counted as a new signup.
+    // Guarded by a setting so it only ever runs once.
+    const backfillSetting = await pluginStore.get({ key: 'pixel_signup_fired_backfilled' });
+    if (!backfillSetting) {
+      const backfillCount = await strapi.db
+        .connection('up_users')
+        .where({ pixel_signup_fired: false })
+        .orWhereNull('pixel_signup_fired')
+        .update({ pixel_signup_fired: true });
+      await pluginStore.set({ key: 'pixel_signup_fired_backfilled', value: true });
+      console.log(`✅ Backfilled pixel_signup_fired for ${backfillCount} existing users`);
+    }
+
     // Start Telegram bot (long-polling)
     startTelegramBot(strapi);
 

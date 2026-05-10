@@ -29,10 +29,12 @@ export default function SignUpPage() {
       return
     }
 
-    fbEvent('CompleteRegistration', {
-      content_name: 'free_account',
-      status: true,
-    })
+    if (result?.isNewUser) {
+      fbEvent('CompleteRegistration', {
+        content_name: 'free_account',
+        status: true,
+      })
+    }
 
     router.push('/dashboard')
     router.refresh()

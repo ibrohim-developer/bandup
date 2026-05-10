@@ -68,7 +68,6 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
     });
 
     let userId: number;
-    const isNewUser = !existing;
 
     if (existing) {
       await strapi.query('plugin::users-permissions.user').update({
@@ -112,6 +111,14 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
       where: { id: userId },
       populate: ['role'],
     });
+
+    const isNewUser = !user.pixel_signup_fired;
+    if (isNewUser) {
+      await strapi.query('plugin::users-permissions.user').update({
+        where: { id: userId },
+        data: { pixel_signup_fired: true },
+      });
+    }
 
     return ctx.send({ jwt, user, isNewUser });
   },

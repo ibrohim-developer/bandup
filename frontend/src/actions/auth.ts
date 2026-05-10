@@ -40,6 +40,7 @@ export async function signUp(formData: FormData) {
         },
         body: JSON.stringify({
           full_name: fullName,
+          pixel_signup_fired: true,
         }),
       })
     }
@@ -47,7 +48,7 @@ export async function signUp(formData: FormData) {
     return { error: 'Something went wrong' }
   }
 
-  return { success: true }
+  return { success: true, isNewUser: true }
 }
 
 export async function signIn(formData: FormData) {

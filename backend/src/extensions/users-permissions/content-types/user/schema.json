@@ -82,6 +82,10 @@
     },
     "mock_test_expires_at": {
       "type": "datetime"
+    },
+    "pixel_signup_fired": {
+      "type": "boolean",
+      "default": false
     }
   }
 }

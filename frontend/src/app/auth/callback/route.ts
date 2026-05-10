@@ -7,23 +7,18 @@ const COOKIE_NAME = 'strapi_jwt'
 
 export async function GET(request: Request) {
   const url = new URL(request.url)
-  const { searchParams, origin } = url
-  const accessToken = searchParams.get('access_token')
+  const accessToken = url.searchParams.get('access_token')
 
   if (accessToken) {
     try {
-      // Exchange Google's access_token for a Strapi JWT
       const res = await fetch(
         `${STRAPI_URL}/api/auth/google/callback?access_token=${accessToken}`
       )
 
-      console.log('[auth/callback] Strapi exchange status:', res.status)
-
       if (res.ok) {
         const data = await res.json()
-        console.log('[auth/callback] Got Strapi JWT:', !!data.jwt)
 
-        if (data.jwt) {
+        if (data.jwt && data.user?.id) {
           const cookieStore = await cookies()
           cookieStore.set(COOKIE_NAME, data.jwt, {
             httpOnly: true,
@@ -32,8 +27,31 @@ export async function GET(request: Request) {
             path: '/',
             maxAge: 30 * 24 * 60 * 60,
           })
-          const createdAt = data.user?.createdAt ? new Date(data.user.createdAt).getTime() : 0
-          const isNewSignup = createdAt && Date.now() - createdAt < 30_000
+
+          let isNewSignup = false
+          try {
+            const meRes = await fetch(`${STRAPI_URL}/api/users/${data.user.id}`, {
+              headers: { Authorization: `Bearer ${process.env.STRAPI_API_TOKEN}` },
+              cache: 'no-store',
+            })
+            if (meRes.ok) {
+              const me = await meRes.json()
+              if (!me.pixel_signup_fired) {
+                isNewSignup = true
+                await fetch(`${STRAPI_URL}/api/users/${data.user.id}`, {
+                  method: 'PUT',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${process.env.STRAPI_API_TOKEN}`,
+                  },
+                  body: JSON.stringify({ pixel_signup_fired: true }),
+                })
+              }
+            }
+          } catch (err) {
+            console.log('[auth/callback] pixel flag check failed:', err)
+          }
+
           const dest = isNewSignup ? `${SITE_URL}/dashboard?signup=1` : `${SITE_URL}/dashboard`
           return NextResponse.redirect(dest)
         }
@@ -46,7 +64,6 @@ export async function GET(request: Request) {
     }
   }
 
-  // Include debug info in error redirect
   return NextResponse.redirect(
     `${SITE_URL}/sign-in?error=auth_callback_error&has_token=${!!accessToken}`
   )
