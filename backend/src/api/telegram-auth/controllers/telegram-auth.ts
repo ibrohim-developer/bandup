@@ -68,6 +68,7 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
     });
 
     let userId: number;
+    const isNewUser = !existing;
 
     if (existing) {
       await strapi.query('plugin::users-permissions.user').update({
@@ -112,6 +113,6 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
       populate: ['role'],
     });
 
-    return ctx.send({ jwt, user });
+    return ctx.send({ jwt, user, isNewUser });
   },
 });

@@ -1,8 +1,10 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from '@/components/no-prefetch-link'
 import { signUp, signInWithGoogle } from '@/actions/auth'
+import { fbEvent } from '@/lib/pixel'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
@@ -10,6 +12,7 @@ import { BookOpen, Loader2, Eye, EyeOff } from 'lucide-react'
 import { TelegramTab } from '@/components/auth/telegram-tab'
 
 export default function SignUpPage() {
+  const router = useRouter()
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
@@ -23,7 +26,16 @@ export default function SignUpPage() {
     if (result?.error) {
       setError(result.error)
       setIsLoading(false)
+      return
     }
+
+    fbEvent('CompleteRegistration', {
+      content_name: 'free_account',
+      status: true,
+    })
+
+    router.push('/dashboard')
+    router.refresh()
   }
 
   const passwordField = (

@@ -4,6 +4,7 @@ import { useRef, useState, useCallback, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Loader2, Send } from 'lucide-react'
+import { fbEvent } from '@/lib/pixel'
 
 const BOT_USERNAME = process.env.NEXT_PUBLIC_TELEGRAM_BOT_NAME || 'bandupuz_bot'
 const BOT_LINK = `https://t.me/${BOT_USERNAME}?start=auth`
@@ -94,6 +95,12 @@ export function TelegramTab({ redirectTo }: Props) {
         setTimeout(() => focus(0), 0)
         setIsLoading(false)
         return
+      }
+      if (data.isNewUser) {
+        fbEvent('CompleteRegistration', {
+          content_name: 'free_account',
+          status: true,
+        })
       }
       router.push(redirectTo || '/dashboard')
       router.refresh()

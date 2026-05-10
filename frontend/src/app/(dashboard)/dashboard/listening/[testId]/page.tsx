@@ -15,10 +15,11 @@ import { TestOptionsMenu } from "@/components/test/common/test-options-menu";
 import { AudioPlayer } from "@/components/test/listening/audio-player";
 import { MultipleChoice } from "@/components/test/questions/multiple-choice";
 import { MultipleAnswer } from "@/components/test/questions/multiple-answer";
-
+import { MultipleAnswerGroup } from "@/components/test/questions/multiple-answer-group";
 import { FillInBlank } from "@/components/test/questions/fill-in-blank";
 import { TrueFalseNotGiven } from "@/components/test/questions/true-false-not-given";
 import { ContextFillInBlank } from "@/components/test/questions/context-fill-in-blank";
+import { ContextLetterSelect } from "@/components/test/questions/context-letter-select";
 import { MatchingSelect } from "@/components/test/questions/matching-select";
 import { FlowChart } from "@/components/test/questions/flow-chart";
 import { useListeningTest } from "@/hooks/use-listening-test";
@@ -511,41 +512,38 @@ function ListeningTestContent({ testId }: { testId: string }) {
                     );
                   }
 
-                  // MCQ multiple with group-level context and options
+                  // MCQ multiple with group-level context and options —
+                  // single shared list of A-E options where the user picks the required count.
                   const groupOptions = (group.options as string[]) || [];
                   if (group.type === "mcq_multiple" && groupOptions.length > 0) {
                     return (
-                      <div className="space-y-6">
+                      <div className="space-y-4">
                         {contextHtml && (
                           <div
                             className="text-sm leading-relaxed rich-html"
                             dangerouslySetInnerHTML={{ __html: contextHtml }}
                           />
                         )}
-                        {group.questions.map((question) => {
-                          const globalIdx = currentPassage.questions.findIndex((q) => q.id === question.id);
-                          const review = reviewData[question.id];
-                          const value = isReviewMode
-                            ? review?.userAnswer || ""
-                            : answers[question.id]?.answer || "";
-                          return (
-                            <MultipleAnswer
-                              key={question.id}
-                              questionId={question.id}
-                              questionNumber={questionOffset + globalIdx + 1}
-                              questionText={question.text}
-                              options={groupOptions}
-                              value={value}
-                              onChange={(val: string) => handleAnswer(question.id, val)}
-                              disabled={isReviewMode}
-                              reviewMode={isReviewMode}
-                              correctAnswer={review?.correctAnswer}
-                              isCorrect={review?.isCorrect}
-                              isUnanswered={unansweredQuestions.has(question.id)}
-                            />
-                          );
-                        })}
+                        <MultipleAnswerGroup
+                          options={groupOptions}
+                          questions={buildGroupQuestions()}
+                          disabled={isReviewMode}
+                          reviewMode={isReviewMode}
+                        />
                       </div>
+                    );
+                  }
+
+                  // Matching with context blanks — render letter-select dropdowns inline,
+                  // with the shared option list shown above.
+                  const isMatchingType = group.type === "matching_info" || group.type === "matching_headings" || group.type === "matching_names" || group.type === "matching_sentence_endings";
+                  if (isMatchingType && contextHtml && groupOptions.length > 0 && /_{3,}/.test(contextHtml)) {
+                    return (
+                      <ContextLetterSelect
+                        contextHtml={contextHtml}
+                        options={groupOptions}
+                        questions={buildGroupQuestions()}
+                      />
                     );
                   }
 

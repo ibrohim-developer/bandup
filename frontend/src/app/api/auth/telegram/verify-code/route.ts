@@ -36,5 +36,5 @@ export async function POST(request: Request) {
     maxAge: 30 * 24 * 60 * 60,
   })
 
-  return NextResponse.json({ ok: true })
+  return NextResponse.json({ ok: true, isNewUser: !!data.isNewUser })
 }

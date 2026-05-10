@@ -8,6 +8,7 @@ import { JsonLd } from "@/components/json-ld";
 import { TelegramProvider } from "@/components/telegram/telegram-provider";
 import { Toaster } from "sonner";
 import "./globals.css";
+import MetaPixel from "@/components/MetaPixel";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   variable: "--font-plus-jakarta",
@@ -150,6 +151,7 @@ export default function RootLayout({
         <JsonLd data={softwareSchema} />
         <GoogleAnalytics />
         <Suspense fallback={null}>
+          <MetaPixel />
           <TelegramProvider>
             <QueryProvider>
               {children}

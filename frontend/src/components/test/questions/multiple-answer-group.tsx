@@ -24,46 +24,57 @@ interface MultipleAnswerGroupProps {
   reviewMode?: boolean;
 }
 
+const splitLetters = (s: string | undefined) =>
+  s ? s.split(",").map((x) => x.trim()).filter(Boolean) : [];
+
 export function MultipleAnswerGroup({
   options,
   questions,
   disabled,
   reviewMode,
 }: MultipleAnswerGroupProps) {
-  // Each sub-question holds one selected answer (e.g. "C" or "E")
-  const selectedLetters = questions
-    .map((q) => q.value)
-    .filter(Boolean);
+  const maxSelections = questions.length;
 
-  const correctLetters = questions
-    .map((q) => q.correctAnswer)
-    .filter(Boolean) as string[];
+  // Each sub-question stores the same combined value (e.g. "B,C") so it can be
+  // graded against the stored correct_answer ("B,C") on each row.
+  const combinedValue = questions.find((q) => q.value)?.value ?? "";
+  const selectedLetters = splitLetters(combinedValue);
+  const limitReached = selectedLetters.length >= maxSelections;
+
+  // In review mode, prefer the per-row userAnswer (back-compat for older
+  // attempts where each row stored only one letter).
+  const reviewSelected = reviewMode
+    ? Array.from(
+        new Set(questions.flatMap((q) => splitLetters(q.value))),
+      )
+    : selectedLetters;
+
+  const correctLetters = Array.from(
+    new Set(questions.flatMap((q) => splitLetters(q.correctAnswer))),
+  );
 
   const allCorrect = questions.every((q) => q.isCorrect);
   const allUnanswered = questions.every((q) => q.isUnanswered);
 
+  const writeAll = (letters: string[]) => {
+    const next = [...letters].sort().join(",");
+    questions.forEach((q) => q.onChange(next));
+  };
+
   const toggleOption = (optionLetter: string) => {
     if (disabled) return;
-
     if (selectedLetters.includes(optionLetter)) {
-      // Deselect: find which sub-question has this value and clear it
-      const qIdx = questions.findIndex((q) => q.value === optionLetter);
-      if (qIdx >= 0) questions[qIdx].onChange("");
+      writeAll(selectedLetters.filter((l) => l !== optionLetter));
     } else {
-      // Select: find first empty sub-question slot
-      const emptyIdx = questions.findIndex((q) => !q.value);
-      if (emptyIdx >= 0) {
-        questions[emptyIdx].onChange(optionLetter);
-      } else {
-        // All slots full — replace the last one
-        questions[questions.length - 1].onChange(optionLetter);
-      }
+      if (limitReached) return;
+      writeAll([...selectedLetters, optionLetter]);
     }
   };
 
+  const visibleSelected = reviewMode ? reviewSelected : selectedLetters;
+
   return (
     <div>
-      {/* Review badge */}
       {reviewMode && (
         <div className="flex items-center gap-2 mb-3">
           {allUnanswered ? (
@@ -82,23 +93,27 @@ export function MultipleAnswerGroup({
         </div>
       )}
 
+      {!reviewMode && (
+        <p className="text-xs text-muted-foreground mb-2">
+          Choose {maxSelections} answers ({selectedLetters.length}/{maxSelections} selected)
+        </p>
+      )}
+
       <div className="space-y-2">
         {options.map((option, index) => {
           const optionLetter = String.fromCharCode(65 + index);
-          const isSelected = selectedLetters.includes(optionLetter);
+          const isSelected = visibleSelected.includes(optionLetter);
           const isCorrectOption = correctLetters.includes(optionLetter);
+          const isDisabledByLimit = !reviewMode && !isSelected && limitReached && !disabled;
 
           return (
             <div
               key={index}
-              id={
-                isSelected
-                  ? `question-${questions[questions.findIndex((q) => q.value === optionLetter)]?.questionId}`
-                  : undefined
-              }
+              id={isSelected ? `question-${questions[0]?.questionId}` : undefined}
               className={cn(
                 "flex items-center space-x-3 rounded-lg border p-4 transition-colors",
-                !disabled && "cursor-pointer",
+                !disabled && !isDisabledByLimit && "cursor-pointer",
+                isDisabledByLimit && "cursor-not-allowed opacity-50",
                 reviewMode &&
                   isSelected &&
                   isCorrectOption &&
@@ -114,16 +129,16 @@ export function MultipleAnswerGroup({
                 !reviewMode &&
                   isSelected &&
                   "border-primary bg-primary/5",
-                !reviewMode && !isSelected && "hover:bg-muted/50",
+                !reviewMode && !isSelected && !isDisabledByLimit && "hover:bg-muted/50",
               )}
               onClick={() => toggleOption(optionLetter)}
             >
               <Checkbox
                 checked={isSelected}
-                disabled={disabled}
+                disabled={disabled || isDisabledByLimit}
                 className="pointer-events-none"
               />
-              <Label className={cn("flex-1", !disabled && "cursor-pointer")}>
+              <Label className={cn("flex-1", !disabled && !isDisabledByLimit && "cursor-pointer")}>
                 <span className="font-semibold mr-2">{optionLetter}.</span>
                 {option}
               </Label>

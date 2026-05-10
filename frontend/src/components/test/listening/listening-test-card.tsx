@@ -24,7 +24,7 @@ export function ListeningTestCard({
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-3 mb-1 md:mb-2">
           <h3 className="text-lg md:text-xl font-bold truncate">
-            Day {index + 1}: {test.title}
+            {test.title}
           </h3>
           {test.isCompleted && (
             <span className="flex items-center gap-1 text-xs font-bold text-green-600 dark:text-green-400 shrink-0">

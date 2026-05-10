@@ -32,7 +32,10 @@ export async function GET(request: Request) {
             path: '/',
             maxAge: 30 * 24 * 60 * 60,
           })
-          return NextResponse.redirect(`${SITE_URL}/dashboard`)
+          const createdAt = data.user?.createdAt ? new Date(data.user.createdAt).getTime() : 0
+          const isNewSignup = createdAt && Date.now() - createdAt < 30_000
+          const dest = isNewSignup ? `${SITE_URL}/dashboard?signup=1` : `${SITE_URL}/dashboard`
+          return NextResponse.redirect(dest)
         }
       }
 

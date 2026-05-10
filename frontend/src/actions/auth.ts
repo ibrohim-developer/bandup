@@ -47,7 +47,7 @@ export async function signUp(formData: FormData) {
     return { error: 'Something went wrong' }
   }
 
-  redirect('/dashboard')
+  return { success: true }
 }
 
 export async function signIn(formData: FormData) {

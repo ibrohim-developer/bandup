@@ -4,6 +4,7 @@ import { Sidebar } from '@/components/layout/sidebar'
 import { DashboardMain } from '@/components/layout/dashboard-main'
 import { ThemeProvider } from '@/components/theme-provider'
 import { getCurrentUser } from '@/lib/strapi/server'
+import { SignupPixelTracker } from '@/components/signup-pixel-tracker'
 
 export const metadata: Metadata = {
   title: {
@@ -37,6 +38,7 @@ export default function DashboardLayout({
       enableSystem
       disableTransitionOnChange
     >
+      <SignupPixelTracker />
       <div className="flex h-dvh overflow-hidden">
         <Suspense fallback={<Sidebar />}>
           <AuthSidebar />
