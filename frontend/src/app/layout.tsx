@@ -81,6 +81,7 @@ export const metadata: Metadata = {
     images: ["/opengraph-image"],
   },
   icons: {
+    icon: "/icon.png",
     apple: "/apple-touch-icon.png",
   },
   alternates: { canonical: "https://bandup.uz" },

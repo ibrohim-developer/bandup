@@ -121,6 +121,7 @@ export function SpeakingTestRunner({
   };
 
   const isTopicComplete = (topic: SpeakingTopic) =>
+    topic.questions.length > 0 &&
     getTopicRecordingCount(topic) === topic.questions.length;
 
   const allComplete = topics.every((t) => isTopicComplete(t));

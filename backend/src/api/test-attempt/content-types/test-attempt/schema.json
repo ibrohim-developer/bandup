@@ -13,12 +13,14 @@
     "user": {
       "type": "relation",
       "relation": "manyToOne",
-      "target": "plugin::users-permissions.user"
+      "target": "plugin::users-permissions.user",
+      "required": true
     },
     "test": {
       "type": "relation",
       "relation": "manyToOne",
-      "target": "api::test.test"
+      "target": "api::test.test",
+      "required": true
     },
     "module_type": {
       "type": "enumeration",
@@ -42,11 +44,17 @@
     "raw_score": {
       "type": "integer"
     },
+    "total_questions": {
+      "type": "integer"
+    },
     "band_score": {
       "type": "decimal"
     },
     "evaluation_started_at": {
       "type": "datetime"
+    },
+    "result_url": {
+      "type": "string"
     },
     "user_answers": {
       "type": "relation",

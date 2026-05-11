@@ -32,10 +32,53 @@ export async function ModuleHistory({ module }: { module: ModuleConfig }) {
         status: { $eq: 'completed' },
       },
       sort: ['createdAt:desc'],
-      fields: ['band_score', 'raw_score', 'status', 'createdAt', 'time_spent_seconds'],
+      fields: ['band_score', 'raw_score', 'total_questions', 'status', 'createdAt', 'time_spent_seconds'],
       populate: ['test'],
       pagination: { pageSize: 100 },
     })
+  }
+
+  const totalsByTest = new Map<string, number>()
+  if (module.type === 'reading' || module.type === 'listening') {
+    const missingTotalTestIds = Array.from(
+      new Set(
+        attempts
+          .filter((a) => a.total_questions == null)
+          .map((a) => a.test?.documentId)
+          .filter(Boolean) as string[],
+      ),
+    )
+
+    const counts = await Promise.all(
+      missingTotalTestIds.map(async (testId) => {
+        const seen = new Set<string>()
+        if (module.type === 'reading') {
+          const passages = await find('reading-passages', {
+            filters: { test: { documentId: { $eq: testId } } },
+            populate: {
+              question_groups: { populate: { questions: { fields: ['documentId'] } } },
+              questions: { fields: ['documentId'] },
+            },
+          })
+          for (const p of passages ?? []) {
+            for (const g of p.question_groups ?? []) {
+              for (const q of g.questions ?? []) seen.add(q.documentId)
+            }
+            for (const q of p.questions ?? []) seen.add(q.documentId)
+          }
+        } else {
+          const sections = await find('listening-sections', {
+            filters: { test: { documentId: { $eq: testId } } },
+            populate: { questions: { fields: ['documentId'] } },
+          })
+          for (const s of sections ?? []) {
+            for (const q of s.questions ?? []) seen.add(q.documentId)
+          }
+        }
+        return [testId, seen.size] as const
+      }),
+    )
+    for (const [id, n] of counts) totalsByTest.set(id, n)
   }
 
   const { Icon, bgLight, bgDark, textLight, textDark, label } = module
@@ -89,7 +132,8 @@ export async function ModuleHistory({ module }: { module: ModuleConfig }) {
             </thead>
             <tbody className="divide-y divide-border">
               {attempts.map((attempt) => {
-                const score = attempt.band_score ?? attempt.raw_score
+                const rawScore = attempt.raw_score
+                const total = attempt.total_questions ?? totalsByTest.get(attempt.test?.documentId)
                 const title = attempt.test?.title ?? `${label} Test`
                 return (
                   <tr key={attempt.documentId} className="hover:bg-muted/30 transition-colors">
@@ -101,8 +145,8 @@ export async function ModuleHistory({ module }: { module: ModuleConfig }) {
                       {attempt.time_spent_seconds ? formatTime(attempt.time_spent_seconds) : '—'}
                     </td>
                     <td className="px-5 py-4 text-right">
-                      {score != null ? (
-                        <span className={`text-xl font-bold ${textLight} ${textDark}`}>{score}</span>
+                      {rawScore != null && total ? (
+                        <span className={`text-xl font-bold ${textLight} ${textDark}`}>{rawScore}/{total}</span>
                       ) : (
                         <span className="text-muted-foreground">—</span>
                       )}

@@ -57,6 +57,23 @@ export async function POST(request: NextRequest) {
 
   const bandScore = calculateBandScore(rawScore);
 
+  // Count total questions for this test (answered + unanswered)
+  const passages = await find("reading-passages", {
+    filters: { test: { documentId: { $eq: testId } } },
+    populate: {
+      question_groups: { populate: { questions: { fields: ["documentId"] } } },
+      questions: { fields: ["documentId"] },
+    },
+  });
+  const totalQuestionIds = new Set<string>();
+  for (const p of passages ?? []) {
+    for (const g of p.question_groups ?? []) {
+      for (const q of g.questions ?? []) totalQuestionIds.add(q.documentId);
+    }
+    for (const q of p.questions ?? []) totalQuestionIds.add(q.documentId);
+  }
+  const totalQuestions = totalQuestionIds.size;
+
   // Create the test attempt
   const attempt = await create("test-attempts", {
     user: user.id,
@@ -64,7 +81,9 @@ export async function POST(request: NextRequest) {
     module_type: "reading",
     status: "completed",
     raw_score: rawScore,
+    total_questions: totalQuestions,
     band_score: bandScore,
+    started_at: new Date(Date.now() - timeSpentSeconds * 1000).toISOString(),
     completed_at: new Date().toISOString(),
     time_spent_seconds: timeSpentSeconds,
     ...(fullMockAttemptId ? { full_mock_test_attempt: fullMockAttemptId } : {}),
@@ -92,6 +111,6 @@ export async function POST(request: NextRequest) {
     attemptId: attempt.documentId,
     rawScore,
     bandScore,
-    totalQuestions: questionDocIds.length,
+    totalQuestions,
   });
 }

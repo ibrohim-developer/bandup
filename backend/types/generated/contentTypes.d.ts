@@ -1022,6 +1022,7 @@ export interface ApiTestAttemptTestAttempt extends Struct.CollectionTypeSchema {
       Schema.Attribute.Required;
     publishedAt: Schema.Attribute.DateTime;
     raw_score: Schema.Attribute.Integer;
+    result_url: Schema.Attribute.String;
     speaking_submissions: Schema.Attribute.Relation<
       'oneToMany',
       'api::speaking-submission.speaking-submission'
@@ -1031,15 +1032,18 @@ export interface ApiTestAttemptTestAttempt extends Struct.CollectionTypeSchema {
       ['in_progress', 'completed', 'abandoned', 'evaluating', 'failed']
     > &
       Schema.Attribute.DefaultTo<'in_progress'>;
-    test: Schema.Attribute.Relation<'manyToOne', 'api::test.test'>;
+    test: Schema.Attribute.Relation<'manyToOne', 'api::test.test'> &
+      Schema.Attribute.Required;
     time_spent_seconds: Schema.Attribute.Integer;
+    total_questions: Schema.Attribute.Integer;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
     user: Schema.Attribute.Relation<
       'manyToOne',
       'plugin::users-permissions.user'
-    >;
+    > &
+      Schema.Attribute.Required;
     user_answers: Schema.Attribute.Relation<
       'oneToMany',
       'api::user-answer.user-answer'

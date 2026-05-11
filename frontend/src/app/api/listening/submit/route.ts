@@ -56,13 +56,25 @@ export async function POST(request: NextRequest) {
 
   const bandScore = calculateBandScore(rawScore);
 
+  const sections = await find("listening-sections", {
+    filters: { test: { documentId: { $eq: testId } } },
+    populate: { questions: { fields: ["documentId"] } },
+  });
+  const totalQuestionIds = new Set<string>();
+  for (const s of sections ?? []) {
+    for (const q of s.questions ?? []) totalQuestionIds.add(q.documentId);
+  }
+  const totalQuestions = totalQuestionIds.size;
+
   const attempt = await create("test-attempts", {
     user: user.id,
     test: testId,
     module_type: "listening",
     status: "completed",
     raw_score: rawScore,
+    total_questions: totalQuestions,
     band_score: bandScore,
+    started_at: new Date(Date.now() - timeSpentSeconds * 1000).toISOString(),
     completed_at: new Date().toISOString(),
     time_spent_seconds: timeSpentSeconds,
     ...(fullMockAttemptId ? { full_mock_test_attempt: fullMockAttemptId } : {}),
@@ -89,6 +101,6 @@ export async function POST(request: NextRequest) {
     attemptId: attempt.documentId,
     rawScore,
     bandScore,
-    totalQuestions: questionDocIds.length,
+    totalQuestions,
   });
 }

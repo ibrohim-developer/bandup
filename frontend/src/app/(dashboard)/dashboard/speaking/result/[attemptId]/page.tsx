@@ -299,7 +299,7 @@ export default async function SpeakingResultPage({
           <SpeakingRecommendations actions={uniqueActions} />
         </TabsContent>
       </Tabs>
-      <FeedbackModal attemptId={attemptId} attemptCount={attemptCount} />
+      {/* <FeedbackModal attemptId={attemptId} attemptCount={attemptCount} /> */}
     </div>
   );
 }
