@@ -75,7 +75,7 @@ export default async function WritingTestsPage({
 
       <div className="flex items-start md:items-end justify-between gap-3">
         <div>
-          <h2 className="text-2xl md:text-3xl font-black mb-1">Writing Challenge</h2>
+          <h1 className="text-2xl md:text-3xl font-black mb-1">IELTS Writing Practice Tests</h1>
           <p className="text-xs text-muted-foreground font-bold uppercase tracking-widest">
             {totalCount} Available Tests
           </p>

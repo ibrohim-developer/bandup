@@ -1,6 +1,6 @@
 import { ImageResponse } from "next/og";
 
-export const alt = "BandUp — Free IELTS Mock Exams & Practice Tests";
+export const alt = "BandUp — Free IELTS Practice & Mock Exams";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -29,7 +29,7 @@ export default function Image() {
             fontWeight: 700,
           }}
         >
-          Free IELTS Mock Exams
+          Free IELTS Practice & Mock Exams
         </div>
         <div
           style={{

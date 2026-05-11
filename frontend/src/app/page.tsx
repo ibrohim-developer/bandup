@@ -18,9 +18,9 @@ import { Suspense } from "react";
 const courseSchema = {
   "@context": "https://schema.org",
   "@type": "Course",
-  name: "Free IELTS Mock Exams & Practice Tests",
+  name: "Free IELTS Practice & Mock Exams",
   description:
-    "Prepare for IELTS with free mock exams and get instant AI-powered band score predictions. Take a free reading test with answers, free listening test with answers, and try free writing and speaking practice with instant band score evaluation.",
+    "Practise IELTS Reading, Listening, Writing and Speaking for free, or take a full mock exam. Get instant AI-powered band score predictions and detailed feedback on every skill.",
   url: "https://bandup.uz",
   inLanguage: "en",
   educationalLevel: "Intermediate to Advanced",

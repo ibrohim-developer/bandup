@@ -25,11 +25,11 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL("https://bandup.uz"),
   title: {
-    default: "BandUp — Free IELTS Mock Exams & Practice Tests",
+    default: "BandUp — Free IELTS Practice & Mock Exams (Reading, Listening, Writing, Speaking)",
     template: "%s | BandUp IELTS",
   },
   description:
-    "Prepare for IELTS with free mock exams, practice tests, and detailed AI-powered score analysis. Take a free reading test with answers, free listening test with answers, and try free writing and speaking practice with instant band score evaluation.",
+    "Practise IELTS Reading, Listening, Writing and Speaking for free, or take a full mock exam. Get instant AI-powered band score predictions and detailed feedback on every skill.",
   keywords: [
     "IELTS mock exam",
     "IELTS practice test",
@@ -61,23 +61,23 @@ export const metadata: Metadata = {
     locale: "en_US",
     url: "https://bandup.uz",
     siteName: "BandUp IELTS",
-    title: "BandUp — Free IELTS Mock Exams & Practice Tests",
+    title: "BandUp — Free IELTS Practice & Mock Exams",
     description:
-      "Prepare for IELTS with free mock exams and detailed AI-powered score analysis. Access free reading/listening tests with answers and free writing/speaking evaluation.",
+      "Practise IELTS Reading, Listening, Writing and Speaking for free, or take a full mock exam. Instant AI-powered band scoring on every skill.",
     images: [
       {
         url: "/opengraph-image",
         width: 1200,
         height: 630,
-        alt: "BandUp — Free IELTS Mock Exams & Practice Tests",
+        alt: "BandUp — Free IELTS Practice & Mock Exams",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "BandUp — Free IELTS Mock Exams & Practice Tests",
+    title: "BandUp — Free IELTS Practice & Mock Exams",
     description:
-      "Free IELTS mock exams and practice tests with AI-powered scoring.",
+      "Free IELTS skill practice and full mock exams with instant AI band scoring.",
     images: ["/opengraph-image"],
   },
   icons: {
