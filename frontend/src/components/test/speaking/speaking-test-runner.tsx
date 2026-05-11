@@ -54,6 +54,8 @@ export interface SpeakingTestRunnerProps {
   onSubmit: (uploadedTopics: UploadedTopic[], elapsedSeconds: number) => Promise<void>;
   /** Label for the final submit button. Defaults to "Submit Test". */
   submitLabel?: string;
+  /** Allow re-recording a completed answer. Off in the full mock test. Defaults to true. */
+  allowReRecord?: boolean;
 }
 
 const recordingKey = (topicId: string, qIndex: number) => `${topicId}:${qIndex}`;

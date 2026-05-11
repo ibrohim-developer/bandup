@@ -36,7 +36,10 @@ export async function POST(request: NextRequest) {
     "audio/x-wav",
     "audio/wave",
   ]);
-  if (!file.type || !ALLOWED_AUDIO_MIMES.has(file.type)) {
+  // MediaRecorder emits types with codec params (e.g. "audio/webm;codecs=opus",
+  // "audio/mp4;codecs=mp4a.40.2"). Match on the base MIME, not the full string.
+  const baseMime = file.type.split(";")[0].trim().toLowerCase();
+  if (!baseMime || !ALLOWED_AUDIO_MIMES.has(baseMime)) {
     return NextResponse.json({ error: "Unsupported audio format" }, { status: 400 });
   }
 

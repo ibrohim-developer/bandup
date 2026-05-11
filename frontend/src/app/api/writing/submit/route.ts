@@ -63,5 +63,23 @@ export async function POST(request: NextRequest) {
     });
   }
 
+  // For full-mock submissions, kick off evaluation server-side so it runs in
+  // parallel with the speaking section. The client is not responsible for
+  // triggering it — by the time the user reaches the results page (~15 min
+  // later, after speaking), the writing band score is already persisted.
+  // Fire-and-forget: we do not await so the submit response returns immediately.
+  if (fullMockAttemptId) {
+    const origin = request.nextUrl.origin;
+    const cookie = request.headers.get("cookie") ?? "";
+    fetch(`${origin}/api/writing/evaluate`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        cookie,
+      },
+      body: JSON.stringify({ attemptId: attempt.documentId }),
+    }).catch(() => {});
+  }
+
   return NextResponse.json({ attemptId: attempt.documentId });
 }

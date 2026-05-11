@@ -62,42 +62,41 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "No submissions found" }, { status: 404 });
   }
 
-  // Evaluate each submission
+  // Evaluate all submissions in parallel. A full mock has ~9 questions; running them
+  // serially took ~3 min because each Gemini Pro call is ~20s. Parallel = ~20-30s total.
   const STRAPI_URL = process.env.NEXT_PUBLIC_STRAPI_URL || "http://localhost:1337";
-  let totalBand = 0;
-  let scoredCount = 0;
 
-  for (const sub of submissions) {
-    const topic = sub.speaking_topic;
-    const questions = Array.isArray(topic?.questions) ? topic.questions : [];
-    const questionText = questions[sub.question_index] || `Question ${sub.question_index + 1}`;
+  const results = await Promise.all(
+    submissions.map(async (sub: any) => {
+      const topic = sub.speaking_topic;
+      const questions = Array.isArray(topic?.questions) ? topic.questions : [];
+      const questionText = questions[sub.question_index] || `Question ${sub.question_index + 1}`;
 
-    // Download audio from Strapi
-    const audioUrl = sub.audio_url?.startsWith("http")
-      ? sub.audio_url
-      : `${STRAPI_URL}${sub.audio_url}`;
+      const audioUrl = sub.audio_url?.startsWith("http")
+        ? sub.audio_url
+        : `${STRAPI_URL}${sub.audio_url}`;
 
-    try {
-      const audioRes = await fetch(audioUrl);
-      if (!audioRes.ok) {
-        console.error(`[speaking/evaluate] Failed to fetch audio: ${audioRes.status}`);
-        continue;
-      }
+      try {
+        const audioRes = await fetch(audioUrl);
+        if (!audioRes.ok) {
+          console.error(`[speaking/evaluate] Failed to fetch audio: ${audioRes.status}`);
+          return null;
+        }
 
-      const audioBuffer = await audioRes.arrayBuffer();
-      // Strapi serves files with the proper Content-Type based on extension. iOS uploads as
-      // audio/mp4, Chrome as audio/webm — pass the actual type to Gemini, not a guess.
-      const audioMime = (audioRes.headers.get("content-type") || "audio/webm").split(";")[0].trim();
-      const evaluation = await evaluateSpeaking(
-        questionText,
-        topic?.topic || "",
-        topic?.part_number || 1,
-        Buffer.from(audioBuffer),
-        user.id,
-        audioMime
-      );
+        const audioBuffer = await audioRes.arrayBuffer();
+        // Strapi serves files with the proper Content-Type based on extension.
+        const audioMime = (audioRes.headers.get("content-type") || "audio/webm").split(";")[0].trim();
+        const evaluation = await evaluateSpeaking(
+          questionText,
+          topic?.topic || "",
+          topic?.part_number || 1,
+          Buffer.from(audioBuffer),
+          user.id,
+          audioMime
+        );
 
-      if (evaluation) {
+        if (!evaluation) return null;
+
         await update("speaking-submissions", sub.documentId, {
           transcript: evaluation.transcript,
           fluency_score: evaluation.fluencyScore,
@@ -108,17 +107,17 @@ export async function POST(request: NextRequest) {
           feedback: JSON.stringify(evaluation.feedback),
         });
 
-        totalBand += evaluation.overallBandScore;
-        scoredCount++;
+        return evaluation.overallBandScore;
+      } catch (err) {
+        console.error(`[speaking/evaluate] Error evaluating submission:`, err);
+        return null;
       }
-    } catch (err) {
-      console.error(`[speaking/evaluate] Error evaluating submission:`, err);
-    }
-  }
+    })
+  );
 
-  // Calculate overall band score
-  const bandScore = scoredCount > 0
-    ? Math.round((totalBand / scoredCount) * 2) / 2
+  const scored = results.filter((b): b is number => typeof b === "number");
+  const bandScore = scored.length > 0
+    ? Math.round((scored.reduce((a, b) => a + b, 0) / scored.length) * 2) / 2
     : null;
 
   await update("test-attempts", attemptId, {

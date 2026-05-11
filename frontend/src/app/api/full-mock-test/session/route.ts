@@ -45,30 +45,45 @@ export async function PATCH(request: NextRequest) {
     if (body.speakingScore !== undefined) patch.speaking_score = body.speakingScore;
 
     if (body.complete) {
-        patch.status = "completed";
-        patch.completed_at = new Date().toISOString();
-
         const existing = await findOne("full-mock-test-attempts", body.sessionId, {
             fields: ["listening_score", "reading_score", "writing_score", "speaking_score"],
+            populate: { test_attempts: { fields: ["module_type"] } },
         });
 
-        const merged = {
-            listening: patch.listening_score ?? existing?.listening_score,
-            reading: patch.reading_score ?? existing?.reading_score,
-            writing: patch.writing_score ?? existing?.writing_score,
-            speaking: patch.speaking_score ?? existing?.speaking_score,
-        };
-        const bands = Object.values(merged).filter(
-            (b): b is number => typeof b === "number" && b > 0,
+        // Only mark the session completed when all four module attempts are linked.
+        // Without this, doing speaking first would close the session before LRW could
+        // join it, orphaning the speaking attempt in a separate session.
+        const modules = new Set<string>(
+            ((existing as any)?.test_attempts ?? []).map((a: any) => a.module_type),
         );
-        if (bands.length === 4) {
-            patch.overall_band_score =
-                Math.round((bands.reduce((a, b) => a + b, 0) / 4) * 2) / 2;
+        const allModulesPresent =
+            modules.has("listening") &&
+            modules.has("reading") &&
+            modules.has("writing") &&
+            modules.has("speaking");
+
+        if (allModulesPresent) {
+            patch.status = "completed";
+            patch.completed_at = new Date().toISOString();
+
+            const merged = {
+                listening: patch.listening_score ?? existing?.listening_score,
+                reading: patch.reading_score ?? existing?.reading_score,
+                writing: patch.writing_score ?? existing?.writing_score,
+                speaking: patch.speaking_score ?? existing?.speaking_score,
+            };
+            const bands = Object.values(merged).filter(
+                (b): b is number => typeof b === "number" && b > 0,
+            );
+            if (bands.length === 4) {
+                patch.overall_band_score =
+                    Math.round((bands.reduce((a, b) => a + b, 0) / 4) * 2) / 2;
+            }
         }
     }
 
     await update("full-mock-test-attempts", body.sessionId, patch);
-    return NextResponse.json({ ok: true });
+    return NextResponse.json({ ok: true, completed: patch.status === "completed" });
 }
 
 // Find the latest in-progress session for this user+test (used by speaking page).

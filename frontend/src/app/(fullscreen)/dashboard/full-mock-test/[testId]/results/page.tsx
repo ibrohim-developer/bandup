@@ -1,5 +1,5 @@
 import Link from "@/components/no-prefetch-link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { find, findOne } from "@/lib/strapi/api";
 import { getToken, getCurrentUser } from "@/lib/strapi/server";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { ModuleReview } from "./module-review";
 import { WritingEvalTrigger } from "./writing-eval-trigger";
+import { PremiumUpgradeDialog } from "@/components/premium-upgrade-dialog";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -165,8 +166,11 @@ export default async function FullMockResultsPage({
     const writingAttempt = byModule.writing;
     const speakingAttempt = byModule.speaking;
 
+    // Results are only meaningful when all four modules have been attempted.
+    // Otherwise (e.g. user did speaking before LRW) send them back to the
+    // landing page, which shows the correct next step.
     if (!listeningAttempt || !readingAttempt || !writingAttempt || !speakingAttempt) {
-        notFound();
+        redirect(`/dashboard/full-mock-test/${testId}`);
     }
 
     const [listeningAnswers, readingAnswers, writingSubmissions, speakingSubmissions] = await Promise.all([
@@ -383,11 +387,13 @@ export default async function FullMockResultsPage({
                         View All Tests
                     </Button>
                 </Link>
-                <Link href={`/dashboard/full-mock-test/${testId}`}>
-                    <Button size="lg" className="w-full sm:w-auto gap-2">
-                        <RotateCcw className="h-4 w-4" /> Retake
-                    </Button>
-                </Link>
+                <PremiumUpgradeDialog
+                    trigger={
+                        <Button size="lg" className="w-full sm:w-auto gap-2">
+                            <RotateCcw className="h-4 w-4" /> Retake
+                        </Button>
+                    }
+                />
             </div>
         </div>
     );

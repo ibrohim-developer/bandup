@@ -4,8 +4,8 @@ import { useState, useRef, useCallback, useEffect } from "react";
 import { Mic, Square, Play, Pause, RotateCcw, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-const MIN_BLOB_SIZE = 5000; // 5KB — silent webm is typically 2-5KB
-const SILENCE_RMS_THRESHOLD = 0.01; // RMS amplitude threshold for speech detection
+const MIN_BLOB_SIZE = 5000; // 5KB — silent ogg/opus is typically 2-5KB
+const SILENCE_RMS_THRESHOLD = 0.01;
 
 // Official IELTS Part 2 monologue: 1–2 minutes, examiner stops at exactly 2 minutes.
 // We auto-stop at 2:05 to give a small buffer.
@@ -15,29 +15,13 @@ const PART_LIMITS: Record<number, { min: number; max: number | null }> = {
   3: { min: 5, max: null },
 };
 
-// Pick the first MIME type the browser actually supports.
-// iOS Safari only supports mp4; Chrome/Firefox/Edge support webm/opus.
-function pickRecorderMime(): string | undefined {
-  if (typeof MediaRecorder === "undefined") return undefined;
-  const candidates = [
-    "audio/webm;codecs=opus",
-    "audio/webm",
-    "audio/mp4;codecs=mp4a.40.2",
-    "audio/mp4",
-  ];
-  for (const m of candidates) {
-    if (MediaRecorder.isTypeSupported(m)) return m;
-  }
-  return undefined;
-}
+// opus-recorder produces OGG-Opus (audio/ogg), which Gemini accepts directly —
+// unlike MediaRecorder's audio/webm or iOS Safari's audio/mp4, which Gemini
+// rejects with INVALID_ARGUMENT. Every browser now produces the same format.
+const OUTPUT_MIME = "audio/ogg";
+const OUTPUT_EXTENSION = "ogg";
 
-function extensionFor(mime: string): string {
-  if (mime.includes("webm")) return "webm";
-  if (mime.includes("mp4")) return "m4a";
-  if (mime.includes("ogg")) return "ogg";
-  if (mime.includes("wav")) return "wav";
-  return "bin";
-}
+type OpusRecorderInstance = import("opus-recorder").default;
 
 export interface RecordingResult {
   blob: Blob;
@@ -64,15 +48,15 @@ export function VoiceRecorder({ onRecordingComplete, onRecordingCleared, onRecor
   const [isPlaying, setIsPlaying] = useState(false);
   const [warning, setWarning] = useState<string | null>(null);
 
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const chunksRef = useRef<Blob[]>([]);
+  const recorderRef = useRef<OpusRecorderInstance | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+  const audioContextRef = useRef<AudioContext | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const blobRef = useRef<Blob | null>(null);
   const startTimeRef = useRef(0);
 
   // Silence detection refs
-  const audioContextRef = useRef<AudioContext | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
   const hasSignificantAudioRef = useRef(false);
   const silenceCheckRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -84,57 +68,73 @@ export function VoiceRecorder({ onRecordingComplete, onRecordingCleared, onRecor
     }
   }, []);
 
-  const cleanupAudioAnalysis = useCallback(() => {
+  const teardown = useCallback(() => {
     if (silenceCheckRef.current) {
       clearInterval(silenceCheckRef.current);
       silenceCheckRef.current = null;
     }
+    analyserRef.current = null;
+    if (recorderRef.current) {
+      try {
+        recorderRef.current.close();
+      } catch {}
+      recorderRef.current = null;
+    }
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((t) => t.stop());
+      streamRef.current = null;
+    }
     if (audioContextRef.current && audioContextRef.current.state !== "closed") {
-      audioContextRef.current.close();
+      audioContextRef.current.close().catch(() => {});
       audioContextRef.current = null;
     }
-    analyserRef.current = null;
   }, []);
 
   useEffect(() => {
     return () => {
       clearTimer();
-      cleanupAudioAnalysis();
-      if (mediaRecorderRef.current?.state === "recording") {
-        mediaRecorderRef.current.stop();
-      }
+      teardown();
       if (audioRef.current) {
         audioRef.current.pause();
         audioRef.current = null;
       }
     };
-  }, [clearTimer, cleanupAudioAnalysis]);
+  }, [clearTimer, teardown]);
 
   const startRecording = useCallback(async () => {
     try {
       setWarning(null);
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const pickedMime = pickRecorderMime();
-      // If the browser supports nothing we recognise, let it pick — passing an unsupported
-      // mimeType to MediaRecorder throws on iOS Safari, which is what was breaking uploads.
-      const mediaRecorder = pickedMime
-        ? new MediaRecorder(stream, { mimeType: pickedMime })
-        : new MediaRecorder(stream);
-      const actualMime = mediaRecorder.mimeType || pickedMime || "audio/webm";
 
-      chunksRef.current = [];
-      mediaRecorderRef.current = mediaRecorder;
+      const { default: Recorder } = await import("opus-recorder");
+
+      if (!Recorder.isRecordingSupported()) {
+        alert("Your browser does not support audio recording. Please use Chrome, Firefox, or Safari 14.5+.");
+        return;
+      }
+
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      streamRef.current = stream;
+
+      const audioContext = new AudioContext();
+      audioContextRef.current = audioContext;
+      const sourceNode = audioContext.createMediaStreamSource(stream);
+
+      const recorder = new Recorder({
+        encoderPath: "/opus-encoderWorker.min.js",
+        sourceNode,
+        numberOfChannels: 1,
+        encoderSampleRate: 48000,
+        encoderApplication: 2048, // voice-optimised
+        streamPages: false,
+      });
+      recorderRef.current = recorder;
       hasSignificantAudioRef.current = false;
 
-      // Set up Web Audio API for silence detection
+      // Silence detection on the same stream
       try {
-        const audioContext = new AudioContext();
-        const source = audioContext.createMediaStreamSource(stream);
         const analyser = audioContext.createAnalyser();
         analyser.fftSize = 2048;
-        source.connect(analyser);
-
-        audioContextRef.current = audioContext;
+        sourceNode.connect(analyser);
         analyserRef.current = analyser;
 
         const dataArray = new Float32Array(analyser.fftSize);
@@ -151,23 +151,16 @@ export function VoiceRecorder({ onRecordingComplete, onRecordingCleared, onRecor
           }
         }, 200);
       } catch {
-        // If Web Audio API fails, skip silence detection
         hasSignificantAudioRef.current = true;
       }
 
-      mediaRecorder.ondataavailable = (e) => {
-        if (e.data.size > 0) chunksRef.current.push(e.data);
-      };
-
-      mediaRecorder.onstop = () => {
-        stream.getTracks().forEach((t) => t.stop());
-        cleanupAudioAnalysis();
-
-        const blob = new Blob(chunksRef.current, { type: actualMime });
+      recorder.ondataavailable = (data: Uint8Array) => {
+        const blob = new Blob([data], { type: OUTPUT_MIME });
         const duration = Math.round((Date.now() - startTimeRef.current) / 1000);
-        const extension = extensionFor(actualMime);
 
-        // Validate recording
+        // We're done with the recorder/stream/context at this point.
+        teardown();
+
         if (duration < minDuration) {
           const reason = partNumber === 2
             ? `Part 2 requires a 1–2 minute monologue. Please speak for at least ${minDuration} seconds.`
@@ -205,12 +198,12 @@ export function VoiceRecorder({ onRecordingComplete, onRecordingCleared, onRecor
         setState("recorded");
         setWarning(null);
         onRecordingStateChange?.(false);
-        onRecordingComplete(blob, duration, { mimeType: actualMime, extension });
+        onRecordingComplete(blob, duration, { mimeType: OUTPUT_MIME, extension: OUTPUT_EXTENSION });
       };
 
+      await recorder.start();
       startTimeRef.current = Date.now();
       setElapsed(0);
-      mediaRecorder.start(1000);
       setState("recording");
       onRecordingStateChange?.(true);
 
@@ -222,14 +215,17 @@ export function VoiceRecorder({ onRecordingComplete, onRecordingCleared, onRecor
         }
       }, 500);
     } catch {
+      teardown();
       alert("Microphone access is required to record your answer.");
     }
-  }, [onRecordingComplete, onRecordingRejected, onRecordingStateChange, cleanupAudioAnalysis, minDuration, maxDuration, partNumber]);
+  }, [onRecordingComplete, onRecordingRejected, onRecordingStateChange, teardown, minDuration, maxDuration, partNumber]);
 
   const stopRecording = useCallback(() => {
     clearTimer();
-    if (mediaRecorderRef.current?.state === "recording") {
-      mediaRecorderRef.current.stop();
+    const rec = recorderRef.current;
+    if (rec) {
+      // ondataavailable fires before stop() resolves; we handle finalize there.
+      rec.stop().catch(() => {});
     }
   }, [clearTimer]);
 

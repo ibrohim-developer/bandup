@@ -103,8 +103,9 @@ export default function FullMockSpeakingPage({
     }
     const { bandScore: speakingScore } = await evalRes.json();
 
+    let completed = false;
     if (sessionId) {
-      await fetch("/api/full-mock-test/session", {
+      const patchRes = await fetch("/api/full-mock-test/session", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -113,9 +114,18 @@ export default function FullMockSpeakingPage({
           complete: true,
         }),
       });
+      const patchJson = await patchRes.json().catch(() => null);
+      completed = Boolean(patchJson?.completed);
     }
 
-    router.push(`/dashboard/full-mock-test/${testId}/results`);
+    // If all four modules are now done, go straight to results. Otherwise (user did
+    // speaking before LRW), go to the test landing page — /results would 404 because
+    // the L/R/W attempts don't exist yet.
+    router.push(
+      completed
+        ? `/dashboard/full-mock-test/${testId}/results`
+        : `/dashboard/full-mock-test/${testId}`,
+    );
   };
 
   if (loading) {

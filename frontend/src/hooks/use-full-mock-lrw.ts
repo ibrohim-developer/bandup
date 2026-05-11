@@ -306,13 +306,19 @@ export function useFullMockLRW(testId: string) {
                 content: writingContents[task.id] || "",
             }));
 
-            // Create (or reuse) a full-mock-test-attempt session to group the 4 module attempts
-            const sessionRes = await fetch("/api/full-mock-test/session", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ testId }),
-            });
-            const { sessionId } = await sessionRes.json();
+            // Reuse an in-progress session if the user already started this test (e.g. did
+            // speaking first). Otherwise create a new one. Without this, doing speaking-then-LRW
+            // creates two sessions and the speaking attempt looks orphaned in the UI.
+            const sessionGetRes = await fetch(`/api/full-mock-test/session?testId=${testId}`);
+            let { sessionId } = await sessionGetRes.json();
+            if (!sessionId) {
+                const sessionCreateRes = await fetch("/api/full-mock-test/session", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ testId }),
+                });
+                ({ sessionId } = await sessionCreateRes.json());
+            }
 
             // Submit all 3 modules, tagging each attempt with the session
             const [listeningRes, readingRes, writingRes] = await Promise.all([
@@ -354,13 +360,16 @@ export function useFullMockLRW(testId: string) {
                 }),
             ]);
 
-            const [listeningJson, readingJson] = await Promise.all([
+            const [listeningJson, readingJson, writingJson] = await Promise.all([
                 listeningRes.json(),
                 readingRes.json(),
                 writingRes.json(),
             ]);
 
-            // Persist L+R band scores on the session. Writing is still evaluating; speaking hasn't started.
+            // Persist L+R band scores on the session. Writing is still evaluating; speaking
+            // is either still pending or already done if the user did it first. Either way,
+            // pass `complete: true` — the server only marks completed when all 4 module
+            // attempts are linked to this session, so this is a no-op in the LRW-first flow.
             await fetch("/api/full-mock-test/session", {
                 method: "PATCH",
                 headers: { "Content-Type": "application/json" },
@@ -368,8 +377,14 @@ export function useFullMockLRW(testId: string) {
                     sessionId,
                     listeningScore: listeningJson?.bandScore ?? null,
                     readingScore: readingJson?.bandScore ?? null,
+                    complete: true,
                 }),
             });
+
+            // Note: writing evaluation is kicked off server-side inside /api/writing/submit
+            // when a full-mock session is present, so it runs in parallel with speaking
+            // regardless of what the client does (tab close, navigation, etc.).
+            void writingJson;
 
             // Save silently — results are revealed after speaking completes
             router.push(`/dashboard/full-mock-test/${testId}`);
