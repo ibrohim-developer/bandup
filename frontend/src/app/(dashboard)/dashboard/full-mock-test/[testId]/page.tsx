@@ -253,15 +253,15 @@ export default async function FullMockTestDetailPage({
                         <ul className="space-y-2 text-sm text-muted-foreground">
                             <li className="flex items-center gap-3">
                                 <span className="text-primary">•</span>
-                                You can pause and resume your test anytime, but the timer continues running
+                                If you leave the page mid-test, your answers will be cleared and you'll need to start over
                             </li>
                             <li className="flex items-center gap-3">
                                 <span className="text-primary">•</span>
-                                Complete each section in one sitting for accurate results
+                                Use headphones and find a quiet environment to simulate real exam conditions
                             </li>
                             <li className="flex items-center gap-3">
                                 <span className="text-primary">•</span>
-                                You&apos;ll receive detailed AI feedback on all sections after completion
+                                You&apos;ll receive detailed AI feedback on your Writing and Speaking after completion
                             </li>
                         </ul>
                     </div>

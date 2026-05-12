@@ -21,6 +21,7 @@ interface TestState {
 
   // Actions
   initTest: (testId: string, moduleType: 'listening' | 'reading' | 'writing', totalTime: number, startTimer?: boolean) => void
+  switchModule: (moduleType: 'listening' | 'reading' | 'writing', totalTime: number, startTimer?: boolean) => void
   setAnswer: (questionId: string, answer: string) => void
   toggleFlag: (questionId: string) => void
   goToQuestion: (section: number, question: number) => void
@@ -52,6 +53,17 @@ export const useTestStore = create<TestState>()(
         isTimerRunning: startTimer,
         answers: {},
         flaggedQuestions: [],
+      }),
+
+      // Module transition within a single attempt (e.g. full-mock LRW going
+      // listening → reading → writing). Updates timer + module but preserves
+      // answers and flagged questions, which are submitted together at the end.
+      switchModule: (moduleType, totalTime, startTimer = true) => set({
+        moduleType,
+        currentSection: 1,
+        currentQuestion: 1,
+        timeRemaining: totalTime,
+        isTimerRunning: startTimer,
       }),
 
       setAnswer: (questionId, answer) => set((state) => ({

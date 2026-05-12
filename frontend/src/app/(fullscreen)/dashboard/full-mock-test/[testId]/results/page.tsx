@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { ModuleReview } from "./module-review";
 import { WritingEvalTrigger } from "./writing-eval-trigger";
+import { SpeakingEvalTrigger } from "./speaking-eval-trigger";
 import { PremiumUpgradeDialog } from "@/components/premium-upgrade-dialog";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -258,10 +259,10 @@ export default async function FullMockResultsPage({
     return (
         <div className="max-w-5xl mx-auto mt-8 px-4 md:px-6 pb-20">
             <Link
-                href={`/dashboard/full-mock-test/${testId}`}
+                href="/dashboard/full-mock-test"
                 className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground mb-6 text-sm font-medium"
             >
-                <ArrowLeft className="h-4 w-4" /> Back to Test
+                <ArrowLeft className="h-4 w-4" /> Back to Tests
             </Link>
 
             {/* Hero overall score */}
@@ -311,6 +312,10 @@ export default async function FullMockResultsPage({
                 hard-reloads the page once Gemini scoring completes so the new band shows up. */}
             {writingAttempt.status === "evaluating" && (
                 <WritingEvalTrigger attemptId={writingAttempt.documentId} />
+            )}
+            {/* Same for speaking — covers the case where the user closed the tab mid-eval. */}
+            {speakingAttempt.status === "evaluating" && (
+                <SpeakingEvalTrigger attemptId={speakingAttempt.documentId} />
             )}
 
             {/* Module band bars */}

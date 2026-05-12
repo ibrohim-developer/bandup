@@ -268,6 +268,11 @@ export function SpeakingTestRunner({
                 ? "Please wait while we upload your audio files."
                 : "This usually takes 15-30 seconds. Please wait."}
             </p>
+            {!submitting && (
+              <p className="mt-4 text-xs md:text-sm text-amber-600 dark:text-amber-400 max-w-md mx-auto">
+                Do not leave or close this tab — your speaking results may be lost if you do.
+              </p>
+            )}
           </div>
         </div>
       </div>

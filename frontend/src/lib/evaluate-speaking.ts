@@ -161,8 +161,8 @@ OUTPUT JSON SCHEMA:
     "pronunciation": number
   },
   "summary": {
-    "strengths": [string, string, string],
-    "weaknesses": [string, string, string]
+    "strengths": string[],
+    "weaknesses": string[]
   },
   "criterion_feedback": {
     "fluency_and_coherence": {
@@ -206,6 +206,24 @@ ADDITIONAL RULES:
 - top_5_actions: concrete, actionable items the candidate can practise.
 - If audio is silent or unintelligible: set all criterion scores to 0, transcript to "(no audible response)", and explain in feedback.
 - Be concise inside JSON strings.
+
+STRENGTHS RULES (CRITICAL):
+- "strengths" is a list of GENUINE strengths only. It can be empty ([]).
+- A 3-second broken response has NO strengths. Return [].
+- An off-topic response has NO strengths. Return [].
+- DO NOT invent fake strengths to pad the response. The following are baseline expectations, NOT strengths, and must NEVER appear:
+  * "Attempted to answer the question" / "Addressed the question" / "Topic was relevant"
+  * "Some individual words were intelligible"
+  * "The candidate spoke English" / "Used basic vocabulary"
+  * "Speech is generally understandable" / "Speech is generally clear"
+  * "The response is of an appropriate length" / "Spoke for the expected duration"
+  * "Used simple sentences correctly"
+  * "Maintained the flow of speech" (vague)
+  * "Communicated the main idea" (baseline if the message got across at all)
+- Rule of thumb: if the "strength" is just a paraphrase of a band descriptor or a description of what the candidate was *supposed* to do, it is NOT a strength. A strength must be something the candidate did SPECIFICALLY WELL beyond expectations for their band.
+- A real strength is something concrete and quotable: "Used the linker 'therefore' correctly", "Pronounced /θ/ accurately in 'think'", "Used a complex conditional sentence ('if I had known...')", "Developed the idea with a specific example about her grandmother".
+- It is COMPLETELY FINE to return 0 or 1 strengths. Quality over quantity. Padding with vague positives lies to the candidate.
+- Same rule applies to criterion_feedback.feedback: do not write filler praise. If there is nothing positive to say, say what is wrong.
 
 Return ONLY JSON.`;
 

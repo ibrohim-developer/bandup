@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useTestStore } from "@/stores/test-store";
 import { TEST_CONFIG } from "@/lib/constants/test-config";
@@ -65,13 +65,9 @@ interface SectionTimers {
     writing: number;
 }
 
-interface Answer {
-    answer: string;
-}
-
 export function useFullMockLRW(testId: string) {
     const router = useRouter();
-    const { initTest, answers, setAnswer, timeRemaining, resumeTimer, pauseTimer } =
+    const { initTest, switchModule, answers, setAnswer, timeRemaining, resumeTimer, pauseTimer } =
         useTestStore();
 
     // Module state
@@ -101,10 +97,6 @@ export function useFullMockLRW(testId: string) {
         writing: TEST_CONFIG.writing.totalTime,
     });
 
-    // All answers stored per module
-    const [listeningAnswers, setListeningAnswers] = useState<Record<string, Answer>>({});
-    const [readingAnswers, setReadingAnswers] = useState<Record<string, Answer>>({});
-
     // Submission state
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isTimeUp, setIsTimeUp] = useState(false);
@@ -125,6 +117,22 @@ export function useFullMockLRW(testId: string) {
             setIsLoading(false);
             return;
         }
+
+        // Fresh start: clear any leaked state from a prior attempt (browser back,
+        // tab close, etc. — paths that bypass the in-app "Leave anyway" flow).
+        useTestStore.getState().resetTest();
+        try {
+            await useTestStore.persist.clearStorage();
+        } catch { }
+
+        // Fire-and-forget: abandon any in-progress server attempt for this user+test
+        // so the session GET in handleSubmit doesn't reuse it. Safe to run in parallel
+        // with loadTestData — submission happens minutes later.
+        void fetch("/api/full-mock-test/abandon", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ testId }),
+        }).catch(() => { });
 
         try {
             // Fetch all 3 modules in parallel
@@ -195,23 +203,22 @@ export function useFullMockLRW(testId: string) {
         loadTestData();
     }, [loadTestData]);
 
-    // Handle answer for current module
+    // Answers live in the Zustand store; module-specific views are derived below
+    // from per-module question-id sets.
     const handleAnswer = useCallback(
         (questionId: string, value: string) => {
             setAnswer(questionId, value);
-            if (activeModule === "listening") {
-                setListeningAnswers((prev) => ({
-                    ...prev,
-                    [questionId]: { answer: value },
-                }));
-            } else if (activeModule === "reading") {
-                setReadingAnswers((prev) => ({
-                    ...prev,
-                    [questionId]: { answer: value },
-                }));
-            }
         },
-        [activeModule, setAnswer],
+        [setAnswer],
+    );
+
+    const listeningQuestionIds = useMemo(
+        () => new Set(listeningSections.flatMap((s) => s.questions.map((q) => q.id))),
+        [listeningSections],
+    );
+    const readingQuestionIds = useMemo(
+        () => new Set(readingPassages.flatMap((p) => p.questions.map((q) => q.id))),
+        [readingPassages],
     );
 
     // Set writing content
@@ -240,19 +247,20 @@ export function useFullMockLRW(testId: string) {
             setActiveModule(nextModule);
             const nextTime = sectionTimers[nextModule];
 
-            // Re-init test store with new module time
-            initTest(testId, nextModule as "listening" | "reading" | "writing", nextTime, false);
+            // Switch module + reset timer, but PRESERVE answers (they're
+            // submitted together at the end of writing).
+            switchModule(nextModule as "listening" | "reading" | "writing", nextTime, false);
             setShowSectionTransition(false);
         }
-    }, [activeModule, timeRemaining, sectionTimers, testId, initTest, pauseTimer]);
+    }, [activeModule, timeRemaining, sectionTimers, switchModule, pauseTimer]);
 
-    // Calculate answered counts per module
-    const listeningAnsweredCount = Object.values(listeningAnswers).filter(
-        (a) => a.answer.trim() !== "",
+    // Calculate answered counts per module (derived from Zustand answers)
+    const listeningAnsweredCount = Object.entries(answers).filter(
+        ([qId, a]) => listeningQuestionIds.has(qId) && a.answer.trim() !== "",
     ).length;
 
-    const readingAnsweredCount = Object.values(readingAnswers).filter(
-        (a) => a.answer.trim() !== "",
+    const readingAnsweredCount = Object.entries(answers).filter(
+        ([qId, a]) => readingQuestionIds.has(qId) && a.answer.trim() !== "",
     ).length;
 
     const getWordCount = useCallback(
@@ -288,16 +296,16 @@ export function useFullMockLRW(testId: string) {
                 [activeModule]: timeRemaining,
             };
 
-            // Submit listening answers
+            // Submit listening answers (filtered from Zustand)
             const listeningPayload: Record<string, string> = {};
-            for (const [qId, ans] of Object.entries(listeningAnswers)) {
-                listeningPayload[qId] = ans.answer;
+            for (const [qId, ans] of Object.entries(answers)) {
+                if (listeningQuestionIds.has(qId)) listeningPayload[qId] = ans.answer;
             }
 
-            // Submit reading answers
+            // Submit reading answers (filtered from Zustand)
             const readingPayload: Record<string, string> = {};
-            for (const [qId, ans] of Object.entries(readingAnswers)) {
-                readingPayload[qId] = ans.answer;
+            for (const [qId, ans] of Object.entries(answers)) {
+                if (readingQuestionIds.has(qId)) readingPayload[qId] = ans.answer;
             }
 
             // Submit writing
@@ -396,8 +404,9 @@ export function useFullMockLRW(testId: string) {
         activeModule,
         timeRemaining,
         sectionTimers,
-        listeningAnswers,
-        readingAnswers,
+        answers,
+        listeningQuestionIds,
+        readingQuestionIds,
         writingTasks,
         writingContents,
         router,

@@ -152,8 +152,8 @@ Return ONLY JSON with this exact schema:
     "grammatical_range_and_accuracy": number
   },
   "summary": {
-    "strengths": [string, string, string],
-    "weaknesses": [string, string, string]
+    "strengths": string[],
+    "weaknesses": string[]
   },
   "criterion_feedback": {
     "task_achievement_or_response": {
@@ -212,6 +212,23 @@ ADDITIONAL RULES:
 - vocabulary_repetition.message: one sentence, e.g. "No noticeable repetition" or "The word 'important' appears 7 times — try synonyms like 'crucial' or 'essential'."
 - top_5_actions: concrete, actionable items the candidate can practise to raise their score.
 - Be concise inside JSON strings — no long paragraphs.
+
+STRENGTHS RULES (CRITICAL):
+- "strengths" is a list of GENUINE strengths only. It can be empty ([]).
+- An under-length, off-topic, or incoherent essay has NO strengths. Return [].
+- DO NOT invent fake strengths to pad the response. The following are baseline expectations, NOT strengths, and must NEVER appear:
+  * "Attempted to address the task" / "Addressed the task" / "Topic is relevant"
+  * "Used basic vocabulary" / "Wrote in English"
+  * "Some sentences were grammatically correct" (baseline if simple)
+  * "Met the word count" / "Wrote at appropriate length" (this is required, not a strength)
+  * "The essay has an introduction and conclusion" (basic structure is expected)
+  * "Used paragraphs"
+  * "Maintained a clear position" (baseline if true at all)
+  * "Generally readable" / "Generally understandable"
+- Rule of thumb: if the "strength" is just a paraphrase of a band descriptor or a description of what the candidate was *supposed* to do, it is NOT a strength. A strength must be something the candidate did SPECIFICALLY WELL beyond expectations for their band.
+- A real strength is something concrete and quotable: "Used 'in contrast' correctly to introduce a counter-argument", "Demonstrated subject-verb agreement in complex clauses", "Used the less-common item 'detrimental' appropriately", "Linked paragraphs with a clear topic sentence about the economic impact".
+- It is COMPLETELY FINE to return 0 or 1 strengths. Quality over quantity. Padding with vague positives lies to the candidate.
+- Same rule applies to criterion_feedback.feedback: do not write filler praise.
 
 Return ONLY JSON.`;
 

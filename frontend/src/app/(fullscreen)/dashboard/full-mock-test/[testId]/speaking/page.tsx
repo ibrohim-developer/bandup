@@ -121,7 +121,8 @@ export default function FullMockSpeakingPage({
     // If all four modules are now done, go straight to results. Otherwise (user did
     // speaking before LRW), go to the test landing page — /results would 404 because
     // the L/R/W attempts don't exist yet.
-    router.push(
+    // Use replace so the back button on /results skips the speaking eval screen.
+    router.replace(
       completed
         ? `/dashboard/full-mock-test/${testId}/results`
         : `/dashboard/full-mock-test/${testId}`,

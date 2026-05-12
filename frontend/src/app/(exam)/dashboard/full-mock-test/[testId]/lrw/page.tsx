@@ -1,7 +1,7 @@
 "use client";
 
-import { use, Suspense, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import { use, Suspense, useEffect, useMemo, useRef, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import {
@@ -69,6 +69,23 @@ export default function LRWExamPage({
 }) {
     const { testId } = use(params);
 
+    // With Next.js `cacheComponents: true`, client component instances persist
+    // across same-segment navigation, so `useState` defaults don't re-apply on
+    // revisit and prior test progress leaks into the UI. Force a real remount
+    // of LRWExamContent by bumping a key each time the user navigates to /lrw
+    // (i.e. pathname transitions from non-/lrw → /lrw).
+    const pathname = usePathname();
+    const lrwPath = `/dashboard/full-mock-test/${testId}/lrw`;
+    const [mountKey, setMountKey] = useState(0);
+    const prevPathnameRef = useRef(pathname);
+    useEffect(() => {
+        const prev = prevPathnameRef.current;
+        prevPathnameRef.current = pathname;
+        if (prev !== lrwPath && pathname === lrwPath) {
+            setMountKey((k) => k + 1);
+        }
+    }, [pathname, lrwPath]);
+
     return (
         <Suspense
             fallback={
@@ -80,7 +97,7 @@ export default function LRWExamPage({
                 </div>
             }
         >
-            <LRWExamContent testId={testId} />
+            <LRWExamContent key={mountKey} testId={testId} />
         </Suspense>
     );
 }
@@ -88,15 +105,20 @@ export default function LRWExamPage({
 function LRWExamContent({ testId }: { testId: string }) {
     const router = useRouter();
     const { isFullscreen, toggleFullscreen } = useFullscreen();
-    const { resumeTimer, resetTest } = useTestStore();
+    const { resumeTimer } = useTestStore();
     const liveTimeRemaining = useTestStore((s) => s.timeRemaining);
 
+    // Hard navigation (not router.push) — Next.js `cacheComponents: true`
+    // otherwise preserves this client component instance across soft nav,
+    // so prior progress (completedModules, activeModule, hasStarted)
+    // leaks back when the user re-enters /lrw. A full reload guarantees
+    // a clean React tree on next entry. The native beforeunload prompt
+    // (registered by useNavigationProtection while hasStarted) handles
+    // confirmation; if the user cancels it, they stay on /lrw with state intact.
+    // State cleanup runs on next /lrw mount via loadTestData (resetTest +
+    // clearStorage + /api/full-mock-test/abandon).
     const abandonAndLeave = () => {
-        resetTest();
-        try {
-            sessionStorage.removeItem("ielts-test-storage");
-        } catch { }
-        router.push(`/dashboard/full-mock-test/${testId}`);
+        window.location.href = `/dashboard/full-mock-test/${testId}`;
     };
 
     const {
@@ -137,7 +159,6 @@ function LRWExamContent({ testId }: { testId: string }) {
     } = useFullMockLRW(testId);
 
     const [showNextModuleDialog, setShowNextModuleDialog] = useState(false);
-    const [showExitDialog, setShowExitDialog] = useState(false);
 
     // Build passages-like structure for navigation hook
     const sectionPassages = useMemo(() => {
@@ -447,7 +468,7 @@ function LRWExamContent({ testId }: { testId: string }) {
             >
                 <div className="flex items-center gap-2 md:gap-3">
                     <button
-                        onClick={() => setShowExitDialog(true)}
+                        onClick={abandonAndLeave}
                         className="flex items-center gap-1.5 px-2 md:px-2.5 py-1.5 rounded-md transition-colors hover:bg-white/5 text-sm md:text-base"
                         style={{ color: theme.text }}
                     >
@@ -1097,32 +1118,6 @@ function LRWExamContent({ testId }: { testId: string }) {
                         </Button>
                         <Button onClick={() => { setShowNextModuleDialog(false); goToNextModule(); }}>
                             Continue to {activeModule === "listening" ? "Reading" : "Writing"}
-                        </Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
-
-            {/* Exit confirmation dialog */}
-            <Dialog open={showExitDialog} onOpenChange={setShowExitDialog}>
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>Leave the test?</DialogTitle>
-                        <DialogDescription>
-                            Your answers and progress will be lost. Nothing is saved until you submit the full Listening, Reading & Writing section.
-                        </DialogDescription>
-                    </DialogHeader>
-                    <DialogFooter>
-                        <Button variant="outline" onClick={() => setShowExitDialog(false)}>
-                            Stay in test
-                        </Button>
-                        <Button
-                            variant="destructive"
-                            onClick={() => {
-                                setShowExitDialog(false);
-                                abandonAndLeave();
-                            }}
-                        >
-                            Leave anyway
                         </Button>
                     </DialogFooter>
                 </DialogContent>
