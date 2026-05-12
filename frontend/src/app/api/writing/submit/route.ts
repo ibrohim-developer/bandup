@@ -1,5 +1,10 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse, after } from "next/server";
 import { getAuthUser, create } from "@/lib/strapi/api";
+
+// The response itself is fast (~hundreds of ms), but the `after()` background
+// callback awaits the writing/evaluate fetch (~10-30s). Keep the function alive
+// long enough to let that complete on Vercel.
+export const maxDuration = 60;
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export async function POST(request: NextRequest) {
@@ -64,21 +69,29 @@ export async function POST(request: NextRequest) {
   }
 
   // For full-mock submissions, kick off evaluation server-side so it runs in
-  // parallel with the speaking section. The client is not responsible for
-  // triggering it — by the time the user reaches the results page (~15 min
-  // later, after speaking), the writing band score is already persisted.
-  // Fire-and-forget: we do not await so the submit response returns immediately.
+  // parallel with the speaking section. `after()` is critical here: on serverless
+  // (Vercel) a plain fire-and-forget fetch dies the moment we return the response,
+  // because the runtime terminates the function. `after()` tells the platform to
+  // keep the instance alive until the callback finishes — without delaying the
+  // response to the client.
   if (fullMockAttemptId) {
     const origin = request.nextUrl.origin;
     const cookie = request.headers.get("cookie") ?? "";
-    fetch(`${origin}/api/writing/evaluate`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        cookie,
-      },
-      body: JSON.stringify({ attemptId: attempt.documentId }),
-    }).catch(() => {});
+    const attemptDocId = attempt.documentId;
+    after(async () => {
+      try {
+        await fetch(`${origin}/api/writing/evaluate`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            cookie,
+          },
+          body: JSON.stringify({ attemptId: attemptDocId }),
+        });
+      } catch (err) {
+        console.error("[writing/submit] background evaluate failed:", err);
+      }
+    });
   }
 
   return NextResponse.json({ attemptId: attempt.documentId });

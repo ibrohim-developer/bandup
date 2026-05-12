@@ -919,7 +919,7 @@ function LRWExamContent({ testId }: { testId: string }) {
                     borderTop: `1px solid ${theme.border}`,
                 }}
             >
-                <div className="flex items-center justify-between flex-1 min-w-0 overflow-x-auto">
+                <div className={`flex items-center flex-1 min-w-0 overflow-x-auto ${activeModule === "writing" ? "justify-start gap-2" : "justify-between"}`}>
                     {activeModule !== "writing" ? (
                         // Listening / Reading bottom nav — question numbers
                         <>
