@@ -155,7 +155,9 @@ export function VoiceRecorder({ onRecordingComplete, onRecordingCleared, onRecor
       }
 
       recorder.ondataavailable = (data: Uint8Array) => {
-        const blob = new Blob([data], { type: OUTPUT_MIME });
+        // Cast: TS's stricter Uint8Array typing exposes `ArrayBufferLike` (which includes
+        // SharedArrayBuffer), but Blob's constructor accepts plain ArrayBufferView in practice.
+        const blob = new Blob([data as BlobPart], { type: OUTPUT_MIME });
         const duration = Math.round((Date.now() - startTimeRef.current) / 1000);
 
         // We're done with the recorder/stream/context at this point.
