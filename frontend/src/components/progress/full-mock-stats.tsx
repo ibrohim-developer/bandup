@@ -145,7 +145,7 @@ export function FullMockStats({ attempts }: { attempts: FullMockAttempt[] }) {
                     <td className="px-4 py-3"><ScoreBadge value={a.speaking} /></td>
                     <td className="px-4 py-3"><span className="font-black text-sm">{a.overall ?? "—"}</span></td>
                     <td className="px-4 py-3 pr-5">
-                      <Link href={`/dashboard/results/${a.id}`}>
+                      <Link href={`/dashboard/full-mock-test/results/${a.id}`}>
                         <ExternalLink className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground transition-colors" />
                       </Link>
                     </td>

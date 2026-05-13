@@ -602,6 +602,7 @@ export interface ApiFullMockTestAttemptFullMockTestAttempt
     overall_band_score: Schema.Attribute.Decimal;
     publishedAt: Schema.Attribute.DateTime;
     reading_score: Schema.Attribute.Decimal;
+    result_url: Schema.Attribute.String;
     speaking_score: Schema.Attribute.Decimal;
     started_at: Schema.Attribute.DateTime;
     status: Schema.Attribute.Enumeration<

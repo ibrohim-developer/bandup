@@ -49,6 +49,9 @@
     "time_spent_seconds": {
       "type": "integer"
     },
+    "result_url": {
+      "type": "string"
+    },
     "test_attempts": {
       "type": "relation",
       "relation": "oneToMany",

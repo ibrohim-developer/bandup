@@ -64,7 +64,7 @@ export default async function FullMockHistoryPage() {
                         <span className="font-black text-base">{a.overall ?? "—"}</span>
                       </td>
                       <td className="px-5 py-4">
-                        <Link href={`/dashboard/results/${a.id}`}>
+                        <Link href={`/dashboard/full-mock-test/results/${a.id}`}>
                           <ExternalLink className="h-4 w-4 text-muted-foreground hover:text-foreground transition-colors" />
                         </Link>
                       </td>
@@ -79,7 +79,7 @@ export default async function FullMockHistoryPage() {
               {attempts.map((a, i) => (
                 <li key={a.id}>
                   <Link
-                    href={`/dashboard/results/${a.id}`}
+                    href={`/dashboard/full-mock-test/results/${a.id}`}
                     className="block p-4 hover:bg-muted/40 transition-colors"
                   >
                     <div className="flex items-start justify-between gap-3 mb-3">

@@ -144,7 +144,10 @@ export function PassageDisplay({
   const { state: definitionState, lookup: lookupDefinition, reset: resetDefinition } = useWordDefinition();
 
   const paragraphs = useMemo(() => {
-    const parts = content.split(/\r?\n\r?\n/).filter((p) => p.trim());
+    const parts = content
+      .split(/\r?\n\s*\r?\n/)
+      .map((p) => p.trim())
+      .filter(Boolean);
     const hasSub =
       parts.length > 1 && parts[0].length < 150 && !parts[0].endsWith(".");
     return {
@@ -386,7 +389,7 @@ export function PassageDisplay({
       )}
       <div ref={contentRef} className="space-y-4" onMouseUp={handleMouseUp}>
         {paragraphs.body.map((paragraph, index) => (
-          <p key={index} className="text-base leading-relaxed opacity-90">
+          <p key={index} className="text-base leading-relaxed opacity-90 whitespace-pre-line">
             {paragraph}
           </p>
         ))}

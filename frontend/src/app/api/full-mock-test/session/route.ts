@@ -20,6 +20,11 @@ export async function POST(request: NextRequest) {
         started_at: new Date().toISOString(),
     });
 
+    const origin = request.nextUrl.origin;
+    await update("full-mock-test-attempts", session.documentId, {
+        result_url: `${origin}/dashboard/full-mock-test/results/${session.documentId}`,
+    });
+
     return NextResponse.json({ sessionId: session.documentId });
 }
 
