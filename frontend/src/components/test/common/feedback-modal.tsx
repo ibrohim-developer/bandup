@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Star } from 'lucide-react'
 import { toast } from 'sonner'
 import {
   Dialog,
@@ -22,8 +21,6 @@ interface FeedbackModalProps {
 
 export function FeedbackModal({ attemptId, attemptCount, delayMs = 3000 }: FeedbackModalProps) {
   const [open, setOpen] = useState(false)
-  const [rating, setRating] = useState(0)
-  const [hovered, setHovered] = useState(0)
   const [message, setMessage] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isDone, setIsDone] = useState(false)
@@ -36,21 +33,21 @@ export function FeedbackModal({ attemptId, attemptCount, delayMs = 3000 }: Feedb
   }, [attemptCount, delayMs])
 
   const handleDismiss = () => {
-    if (!rating) {
+    if (!message.trim()) {
       localStorage.setItem(DISMISSED_KEY, '1')
     }
     setOpen(false)
   }
 
   const handleSubmit = async () => {
-    if (!rating) return
+    if (!message.trim()) return
 
     setIsSubmitting(true)
     try {
       const res = await fetch('/api/feedback', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ rating, message: message.trim() || null, attemptId }),
+        body: JSON.stringify({ message: message.trim(), attemptId }),
       })
 
       if (!res.ok) {
@@ -69,13 +66,6 @@ export function FeedbackModal({ attemptId, attemptCount, delayMs = 3000 }: Feedb
     }
   }
 
-  const placeholder =
-    rating >= 4
-      ? 'What did you like most? (optional)'
-      : rating > 0
-      ? 'What could be better? (optional)'
-      : 'Share your thoughts... (optional)'
-
   return (
     <Dialog open={open} onOpenChange={(v) => { if (!v) handleDismiss() }}>
       <DialogContent className="max-w-md rounded-2xl p-8">
@@ -91,47 +81,22 @@ export function FeedbackModal({ attemptId, attemptCount, delayMs = 3000 }: Feedb
                 How was this test?
               </DialogTitle>
               <DialogDescription className="text-sm text-muted-foreground">
-                Rate your experience — it only takes a second.
+                Share your thoughts — it only takes a moment.
               </DialogDescription>
             </DialogHeader>
 
-            <div className="flex justify-center gap-2 py-2">
-              {[1, 2, 3, 4, 5].map((star) => (
-                <button
-                  key={star}
-                  type="button"
-                  onClick={() => setRating(star)}
-                  onMouseEnter={() => setHovered(star)}
-                  onMouseLeave={() => setHovered(0)}
-                  className="transition-transform hover:scale-110 focus:outline-none"
-                  aria-label={`Rate ${star} star${star > 1 ? 's' : ''}`}
-                >
-                  <Star
-                    className="h-10 w-10"
-                    fill={(hovered || rating) >= star ? 'currentColor' : 'none'}
-                    strokeWidth={1.5}
-                    style={{
-                      color: (hovered || rating) >= star ? '#f59e0b' : undefined,
-                    }}
-                  />
-                </button>
-              ))}
-            </div>
-
-            {rating > 0 && (
-              <textarea
-                className="w-full rounded-xl border border-border focus:border-foreground focus:ring-0 text-base p-4 font-medium placeholder:text-muted-foreground/40 transition-all bg-background resize-none mt-2"
-                placeholder={placeholder}
-                rows={3}
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                disabled={isSubmitting}
-                autoCorrect="off"
-                autoCapitalize="none"
-                spellCheck={false}
-                data-form-type="other"
-              />
-            )}
+            <textarea
+              className="w-full rounded-xl border border-border focus:border-foreground focus:ring-0 text-base p-4 font-medium placeholder:text-muted-foreground/40 transition-all bg-background resize-none mt-2"
+              placeholder="What did you like or what could be better?"
+              rows={4}
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              disabled={isSubmitting}
+              autoCorrect="off"
+              autoCapitalize="none"
+              spellCheck={false}
+              data-form-type="other"
+            />
 
             <div className="flex items-center justify-between mt-2">
               <button
@@ -144,7 +109,7 @@ export function FeedbackModal({ attemptId, attemptCount, delayMs = 3000 }: Feedb
               <Button
                 className="px-8 py-5 rounded-xl font-bold text-sm tracking-widest uppercase"
                 onClick={handleSubmit}
-                disabled={isSubmitting || !rating}
+                disabled={isSubmitting || !message.trim()}
               >
                 {isSubmitting ? 'Submitting...' : 'Submit'}
               </Button>
