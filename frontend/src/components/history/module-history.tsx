@@ -25,7 +25,7 @@ export async function ModuleHistory({ module }: { module: ModuleConfig }) {
   let attempts: any[] = []
 
   if (user) {
-    attempts = await find('test-attempts', {
+    const raw = await find('test-attempts', {
       filters: {
         user: { id: { $eq: user.id } },
         module_type: { $eq: module.type },
@@ -33,9 +33,12 @@ export async function ModuleHistory({ module }: { module: ModuleConfig }) {
       },
       sort: ['createdAt:desc'],
       fields: ['band_score', 'raw_score', 'total_questions', 'status', 'createdAt', 'time_spent_seconds'],
-      populate: ['test'],
+      populate: ['test', 'full_mock_test_attempt'],
       pagination: { pageSize: 100 },
     })
+    attempts = (raw ?? []).filter(
+      (a: any) => !a.full_mock_test_attempt && !a.test?.is_full_mock_test,
+    )
   }
 
   const totalsByTest = new Map<string, number>()

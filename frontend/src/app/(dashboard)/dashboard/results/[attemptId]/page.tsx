@@ -373,15 +373,15 @@ function WritingResultsContent({ attempt, testTitle, tasks, submissions, attempt
       {/* Tabs */}
       <Tabs defaultValue="breakdown" className="mb-12">
         <TabsList className="grid h-auto w-full grid-cols-3">
-          <TabsTrigger value="breakdown" className="px-1 text-xs sm:text-sm">
+          <TabsTrigger value="breakdown" className="px-1 py-2 text-xs sm:text-sm">
             <span className="sm:hidden">Scores</span>
             <span className="hidden sm:inline">Score Breakdown</span>
           </TabsTrigger>
-          <TabsTrigger value="feedback" className="px-1 text-xs sm:text-sm">
+          <TabsTrigger value="feedback" className="px-1 py-2 text-xs sm:text-sm">
             <span className="sm:hidden">Feedback</span>
             <span className="hidden sm:inline">Task Feedback</span>
           </TabsTrigger>
-          <TabsTrigger value="recommendations" className="px-1 text-xs sm:text-sm">
+          <TabsTrigger value="recommendations" className="px-1 py-2 text-xs sm:text-sm">
             <span className="sm:hidden">Tips</span>
             <span className="hidden sm:inline">Recommendations</span>
           </TabsTrigger>
