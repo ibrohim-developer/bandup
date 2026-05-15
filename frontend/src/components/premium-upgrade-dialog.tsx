@@ -41,7 +41,7 @@ export function PremiumUpgradeDialog({ trigger, open, onOpenChange }: PremiumUpg
 
               <div className="space-y-2">
                 {[
-                  "Unlimited full mock test attempts for 1 month",
+                  "Unlimited full mock test attempts",
                   "3 new full mock tests",
                   "AI scoring for Writing & Speaking",
                   "Detailed band score breakdown",

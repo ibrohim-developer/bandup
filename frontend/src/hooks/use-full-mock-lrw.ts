@@ -249,7 +249,7 @@ export function useFullMockLRW(testId: string) {
 
             // Switch module + reset timer, but PRESERVE answers (they're
             // submitted together at the end of writing).
-            switchModule(nextModule as "listening" | "reading" | "writing", nextTime, false);
+            switchModule(nextModule as "listening" | "reading" | "writing", nextTime, true);
             setShowSectionTransition(false);
         }
     }, [activeModule, timeRemaining, sectionTimers, switchModule, pauseTimer]);

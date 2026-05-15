@@ -174,7 +174,17 @@ export default async function FullMockResultsByAttemptPage({
     const writingBand = writingAttempt?.band_score ?? 0;
     const speakingBand = speakingAttempt?.band_score ?? 0;
 
-    const bands = [listeningBand, readingBand, writingBand, speakingBand].filter((b) => b > 0);
+    // Include a module only once it has been evaluated. A real 0 (e.g. a sub-5-word
+    // writing submission) is a valid score and must count toward the average; only
+    // skip modules that are still pending/evaluating.
+    const bands = [
+        { band: listeningBand, evaluated: !!listeningAttempt },
+        { band: readingBand, evaluated: !!readingAttempt },
+        { band: writingBand, evaluated: writingAttempt?.status === "completed" },
+        { band: speakingBand, evaluated: speakingAttempt?.status === "completed" },
+    ]
+        .filter((m) => m.evaluated)
+        .map((m) => m.band);
     const overallBand =
         session.overall_band_score ??
         (bands.length ? Math.round((bands.reduce((a, b) => a + b, 0) / bands.length) * 2) / 2 : 0);
@@ -341,14 +351,22 @@ export default async function FullMockResultsByAttemptPage({
                     icon="pen"
                     accent="purple"
                     writingTasks={mappedWriting}
-                    scoreLabel={writingBand ? `Band ${writingBand}` : "Pending"}
+                    scoreLabel={
+                        writingAttempt?.status === "completed"
+                            ? `Band ${writingBand}`
+                            : "Pending"
+                    }
                 />
                 <ModuleReview
                     title="Speaking"
                     icon="mic"
                     accent="amber"
                     speakingSubmissions={speakingSubmissions ?? []}
-                    scoreLabel={speakingBand ? `Band ${speakingBand}` : "Pending"}
+                    scoreLabel={
+                        speakingAttempt?.status === "completed"
+                            ? `Band ${speakingBand}`
+                            : "Pending"
+                    }
                 />
             </div>
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { use, Suspense, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -16,18 +16,8 @@ import { TestOptionsMenu } from "@/components/test/common/test-options-menu";
 import { SplitView } from "@/components/test/common/split-view";
 import { PassageDisplay } from "@/components/test/reading/passage-display";
 import { NotesDrawer } from "@/components/test/reading/notes-drawer";
-import { MultipleChoice } from "@/components/test/questions/multiple-choice";
-import { MultipleAnswer } from "@/components/test/questions/multiple-answer";
-import { TrueFalseNotGiven } from "@/components/test/questions/true-false-not-given";
-import { FillInBlank } from "@/components/test/questions/fill-in-blank";
-import { ContextFillInBlank } from "@/components/test/questions/context-fill-in-blank";
-import { MatchingSelect } from "@/components/test/questions/matching-select";
-import { MatchingGrid } from "@/components/test/questions/matching-grid";
-
-import { FlowChart } from "@/components/test/questions/flow-chart";
-import { SentenceEndings } from "@/components/test/questions/sentence-endings";
+import { ReadingQuestions } from "@/components/test/reading/reading-questions";
 import { useTestStore } from "@/stores/test-store";
-import { getTypeInstruction } from "@/lib/constants/reading-instructions";
 import { useReadingTest } from "@/hooks/use-reading-test";
 import { useFullscreen } from "@/hooks/use-fullscreen";
 import { useNavigationProtection } from "@/hooks/use-navigation-protection";
@@ -47,39 +37,6 @@ import {
   StickyNote,
   Bookmark,
 } from "lucide-react";
-
-interface Question {
-  id: string;
-  questionNumber: number;
-  type: string;
-  text: string;
-  options: string[] | null;
-  metadata: Record<string, unknown> | null;
-}
-
-function BookmarkButton({
-  questionId,
-  flaggedQuestions,
-  toggleFlag,
-}: {
-  questionId: string;
-  flaggedQuestions: string[];
-  toggleFlag: (id: string) => void;
-}) {
-  const isFlagged = flaggedQuestions.includes(questionId);
-  return (
-    <button
-      type="button"
-      onClick={() => toggleFlag(questionId)}
-      className={`shrink-0 p-0.5 pr-0 transition-all cursor-pointer ${isFlagged ? "opacity-100" : "opacity-0 group-hover/q:opacity-100"}`}
-      title={isFlagged ? "Remove flag" : "Flag for review"}
-    >
-      <Bookmark
-        className={`h-6 w-6 ${isFlagged ? "fill-red-500 text-red-500" : "text-muted-foreground/40 hover:text-muted-foreground"}`}
-      />
-    </button>
-  );
-}
 
 export default function ReadingTestPage({
   params,
@@ -106,9 +63,6 @@ export default function ReadingTestPage({
 
 function ReadingTestContent({ testId }: { testId: string }) {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const isReviewMode = searchParams.get("review") === "true";
-  const reviewAttemptId = searchParams.get("attemptId");
 
   const { resumeTimer, timeRemaining, flaggedQuestions, toggleFlag, resetTest } =
     useTestStore();
@@ -124,8 +78,6 @@ function ReadingTestContent({ testId }: { testId: string }) {
     isTimeUp,
     showSubmitDialog,
     setShowSubmitDialog,
-    reviewData,
-    unansweredQuestions,
     activePassageId,
     setActivePassageId,
     answers,
@@ -134,7 +86,7 @@ function ReadingTestContent({ testId }: { testId: string }) {
     handleAnswer,
     handleSubmit,
     handleTimeUp,
-  } = useReadingTest(testId, isReviewMode, reviewAttemptId);
+  } = useReadingTest(testId, false, null);
 
   const {
     activePassageIndex,
@@ -165,90 +117,7 @@ function ReadingTestContent({ testId }: { testId: string }) {
   const [activeNoteId, setActiveNoteId] = useState<string | null>(null);
   const [cancelNoteMarkId, setCancelNoteMarkId] = useState<string | null>(null);
   useSyncTestTheme(testOptions.contrast);
-  useNavigationProtection({ enabled: hasStarted && !isReviewMode });
-
-  const renderQuestion = (question: Question, index: number) => {
-    const globalIndex = questionOffset + index;
-    const review = reviewData[question.id];
-    const value = isReviewMode
-      ? review?.userAnswer || ""
-      : answers[question.id]?.answer || "";
-
-    const commonProps = {
-      questionId: question.id,
-      questionNumber: globalIndex + 1,
-      questionText: question.text,
-      value,
-      onChange: (value: string) => handleAnswer(question.id, value),
-      disabled: isReviewMode,
-      reviewMode: isReviewMode,
-      correctAnswer: review?.correctAnswer,
-      isCorrect: review?.isCorrect,
-      isUnanswered: unansweredQuestions.has(question.id),
-    };
-
-    switch (question.type) {
-      case "mcq_single":
-        return (
-          <MultipleChoice
-            key={question.id}
-            {...commonProps}
-            options={question.options ?? []}
-          />
-        );
-      case "mcq_multiple":
-        return (
-          <MultipleAnswer
-            key={question.id}
-            {...commonProps}
-            options={question.options ?? []}
-            maxSelections={(question.metadata?.maxSelections as number | undefined) ?? 2}
-          />
-        );
-      case "tfng":
-      case "ynng":
-        return <TrueFalseNotGiven key={question.id} {...commonProps} />;
-      case "gap_fill":
-      case "short_answer":
-      case "summary_completion":
-      case "note_completion":
-      case "table_completion":
-      case "sentence_completion":
-      case "flow_chart_completion":
-      case "summary_completion_drag_drop":
-        return <FillInBlank key={question.id} {...commonProps} />;
-      case "matching_headings":
-        return (
-          <MatchingSelect
-            key={question.id}
-            {...commonProps}
-            options={question.options ?? []}
-            placeholder="Select a heading"
-          />
-        );
-      case "matching_info":
-      case "matching_names":
-        return (
-          <MatchingSelect
-            key={question.id}
-            {...commonProps}
-            options={question.options ?? []}
-            placeholder="Select a paragraph"
-          />
-        );
-      case "matching_sentence_endings":
-        return (
-          <MatchingSelect
-            key={question.id}
-            {...commonProps}
-            options={question.options ?? []}
-            placeholder="Select an ending"
-          />
-        );
-      default:
-        return <FillInBlank key={question.id} {...commonProps} />;
-    }
-  };
+  useNavigationProtection({ enabled: hasStarted });
 
   if (isLoading) {
     return (
@@ -372,9 +241,7 @@ function ReadingTestContent({ testId }: { testId: string }) {
   const { theme, rootStyle } = testOptions;
 
   const handleNavigation = () => {
-    if (isReviewMode) {
-      router.push(`/dashboard/results/${reviewAttemptId}`);
-    } else if (
+    if (
       window.confirm(
         "If you leave this page, all your answers will be lost and your test progress will not be saved.",
       )
@@ -415,12 +282,10 @@ function ReadingTestContent({ testId }: { testId: string }) {
           </span>
         </div>
 
-        {!isReviewMode && (
-          <TestTimer
-            onTimeUp={handleTimeUp}
-            className="bg-transparent px-2 md:px-3 py-1 md:py-1.5 text-sm md:text-lg font-semibold"
-          />
-        )}
+        <TestTimer
+          onTimeUp={handleTimeUp}
+          className="bg-transparent px-2 md:px-3 py-1 md:py-1.5 text-sm md:text-lg font-semibold"
+        />
 
         <div className="flex items-center gap-2 md:gap-3">
           <button
@@ -450,16 +315,14 @@ function ReadingTestContent({ testId }: { testId: string }) {
       </header>
 
       {/* Timer Progress Bar */}
-      {!isReviewMode && (
-        <div className="shrink-0 h-1" style={{ backgroundColor: theme.border }}>
-          <div
-            className="h-full bg-red-500 transition-all duration-1000 ease-linear"
-            style={{
-              width: `${(timeRemaining / totalTime) * 100}%`,
-            }}
-          />
-        </div>
-      )}
+      <div className="shrink-0 h-1" style={{ backgroundColor: theme.border }}>
+        <div
+          className="h-full bg-red-500 transition-all duration-1000 ease-linear"
+          style={{
+            width: `${(timeRemaining / totalTime) * 100}%`,
+          }}
+        />
+      </div>
 
       {/* Part instruction sub-header */}
       <div
@@ -510,348 +373,16 @@ function ReadingTestContent({ testId }: { testId: string }) {
               className="h-full p-3 md:p-6 space-y-6"
               style={{ backgroundColor: theme.bg }}
             >
-              {questionGroups.map((group, groupIndex) => {
-                const firstMeta = group.questions[0]?.metadata;
-                // Prefer group-level context (from API), fallback to question metadata
-                const contextHtml =
-                  group.context || (firstMeta?.context as string | undefined);
-                // Prefer group-level instruction (from API), fallback to metadata
-                const instructionHtml =
-                  group.instruction ||
-                  (firstMeta?.instruction as string | undefined);
-
-                const isSingleQuestion = group.startNum === group.endNum;
-
-                return (
-                  <div key={groupIndex}>
-                    <div className="mb-4">
-                      <h3 className="font-bold text-base mb-2">
-                        {isSingleQuestion
-                          ? `Question ${group.startNum}`
-                          : `Questions ${group.startNum}-${group.endNum}`}
-                      </h3>
-                      {instructionHtml ? (
-                        <div
-                          className="text-sm leading-relaxed rich-html"
-                          style={{ color: theme.textMuted }}
-                          dangerouslySetInnerHTML={{
-                            __html: instructionHtml,
-                          }}
-                        />
-                      ) : (
-                        <p
-                          className="text-sm leading-relaxed"
-                          style={{ color: theme.textMuted }}
-                        >
-                          {getTypeInstruction(group.type)}
-                        </p>
-                      )}
-                    </div>
-
-                    {(() => {
-                      // Helper to build question data for group-level components
-                      const buildGroupQuestions = () =>
-                        group.questions.map((question) => {
-                          const globalIdx = currentPassage.questions.findIndex(
-                            (pq) => pq.id === question.id,
-                          );
-                          const review = reviewData[question.id];
-                          const value = isReviewMode
-                            ? review?.userAnswer || ""
-                            : answers[question.id]?.answer || "";
-                          return {
-                            questionId: question.id,
-                            questionNumber: questionOffset + globalIdx + 1,
-                            questionText: question.text,
-                            value,
-                            onChange: (val: string) =>
-                              handleAnswer(question.id, val),
-                            disabled: isReviewMode,
-                            reviewMode: isReviewMode,
-                            correctAnswer: review?.correctAnswer,
-                            isCorrect: review?.isCorrect,
-                            isUnanswered: unansweredQuestions.has(question.id),
-                          };
-                        });
-
-                      // Matching types with group-level options → radio grid
-                      const groupOptions = group.options ?? [];
-                      if (
-                        [
-                          "matching_info",
-                          "matching_headings",
-                          "matching_names",
-                        ].includes(group.type) &&
-                        groupOptions.length > 0
-                      ) {
-                        return (
-                          <div className="space-y-4">
-                            {contextHtml && (
-                              <div
-                                className="text-sm leading-relaxed rich-html"
-                                dangerouslySetInnerHTML={{
-                                  __html: contextHtml,
-                                }}
-                              />
-                            )}
-                            <MatchingGrid
-                              options={groupOptions}
-                              questions={buildGroupQuestions()}
-                              flaggedQuestions={!isReviewMode ? flaggedQuestions : undefined}
-                              onToggleFlag={!isReviewMode ? toggleFlag : undefined}
-                            />
-                          </div>
-                        );
-                      }
-
-                      // Matching sentence endings → options box + compact dropdowns
-                      if (
-                        group.type === "matching_sentence_endings" &&
-                        groupOptions.length > 0
-                      ) {
-                        return (
-                          <SentenceEndings
-                            contextHtml={contextHtml || undefined}
-                            options={groupOptions}
-                            questions={buildGroupQuestions()}
-                            flaggedQuestions={
-                              !isReviewMode ? flaggedQuestions : undefined
-                            }
-                            onToggleFlag={
-                              !isReviewMode ? toggleFlag : undefined
-                            }
-                          />
-                        );
-                      }
-
-                      // MCQ single with group-level context and options
-                      if (
-                        group.type === "mcq_single" &&
-                        groupOptions.length > 0
-                      ) {
-                        return (
-                          <div className="space-y-6">
-                            {group.questions.map((question) => {
-                              const globalIdx =
-                                currentPassage.questions.findIndex(
-                                  (pq) => pq.id === question.id,
-                                );
-                              const review = reviewData[question.id];
-                              const value = isReviewMode
-                                ? review?.userAnswer || ""
-                                : answers[question.id]?.answer || "";
-                              // Use question text, or strip HTML tags from context for question stem
-                              const qText =
-                                question.text ||
-                                (contextHtml
-                                  ? contextHtml.replace(/<[^>]*>/g, "").trim()
-                                  : "");
-                              return (
-                                <div
-                                  key={question.id}
-                                  className="group/q flex items-start gap-1"
-                                >
-                                  <div className="flex-1">
-                                    <MultipleChoice
-                                      questionId={question.id}
-                                      questionNumber={
-                                        questionOffset + globalIdx + 1
-                                      }
-                                      questionText={qText}
-                                      options={groupOptions}
-                                      value={value}
-                                      onChange={(val: string) =>
-                                        handleAnswer(question.id, val)
-                                      }
-                                      disabled={isReviewMode}
-                                      reviewMode={isReviewMode}
-                                      correctAnswer={review?.correctAnswer}
-                                      isCorrect={review?.isCorrect}
-                                      isUnanswered={unansweredQuestions.has(
-                                        question.id,
-                                      )}
-                                    />
-                                  </div>
-                                  {!isReviewMode && (
-                                    <BookmarkButton
-                                      questionId={question.id}
-                                      flaggedQuestions={flaggedQuestions}
-                                      toggleFlag={toggleFlag}
-                                    />
-                                  )}
-                                </div>
-                              );
-                            })}
-                          </div>
-                        );
-                      }
-
-                      // MCQ multiple with group-level context and options
-                      if (
-                        group.type === "mcq_multiple" &&
-                        groupOptions.length > 0
-                      ) {
-                        return (
-                          <div className="group/q flex items-start gap-1">
-                            <div className="flex-1 space-y-6">
-                              {contextHtml && (
-                                <div
-                                  className="text-sm leading-relaxed rich-html"
-                                  dangerouslySetInnerHTML={{
-                                    __html: contextHtml,
-                                  }}
-                                />
-                              )}
-                              {group.questions.map((question) => {
-                                const globalIdx =
-                                  currentPassage.questions.findIndex(
-                                    (pq) => pq.id === question.id,
-                                  );
-                                const review = reviewData[question.id];
-                                const value = isReviewMode
-                                  ? review?.userAnswer || ""
-                                  : answers[question.id]?.answer || "";
-                                return (
-                                  <MultipleAnswer
-                                    key={question.id}
-                                    questionId={question.id}
-                                    questionNumber={
-                                      questionOffset + globalIdx + 1
-                                    }
-                                    questionText={question.text}
-                                    options={groupOptions}
-                                    value={value}
-                                    onChange={(val: string) =>
-                                      handleAnswer(question.id, val)
-                                    }
-                                    disabled={isReviewMode}
-                                    reviewMode={isReviewMode}
-                                    correctAnswer={review?.correctAnswer}
-                                    isCorrect={review?.isCorrect}
-                                    isUnanswered={unansweredQuestions.has(
-                                      question.id,
-                                    )}
-                                    maxSelections={(group.metadata?.maxSelections as number | undefined) ?? (question.metadata?.maxSelections as number | undefined) ?? 2}
-                                  />
-                                );
-                              })}
-                            </div>
-                            {!isReviewMode && (
-                              <BookmarkButton
-                                questionId={group.questions[0].id}
-                                flaggedQuestions={flaggedQuestions}
-                                toggleFlag={toggleFlag}
-                              />
-                            )}
-                          </div>
-                        );
-                      }
-
-                      // Flow chart completion → boxes with arrows and embedded inputs
-                      if (
-                        group.type === "flow_chart_completion" &&
-                        groupOptions.length > 0
-                      ) {
-                        return (
-                          <div className="group/q flex items-start gap-1">
-                            <div className="flex-1">
-                              <FlowChart
-                                title={contextHtml || undefined}
-                                options={
-                                  groupOptions as unknown as {
-                                    optionKey?: string;
-                                    optionText: string;
-                                    orderIndex?: number;
-                                  }[]
-                                }
-                                questions={buildGroupQuestions()}
-                              />
-                            </div>
-                            {!isReviewMode && (
-                              <BookmarkButton
-                                questionId={group.questions[0].id}
-                                flaggedQuestions={flaggedQuestions}
-                                toggleFlag={toggleFlag}
-                              />
-                            )}
-                          </div>
-                        );
-                      }
-
-                      // Fill-in-blank types with context HTML → embedded inputs
-                      if (
-                        contextHtml &&
-                        [
-                          "gap_fill",
-                          "summary_completion",
-                          "summary_completion_drag_drop",
-                          "short_answer",
-                          "note_completion",
-                          "table_completion",
-                          "sentence_completion",
-                        ].includes(group.type)
-                      ) {
-                        return (
-                          <div className="text-sm leading-relaxed rich-html">
-                            <ContextFillInBlank
-                              contextHtml={contextHtml}
-                              questions={buildGroupQuestions()}
-                              flaggedQuestions={
-                                !isReviewMode ? flaggedQuestions : undefined
-                              }
-                              onToggleFlag={
-                                !isReviewMode ? toggleFlag : undefined
-                              }
-                            />
-                          </div>
-                        );
-                      }
-
-                      // Default: render each question individually
-                      return (
-                        <div className="space-y-6">
-                          {contextHtml && (
-                            <div
-                              className="text-sm leading-relaxed rich-html"
-                              dangerouslySetInnerHTML={{ __html: contextHtml }}
-                            />
-                          )}
-                          {group.questions.map((question) => {
-                            const globalIdx =
-                              currentPassage.questions.findIndex(
-                                (pq) => pq.id === question.id,
-                              );
-                            return (
-                              <div
-                                key={question.id}
-                                className="group/q flex items-start gap-1"
-                              >
-                                <div className="flex-1">
-                                  {renderQuestion(question, globalIdx)}
-                                </div>
-                                {!isReviewMode && (
-                                  <BookmarkButton
-                                    questionId={question.id}
-                                    flaggedQuestions={flaggedQuestions}
-                                    toggleFlag={toggleFlag}
-                                  />
-                                )}
-                              </div>
-                            );
-                          })}
-                        </div>
-                      );
-                    })()}
-
-                    {groupIndex < questionGroups.length - 1 && (
-                      <hr
-                        className="my-6"
-                        style={{ borderColor: theme.border }}
-                      />
-                    )}
-                  </div>
-                );
-              })}
+              <ReadingQuestions
+                questionGroups={questionGroups}
+                passageQuestions={currentPassage.questions}
+                questionOffset={questionOffset}
+                answers={answers}
+                onAnswer={handleAnswer}
+                theme={{ border: theme.border, textMuted: theme.textMuted }}
+                flaggedQuestions={flaggedQuestions}
+                onToggleFlag={toggleFlag}
+              />
             </div>
           }
         />
@@ -950,14 +481,12 @@ function ReadingTestContent({ testId }: { testId: string }) {
           })}
         </div>
 
-        {!isReviewMode && (
-          <button
-            onClick={() => setShowSubmitDialog(true)}
-            className="cursor-pointer shrink-0 ml-2 md:ml-3 w-8 h-8 md:w-10 md:h-10 bg-gray-800 hover:bg-gray-900 text-white rounded flex items-center justify-center transition-colors"
-          >
-            <Check className="h-4 w-4 md:h-5 md:w-5" />
-          </button>
-        )}
+        <button
+          onClick={() => setShowSubmitDialog(true)}
+          className="cursor-pointer shrink-0 ml-2 md:ml-3 w-8 h-8 md:w-10 md:h-10 bg-gray-800 hover:bg-gray-900 text-white rounded flex items-center justify-center transition-colors"
+        >
+          <Check className="h-4 w-4 md:h-5 md:w-5" />
+        </button>
       </div>
 
       <SubmitDialog

@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
     return { questionId, userAnswer, isCorrect };
   });
 
-  const bandScore = calculateBandScore(rawScore);
+  const bandScore = calculateBandScore(rawScore, "listening");
 
   const sections = await find("listening-sections", {
     filters: { test: { documentId: { $eq: testId } } },

@@ -19,14 +19,8 @@ import { SplitView } from "@/components/test/common/split-view";
 import { PassageDisplay } from "@/components/test/reading/passage-display";
 import { AudioPlayer } from "@/components/test/listening/audio-player";
 import { WritingEditor } from "@/components/test/writing/writing-editor";
-import { MultipleChoice } from "@/components/test/questions/multiple-choice";
-import { MultipleAnswer } from "@/components/test/questions/multiple-answer";
-
-import { TrueFalseNotGiven } from "@/components/test/questions/true-false-not-given";
-import { FillInBlank } from "@/components/test/questions/fill-in-blank";
-import { ContextFillInBlank } from "@/components/test/questions/context-fill-in-blank";
-import { MatchingSelect } from "@/components/test/questions/matching-select";
-import { FlowChart } from "@/components/test/questions/flow-chart";
+import { ListeningQuestions } from "@/components/test/listening/listening-questions";
+import { ReadingQuestions } from "@/components/test/reading/reading-questions";
 import { useFullMockLRW, type ActiveModule } from "@/hooks/use-full-mock-lrw";
 import { useFullscreen } from "@/hooks/use-fullscreen";
 import { useNavigationProtection } from "@/hooks/use-navigation-protection";
@@ -46,15 +40,6 @@ import {
     Minimize2,
     Check,
 } from "lucide-react";
-
-interface Question {
-    id: string;
-    questionNumber: number;
-    type: string;
-    text: string;
-    options: string[] | null;
-    metadata: Record<string, unknown> | null;
-}
 
 const MODULE_LABELS: Record<ActiveModule, { label: string; icon: typeof Headphones; color: string }> = {
     listening: { label: "Listening", icon: Headphones, color: "text-blue-500" },
@@ -207,52 +192,6 @@ function LRWExamContent({ testId }: { testId: string }) {
         enabled: hasStarted,
         onBackAttempt: abandonAndLeave,
     });
-
-    const renderQuestion = (question: Question, index: number) => {
-        const globalIndex = questionOffset + index;
-        const value = answers[question.id]?.answer || "";
-
-        const commonProps = {
-            questionId: question.id,
-            questionNumber: globalIndex + 1,
-            questionText: question.text,
-            value,
-            onChange: (value: string) => handleAnswer(question.id, value),
-            disabled: false,
-            reviewMode: false,
-            correctAnswer: undefined,
-            isCorrect: undefined,
-            isUnanswered: false,
-        };
-
-        switch (question.type) {
-            case "mcq_single":
-                return <MultipleChoice key={question.id} {...commonProps} options={question.options ?? []} />;
-            case "mcq_multiple":
-                return <MultipleAnswer key={question.id} {...commonProps} options={question.options ?? []} />;
-            case "tfng":
-            case "ynng":
-                return <TrueFalseNotGiven key={question.id} {...commonProps} />;
-            case "gap_fill":
-            case "short_answer":
-            case "summary_completion":
-            case "note_completion":
-            case "table_completion":
-            case "sentence_completion":
-            case "flow_chart_completion":
-            case "summary_completion_drag_drop":
-                return <FillInBlank key={question.id} {...commonProps} />;
-            case "matching_headings":
-                return <MatchingSelect key={question.id} {...commonProps} options={question.options ?? []} placeholder="Select a heading" />;
-            case "matching_info":
-            case "matching_names":
-                return <MatchingSelect key={question.id} {...commonProps} options={question.options ?? []} placeholder="Select a paragraph" />;
-            case "matching_sentence_endings":
-                return <MatchingSelect key={question.id} {...commonProps} options={question.options ?? []} placeholder="Select an ending" />;
-            default:
-                return <FillInBlank key={question.id} {...commonProps} />;
-        }
-    };
 
     if (isLoading) {
         return (
@@ -646,78 +585,18 @@ function LRWExamContent({ testId }: { testId: string }) {
             {/* Main Content */}
             <div className="flex-1 min-h-0">
                 {/* LISTENING MODULE */}
-                {activeModule === "listening" && (
+                {activeModule === "listening" && currentPassage && (
                     <div className="h-full overflow-y-auto">
                         <div className="max-w-4xl mx-auto p-3 md:p-6 space-y-4 md:space-y-6">
                             <AudioPlayer audioUrl={audioUrl} examMode />
-                            {questionGroups.map((group, groupIndex) => {
-                                const contextHtml = group.context as string | undefined;
-                                const instructionHtml = group.instruction as string | undefined;
-
-                                return (
-                                    <div key={groupIndex}>
-                                        <div className="mb-4">
-                                            <h3 className="font-bold text-base mb-2">
-                                                Questions {group.startNum}-{group.endNum}
-                                            </h3>
-                                            {instructionHtml && (
-                                                <div
-                                                    className="text-sm leading-relaxed [&_strong]:font-bold"
-                                                    style={{ color: theme.textMuted }}
-                                                    dangerouslySetInnerHTML={{ __html: instructionHtml }}
-                                                />
-                                            )}
-                                        </div>
-
-                                        {(() => {
-                                            const buildGroupQuestions = () =>
-                                                group.questions.map((question) => {
-                                                    const globalIdx = currentPassage!.questions.findIndex(
-                                                        (q) => q.id === question.id,
-                                                    );
-                                                    const value = answers[question.id]?.answer || "";
-                                                    return {
-                                                        questionId: question.id,
-                                                        questionNumber: questionOffset + globalIdx + 1,
-                                                        value,
-                                                        onChange: (val: string) => handleAnswer(question.id, val),
-                                                        disabled: false,
-                                                        reviewMode: false,
-                                                        correctAnswer: undefined,
-                                                        isCorrect: undefined,
-                                                        isUnanswered: false,
-                                                    };
-                                                });
-
-                                            if (contextHtml) {
-                                                return (
-                                                    <div className="text-sm leading-relaxed [&_h2]:text-base [&_h2]:font-bold [&_h2]:mb-2 [&_h3]:text-base [&_h3]:font-bold [&_h3]:mb-2 [&_strong]:font-semibold [&_ul]:list-disc [&_ul]:ml-5 [&_ol]:list-decimal [&_ol]:ml-5 [&_li]:mb-1 [&_p]:mb-1 [&_table]:w-full [&_table]:border-collapse [&_th]:border [&_th]:border-gray-300 [&_th]:dark:border-gray-600 [&_th]:px-3 [&_th]:py-2 [&_th]:text-left [&_th]:font-bold [&_th]:bg-gray-100 [&_th]:dark:bg-gray-800 [&_td]:border [&_td]:border-gray-300 [&_td]:dark:border-gray-600 [&_td]:px-3 [&_td]:py-2 [&_td]:align-top">
-                                                        <ContextFillInBlank
-                                                            contextHtml={contextHtml}
-                                                            questions={buildGroupQuestions()}
-                                                        />
-                                                    </div>
-                                                );
-                                            }
-
-                                            return (
-                                                <div className="space-y-6">
-                                                    {group.questions.map((question) => {
-                                                        const globalIdx = currentPassage!.questions.findIndex(
-                                                            (q) => q.id === question.id,
-                                                        );
-                                                        return <div key={question.id}>{renderQuestion(question, globalIdx)}</div>;
-                                                    })}
-                                                </div>
-                                            );
-                                        })()}
-
-                                        {groupIndex < questionGroups.length - 1 && (
-                                            <hr className="my-6" style={{ borderColor: theme.border }} />
-                                        )}
-                                    </div>
-                                );
-                            })}
+                            <ListeningQuestions
+                                questionGroups={questionGroups}
+                                passageQuestions={currentPassage.questions}
+                                questionOffset={questionOffset}
+                                answers={answers}
+                                onAnswer={handleAnswer}
+                                theme={{ border: theme.border, textMuted: theme.textMuted }}
+                            />
                         </div>
                     </div>
                 )}
@@ -736,135 +615,14 @@ function LRWExamContent({ testId }: { testId: string }) {
                         }
                         rightPanel={
                             <div className="h-full p-3 md:p-6 space-y-6" style={{ backgroundColor: theme.bg }}>
-                                {questionGroups.map((group, groupIndex) => {
-                                    const contextHtml = group.context as string | undefined;
-                                    const instructionHtml = group.instruction as string | undefined;
-
-                                    return (
-                                        <div key={groupIndex}>
-                                            <div className="mb-4">
-                                                <h3 className="font-bold text-base mb-2">
-                                                    Questions {group.startNum}-{group.endNum}
-                                                </h3>
-                                                {instructionHtml && (
-                                                    <div
-                                                        className="text-sm leading-relaxed rich-html"
-                                                        style={{ color: theme.textMuted }}
-                                                        dangerouslySetInnerHTML={{ __html: instructionHtml }}
-                                                    />
-                                                )}
-                                            </div>
-
-                                            {(() => {
-                                                const buildGroupQuestions = () =>
-                                                    group.questions.map((question) => {
-                                                        const globalIdx = currentPassage.questions.findIndex(
-                                                            (pq) => pq.id === question.id,
-                                                        );
-                                                        const value = answers[question.id]?.answer || "";
-                                                        return {
-                                                            questionId: question.id,
-                                                            questionNumber: questionOffset + globalIdx + 1,
-                                                            questionText: question.text,
-                                                            value,
-                                                            onChange: (val: string) => handleAnswer(question.id, val),
-                                                            disabled: false,
-                                                            reviewMode: false,
-                                                            correctAnswer: undefined,
-                                                            isCorrect: undefined,
-                                                            isUnanswered: false,
-                                                        };
-                                                    });
-
-                                                const groupOptions = group.options ?? [];
-
-                                                if (
-                                                    contextHtml &&
-                                                    ["gap_fill", "summary_completion", "summary_completion_drag_drop", "short_answer", "note_completion", "table_completion", "sentence_completion"].includes(group.type)
-                                                ) {
-                                                    return (
-                                                        <div className="text-sm leading-relaxed rich-html">
-                                                            <ContextFillInBlank
-                                                                contextHtml={contextHtml}
-                                                                questions={buildGroupQuestions()}
-                                                            />
-                                                        </div>
-                                                    );
-                                                }
-
-                                                if (
-                                                    ["matching_info", "matching_headings", "matching_names"].includes(group.type) &&
-                                                    groupOptions.length > 0
-                                                ) {
-                                                    const MatchingGrid = require("@/components/test/questions/matching-grid").MatchingGrid;
-                                                    return (
-                                                        <MatchingGrid
-                                                            options={groupOptions}
-                                                            questions={buildGroupQuestions()}
-                                                        />
-                                                    );
-                                                }
-
-                                                if (group.type === "flow_chart_completion" && groupOptions.length > 0) {
-                                                    return (
-                                                        <FlowChart
-                                                            title={contextHtml || undefined}
-                                                            options={groupOptions as unknown as { optionKey?: string; optionText: string; orderIndex?: number }[]}
-                                                            questions={buildGroupQuestions()}
-                                                        />
-                                                    );
-                                                }
-
-                                                if (group.type === "mcq_multiple" && groupOptions.length > 0) {
-                                                    return (
-                                                        <div className="space-y-6">
-                                                            {contextHtml && (
-                                                                <div className="text-sm leading-relaxed rich-html" dangerouslySetInnerHTML={{ __html: contextHtml }} />
-                                                            )}
-                                                            {group.questions.map((question) => {
-                                                                const globalIdx = currentPassage.questions.findIndex(
-                                                                    (pq) => pq.id === question.id,
-                                                                );
-                                                                const value = answers[question.id]?.answer || "";
-                                                                return (
-                                                                    <MultipleAnswer
-                                                                        key={question.id}
-                                                                        questionId={question.id}
-                                                                        questionNumber={questionOffset + globalIdx + 1}
-                                                                        questionText={question.text}
-                                                                        options={groupOptions}
-                                                                        value={value}
-                                                                        onChange={(val: string) => handleAnswer(question.id, val)}
-                                                                        disabled={false}
-                                                                        reviewMode={false}
-                                                                    />
-                                                                );
-                                                            })}
-                                                        </div>
-                                                    );
-                                                }
-
-                                                return (
-                                                    <div className="space-y-6">
-                                                        {contextHtml && (
-                                                            <div className="text-sm leading-relaxed rich-html" dangerouslySetInnerHTML={{ __html: contextHtml }} />
-                                                        )}
-                                                        {group.questions.map((question) => {
-                                                            const globalIdx = currentPassage.questions.findIndex(
-                                                                (pq) => pq.id === question.id,
-                                                            );
-                                                            return <div key={question.id}>{renderQuestion(question, globalIdx)}</div>;
-                                                        })}
-                                                    </div>
-                                                );
-                                            })()}
-
-                                            {groupIndex < questionGroups.length - 1 && (
-                                                <hr className="my-6" style={{ borderColor: theme.border }} />
-                                            )}
-                                        </div>
-                                    );
-                                })}
+                                <ReadingQuestions
+                                    questionGroups={questionGroups}
+                                    passageQuestions={currentPassage.questions}
+                                    questionOffset={questionOffset}
+                                    answers={answers}
+                                    onAnswer={handleAnswer}
+                                    theme={{ border: theme.border, textMuted: theme.textMuted }}
+                                />
                             </div>
                         }
                     />

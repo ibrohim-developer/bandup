@@ -78,7 +78,7 @@ export async function PATCH(request: NextRequest) {
                 speaking: patch.speaking_score ?? existing?.speaking_score,
             };
             const bands = Object.values(merged).filter(
-                (b): b is number => typeof b === "number" && b > 0,
+                (b): b is number => typeof b === "number",
             );
             if (bands.length === 4) {
                 // Official IELTS rounding: average to nearest whole or half band.

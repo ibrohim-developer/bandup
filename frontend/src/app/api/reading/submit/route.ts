@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
     return { questionId, userAnswer, isCorrect };
   });
 
-  const bandScore = calculateBandScore(rawScore);
+  const bandScore = calculateBandScore(rawScore, "reading");
 
   // Count total questions for this test (answered + unanswered)
   const passages = await find("reading-passages", {

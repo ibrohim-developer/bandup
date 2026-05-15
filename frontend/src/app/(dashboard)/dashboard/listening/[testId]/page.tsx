@@ -1,7 +1,7 @@
 "use client";
 
 import { use, Suspense, useMemo } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -13,15 +13,7 @@ import {
 import { SubmitDialog } from "@/components/test/common/submit-dialog";
 import { TestOptionsMenu } from "@/components/test/common/test-options-menu";
 import { AudioPlayer } from "@/components/test/listening/audio-player";
-import { MultipleChoice } from "@/components/test/questions/multiple-choice";
-import { MultipleAnswer } from "@/components/test/questions/multiple-answer";
-import { MultipleAnswerGroup } from "@/components/test/questions/multiple-answer-group";
-import { FillInBlank } from "@/components/test/questions/fill-in-blank";
-import { TrueFalseNotGiven } from "@/components/test/questions/true-false-not-given";
-import { ContextFillInBlank } from "@/components/test/questions/context-fill-in-blank";
-import { ContextLetterSelect } from "@/components/test/questions/context-letter-select";
-import { MatchingSelect } from "@/components/test/questions/matching-select";
-import { FlowChart } from "@/components/test/questions/flow-chart";
+import { ListeningQuestions } from "@/components/test/listening/listening-questions";
 import { useListeningTest } from "@/hooks/use-listening-test";
 import { useFullscreen } from "@/hooks/use-fullscreen";
 import { useNavigationProtection } from "@/hooks/use-navigation-protection";
@@ -93,9 +85,6 @@ export default function ListeningTestPage({
 
 function ListeningTestContent({ testId }: { testId: string }) {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const isReviewMode = searchParams.get("review") === "true";
-  const reviewAttemptId = searchParams.get("attemptId");
 
   const { isFullscreen, toggleFullscreen } = useFullscreen();
 
@@ -110,15 +99,13 @@ function ListeningTestContent({ testId }: { testId: string }) {
     isTimeUp,
     showSubmitDialog,
     setShowSubmitDialog,
-    reviewData,
-    unansweredQuestions,
     activeSectionId,
     setActiveSectionId,
     answers,
     answeredCount,
     handleAnswer,
     handleSubmit,
-  } = useListeningTest(testId, isReviewMode, reviewAttemptId);
+  } = useListeningTest(testId, false, null);
 
   const sectionPassages = useMemo(
     () =>
@@ -153,93 +140,8 @@ function ListeningTestContent({ testId }: { testId: string }) {
   useSyncTestTheme(testOptions.contrast);
 
   useNavigationProtection({
-    enabled: hasStarted && !isReviewMode,
+    enabled: hasStarted,
   });
-
-  const getTypeInstruction = (type: string) => {
-    switch (type) {
-      case "mcq_single":
-        return "Choose the correct answer.";
-      case "gap_fill":
-      case "short_answer":
-      case "sentence_completion":
-      case "flow_chart_completion":
-        return "Write NO MORE THAN TWO WORDS AND/OR A NUMBER for each answer.";
-      default:
-        return "";
-    }
-  };
-
-  const renderQuestion = (question: Question, index: number) => {
-    const globalIndex = questionOffset + index;
-    const review = reviewData[question.id];
-    const value = isReviewMode
-      ? review?.userAnswer || ""
-      : answers[question.id]?.answer || "";
-
-    const commonProps = {
-      questionId: question.id,
-      questionNumber: globalIndex + 1,
-      questionText: question.text,
-      value,
-      onChange: (value: string) => handleAnswer(question.id, value),
-      disabled: isReviewMode,
-      reviewMode: isReviewMode,
-      correctAnswer: review?.correctAnswer,
-      isCorrect: review?.isCorrect,
-      isUnanswered: unansweredQuestions.has(question.id),
-    };
-
-    switch (question.type) {
-      case "mcq_single":
-        return (
-          <MultipleChoice
-            key={question.id}
-            {...commonProps}
-            options={question.options ?? []}
-          />
-        );
-      case "mcq_multiple":
-        return (
-          <MultipleAnswer
-            key={question.id}
-            {...commonProps}
-            options={question.options ?? []}
-          />
-        );
-      case "tfng":
-      case "ynng":
-        return <TrueFalseNotGiven key={question.id} {...commonProps} />;
-      case "gap_fill":
-      case "short_answer":
-      case "sentence_completion":
-      case "summary_completion":
-      case "note_completion":
-      case "table_completion":
-      case "flow_chart_completion":
-        return <FillInBlank key={question.id} {...commonProps} />;
-      case "matching_headings":
-        return (
-          <MatchingSelect
-            key={question.id}
-            {...commonProps}
-            options={question.options ?? []}
-            placeholder="Select a heading"
-          />
-        );
-      case "matching_info":
-        return (
-          <MatchingSelect
-            key={question.id}
-            {...commonProps}
-            options={question.options ?? []}
-            placeholder="Select a paragraph"
-          />
-        );
-      default:
-        return null;
-    }
-  };
 
   if (isLoading) {
     return (
@@ -355,9 +257,7 @@ function ListeningTestContent({ testId }: { testId: string }) {
             variant="outline"
             size="default"
             onClick={() => {
-              if (isReviewMode) {
-                router.push(`/dashboard/results/${reviewAttemptId}`);
-              } else if (window.confirm("If you leave this page, all your answers will be lost and your test progress will not be saved.")) {
+              if (window.confirm("If you leave this page, all your answers will be lost and your test progress will not be saved.")) {
                 router.push("/dashboard/listening");
               }
             }}
@@ -405,181 +305,15 @@ function ListeningTestContent({ testId }: { testId: string }) {
 
       <div className="flex-1 min-h-0 overflow-y-auto">
         <div className="max-w-4xl mx-auto p-3 md:p-6 space-y-4 md:space-y-6">
-          {!isReviewMode && (
-            <AudioPlayer audioUrl={audioUrl} examMode />
-          )}
-          {questionGroups.map((group, groupIndex) => {
-            const contextHtml = group.context as string | undefined;
-            const instructionHtml = group.instruction as string | undefined;
-
-            return (
-              <div key={groupIndex}>
-                <div className="mb-4">
-                  <h3 className="font-bold text-base mb-2">
-                    Questions {group.startNum}-{group.endNum}
-                  </h3>
-                  {instructionHtml ? (
-                    <div
-                      className="text-sm leading-relaxed [&_strong]:font-bold"
-                      style={{ color: theme.textMuted }}
-                      dangerouslySetInnerHTML={{ __html: instructionHtml }}
-                    />
-                  ) : (
-                    <p
-                      className="text-sm leading-relaxed"
-                      style={{ color: theme.textMuted }}
-                    >
-                      {getTypeInstruction(group.type)}
-                    </p>
-                  )}
-                </div>
-
-                {(() => {
-                  const diagramMeta = group.metadata as { diagramQuestions?: { imageUrl?: string } } | null;
-                  const diagramImageUrl = diagramMeta?.diagramQuestions?.imageUrl;
-                  const isFlowChart = group.options && Array.isArray(group.options) && group.options.length > 0 && typeof group.options[0] === 'object' && (group.options[0] as { optionText?: string }).optionText;
-
-                  const buildGroupQuestions = () =>
-                    group.questions.map((question) => {
-                      const globalIdx = currentPassage.questions.findIndex((q) => q.id === question.id);
-                      const review = reviewData[question.id];
-                      const value = isReviewMode
-                        ? review?.userAnswer || ""
-                        : answers[question.id]?.answer || "";
-                      return {
-                        questionId: question.id,
-                        questionNumber: questionOffset + globalIdx + 1,
-                        value,
-                        onChange: (val: string) => handleAnswer(question.id, val),
-                        disabled: isReviewMode,
-                        reviewMode: isReviewMode,
-                        correctAnswer: review?.correctAnswer,
-                        isCorrect: review?.isCorrect,
-                        isUnanswered: unansweredQuestions.has(question.id),
-                      };
-                    });
-
-                  // Diagram/Map labeling — image + letter select dropdowns
-                  if (diagramImageUrl) {
-                    const letterOptions = (group.options as string[]) || [];
-                    return (
-                      <div className="space-y-4">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
-                          src={diagramImageUrl}
-                          alt="Map diagram"
-                          className="w-full max-w-2xl rounded-lg border"
-                          style={{ borderColor: theme.border }}
-                        />
-                        <div className="space-y-4">
-                          {group.questions.map((question) => {
-                            const globalIdx = currentPassage.questions.findIndex((q) => q.id === question.id);
-                            const review = reviewData[question.id];
-                            const value = isReviewMode
-                              ? review?.userAnswer || ""
-                              : answers[question.id]?.answer || "";
-                            return (
-                              <MatchingSelect
-                                key={question.id}
-                                questionId={question.id}
-                                questionNumber={questionOffset + globalIdx + 1}
-                                questionText={question.text}
-                                options={letterOptions}
-                                value={value}
-                                onChange={(val: string) => handleAnswer(question.id, val)}
-                                disabled={isReviewMode}
-                                reviewMode={isReviewMode}
-                                correctAnswer={review?.correctAnswer}
-                                isCorrect={review?.isCorrect}
-                                isUnanswered={unansweredQuestions.has(question.id)}
-                                placeholder="Select a letter"
-                              />
-                            );
-                          })}
-                        </div>
-                      </div>
-                    );
-                  }
-
-                  // Flow chart — HTML boxes with arrows and embedded inputs
-                  if (isFlowChart) {
-                    return (
-                      <FlowChart
-                        title={contextHtml || undefined}
-                        options={group.options as unknown as { optionKey?: string; optionText: string; orderIndex?: number }[]}
-                        questions={buildGroupQuestions()}
-                      />
-                    );
-                  }
-
-                  // MCQ multiple with group-level context and options —
-                  // single shared list of A-E options where the user picks the required count.
-                  const groupOptions = (group.options as string[]) || [];
-                  if (group.type === "mcq_multiple" && groupOptions.length > 0) {
-                    return (
-                      <div className="space-y-4">
-                        {contextHtml && (
-                          <div
-                            className="text-sm leading-relaxed rich-html"
-                            dangerouslySetInnerHTML={{ __html: contextHtml }}
-                          />
-                        )}
-                        <MultipleAnswerGroup
-                          options={groupOptions}
-                          questions={buildGroupQuestions()}
-                          disabled={isReviewMode}
-                          reviewMode={isReviewMode}
-                        />
-                      </div>
-                    );
-                  }
-
-                  // Matching with context blanks — render letter-select dropdowns inline,
-                  // with the shared option list shown above.
-                  const isMatchingType = group.type === "matching_info" || group.type === "matching_headings" || group.type === "matching_names" || group.type === "matching_sentence_endings";
-                  if (isMatchingType && contextHtml && groupOptions.length > 0 && /_{3,}/.test(contextHtml)) {
-                    return (
-                      <ContextLetterSelect
-                        contextHtml={contextHtml}
-                        options={groupOptions}
-                        questions={buildGroupQuestions()}
-                      />
-                    );
-                  }
-
-                  // Context fill-in-blank — HTML with ______ placeholders
-                  if (contextHtml) {
-                    return (
-                      <div className="text-sm leading-relaxed [&_h2]:text-base [&_h2]:font-bold [&_h2]:mb-2 [&_h3]:text-base [&_h3]:font-bold [&_h3]:mb-2 [&_strong]:font-semibold [&_ul]:list-disc [&_ul]:ml-5 [&_ol]:list-decimal [&_ol]:ml-5 [&_li]:mb-1 [&_p]:mb-1 [&_table]:w-full [&_table]:border-collapse [&_th]:border [&_th]:border-gray-300 [&_th]:dark:border-gray-600 [&_th]:px-3 [&_th]:py-2 [&_th]:text-left [&_th]:font-bold [&_th]:bg-gray-100 [&_th]:dark:bg-gray-800 [&_td]:border [&_td]:border-gray-300 [&_td]:dark:border-gray-600 [&_td]:px-3 [&_td]:py-2 [&_td]:align-top">
-                        <ContextFillInBlank
-                          contextHtml={contextHtml}
-                          questions={buildGroupQuestions()}
-                        />
-                      </div>
-                    );
-                  }
-
-                  // Default — individual questions
-                  return (
-                    <div className="space-y-6">
-                      {group.questions.map((question) => {
-                        const globalIdx = currentPassage.questions.findIndex((q) => q.id === question.id);
-                        return (
-                          <div key={question.id}>
-                            {renderQuestion(question, globalIdx)}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  );
-                })()}
-
-                {groupIndex < questionGroups.length - 1 && (
-                  <hr className="my-6" style={{ borderColor: theme.border }} />
-                )}
-              </div>
-            );
-          })}
+          <AudioPlayer audioUrl={audioUrl} examMode />
+          <ListeningQuestions
+            questionGroups={questionGroups}
+            passageQuestions={currentPassage.questions}
+            questionOffset={questionOffset}
+            answers={answers}
+            onAnswer={handleAnswer}
+            theme={{ border: theme.border, textMuted: theme.textMuted }}
+          />
         </div>
       </div>
 
@@ -675,14 +409,12 @@ function ListeningTestContent({ testId }: { testId: string }) {
           })}
         </div>
 
-        {!isReviewMode && (
-          <button
-            onClick={() => setShowSubmitDialog(true)}
-            className="cursor-pointer shrink-0 ml-2 md:ml-3 w-8 h-8 md:w-10 md:h-10 bg-gray-800 hover:bg-gray-900 text-white rounded flex items-center justify-center transition-colors"
-          >
-            <Check className="h-4 w-4 md:h-5 md:w-5" />
-          </button>
-        )}
+        <button
+          onClick={() => setShowSubmitDialog(true)}
+          className="cursor-pointer shrink-0 ml-2 md:ml-3 w-8 h-8 md:w-10 md:h-10 bg-gray-800 hover:bg-gray-900 text-white rounded flex items-center justify-center transition-colors"
+        >
+          <Check className="h-4 w-4 md:h-5 md:w-5" />
+        </button>
       </div>
 
       <SubmitDialog
