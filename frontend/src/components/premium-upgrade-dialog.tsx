@@ -35,14 +35,14 @@ export function PremiumUpgradeDialog({ trigger, open, onOpenChange }: PremiumUpg
           <DialogDescription asChild>
             <div className="space-y-4 pt-1">
               <div className="flex items-end gap-1.5">
-                <span className="text-4xl font-black text-foreground">49,000</span>
-                <span className="text-lg font-semibold text-muted-foreground mb-1">UZS</span>
+                <span className="text-4xl font-black text-foreground">$5</span>
                 <span className="text-sm text-muted-foreground mb-1">/ month</span>
               </div>
 
               <div className="space-y-2">
                 {[
-                  "All full mock tests — unlimited access",
+                  "Unlimited full mock test attempts for 1 month",
+                  "3 new full mock tests",
                   "AI scoring for Writing & Speaking",
                   "Detailed band score breakdown",
                   "Performance analytics & history",
@@ -57,7 +57,7 @@ export function PremiumUpgradeDialog({ trigger, open, onOpenChange }: PremiumUpg
               <div className="rounded-lg bg-muted/50 border border-border p-4 space-y-2 text-sm text-foreground">
                 <p className="font-semibold">How to pay:</p>
                 <ol className="space-y-1.5 text-muted-foreground list-decimal list-inside">
-                  <li>Transfer <span className="font-bold text-foreground">49,000 UZS</span> to our admin via your bank app</li>
+                  <li>Transfer <span className="font-bold text-foreground">$5</span> to our admin via your bank app</li>
                   <li>Send the payment screenshot to Telegram: <span className="font-bold text-foreground">@bandup_admin</span></li>
                   <li>We will activate your Premium as soon as we verify your payment</li>
                 </ol>

@@ -25,6 +25,7 @@ const getWritingTests = unstable_cache(
         is_published: { $eq: true },
       },
       fields: ["title", "description", "difficulty_level"],
+      sort: ["createdAt:desc"],
       populate: {
         writing_tasks: { fields: ["task_number"] },
       },

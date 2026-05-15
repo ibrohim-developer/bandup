@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
         started_at: new Date().toISOString(),
     });
 
-    const origin = request.nextUrl.origin;
+    const origin = process.env.NEXT_PUBLIC_SITE_URL ?? "https://bandup.uz";
     await update("full-mock-test-attempts", session.documentId, {
         result_url: `${origin}/dashboard/full-mock-test/results/${session.documentId}`,
     });
@@ -81,8 +81,16 @@ export async function PATCH(request: NextRequest) {
                 (b): b is number => typeof b === "number" && b > 0,
             );
             if (bands.length === 4) {
-                patch.overall_band_score =
-                    Math.round((bands.reduce((a, b) => a + b, 0) / 4) * 2) / 2;
+                // Official IELTS rounding: average to nearest whole or half band.
+                // .25 rounds up to the next half; .75 rounds up to the next whole.
+                const avg = bands.reduce((a, b) => a + b, 0) / 4;
+                const whole = Math.floor(avg);
+                const frac = avg - whole;
+                let rounded: number;
+                if (frac < 0.25) rounded = whole;
+                else if (frac < 0.75) rounded = whole + 0.5;
+                else rounded = whole + 1;
+                patch.overall_band_score = rounded;
             }
         }
     }

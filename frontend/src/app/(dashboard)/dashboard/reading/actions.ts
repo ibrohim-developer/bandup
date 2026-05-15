@@ -27,6 +27,7 @@ const getReadingTests = unstable_cache(
         is_published: { $eq: true },
       },
       fields: ["title", "description", "difficulty_level"],
+      sort: ["createdAt:desc"],
       populate: {
         reading_passages: {
           fields: ["passage_number"],

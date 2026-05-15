@@ -46,6 +46,22 @@ export default async function ResultsPage({ params }: ResultsPageProps) {
 
   const attempt = attempts?.[0];
 
+  const isAdmin = user?.role?.type === "admin" || user?.role?.name === "Admin";
+  if (attempt && user && !isAdmin && attempt.user?.id !== user.id) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4 text-center">
+          <p className="text-destructive font-medium">
+            Test attempt not found.
+          </p>
+          <Link href="/dashboard">
+            <Button variant="outline">Back to Dashboard</Button>
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   const userAttempts = user
     ? await find("test-attempts", {
         filters: { user: { id: { $eq: user.id } }, status: { $eq: "completed" } },

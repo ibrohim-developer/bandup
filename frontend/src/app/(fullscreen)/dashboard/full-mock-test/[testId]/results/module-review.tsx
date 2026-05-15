@@ -11,7 +11,7 @@ import {
     XCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { WritingFeedback } from "@/components/test/writing/writing-feedback";
+import { WritingTaskFeedback, type WritingTaskItem } from "@/components/test/writing/writing-task-feedback";
 import { SpeakingQuestionFeedback } from "@/components/test/speaking/speaking-question-feedback";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -188,37 +188,39 @@ function WritingReview({ tasks }: { tasks: any[] }) {
             </div>
         );
     }
+
+    const items: WritingTaskItem[] = tasks
+        .map((t) => {
+            let parsedFeedback: any = null;
+            if (t.feedback) {
+                if (typeof t.feedback === "string") {
+                    try {
+                        parsedFeedback = JSON.parse(t.feedback);
+                    } catch {
+                        parsedFeedback = null;
+                    }
+                } else {
+                    parsedFeedback = t.feedback;
+                }
+            }
+            return {
+                taskNumber: t.writing_task?.task_number ?? 0,
+                taskType: t.writing_task?.task_type ?? "essay",
+                content: t.content ?? "",
+                wordCount: t.word_count ?? 0,
+                overallBandScore: t.overall_band_score ?? null,
+                taskAchievementScore: t.task_achievement_score ?? null,
+                coherenceScore: t.coherence_score ?? null,
+                lexicalScore: t.lexical_score ?? null,
+                grammarScore: t.grammar_score ?? null,
+                parsedFeedback,
+            };
+        })
+        .sort((a, b) => a.taskNumber - b.taskNumber);
+
     return (
-        <div className="divide-y divide-border">
-            {tasks.map((t) => (
-                <div key={t.id} className="p-5 md:p-6 space-y-4">
-                    <div>
-                        <h4 className="font-bold">
-                            Task {t.writing_task?.task_number} — {t.writing_task?.task_type === "report" ? "Report" : "Essay"}
-                        </h4>
-                        <p className="text-sm text-muted-foreground">
-                            {t.word_count} words
-                            {t.overall_band_score !== null && ` · Band ${t.overall_band_score}`}
-                        </p>
-                    </div>
-                    {t.feedback && (
-                        <WritingFeedback
-                            feedback={t.feedback}
-                            overallBandScore={t.overall_band_score}
-                            taskAchievementScore={t.task_achievement_score}
-                            coherenceScore={t.coherence_score}
-                            lexicalScore={t.lexical_score}
-                            grammarScore={t.grammar_score}
-                        />
-                    )}
-                    <div>
-                        <h5 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">Your Essay</h5>
-                        <div className="p-4 rounded-lg bg-muted/30 border text-sm whitespace-pre-line max-h-60 overflow-y-auto">
-                            {t.content}
-                        </div>
-                    </div>
-                </div>
-            ))}
+        <div className="p-5 md:p-6">
+            <WritingTaskFeedback tasks={items} />
         </div>
     );
 }

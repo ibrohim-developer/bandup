@@ -1,5 +1,9 @@
+"use client";
+
+import { useState } from "react";
 import { Clock, Headphones, BookOpen, PenTool, Mic, CheckCircle, ArrowRight } from "lucide-react";
 import { LoginRequiredLink } from "@/components/auth/login-required-link";
+import { PremiumUpgradeDialog } from "@/components/premium-upgrade-dialog";
 
 export interface FullMockTestItem {
     id: string;
@@ -17,6 +21,7 @@ export interface FullMockTestItem {
 }
 
 export function FullMockTestCard({ test }: { test: FullMockTestItem }) {
+    const [premiumOpen, setPremiumOpen] = useState(false);
     return (
         <div className="bg-card border border-border rounded-xl p-4 md:p-6 flex flex-col gap-4">
             {/* Header */}
@@ -90,14 +95,26 @@ export function FullMockTestCard({ test }: { test: FullMockTestItem }) {
                     <Clock className="h-3.5 w-3.5" />
                     ~{Math.round(test.duration / 60)}h {test.duration % 60}min
                 </div>
-                <LoginRequiredLink
-                    href={`/dashboard/full-mock-test/${test.id}`}
-                    className="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-lg font-bold text-sm hover:opacity-90 transition-all"
-                >
-                    {test.isCompleted ? "Retake" : "Start Test"}
-                    <ArrowRight className="h-4 w-4" />
-                </LoginRequiredLink>
+                {test.isCompleted ? (
+                    <button
+                        type="button"
+                        onClick={() => setPremiumOpen(true)}
+                        className="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-lg font-bold text-sm hover:opacity-90 transition-all"
+                    >
+                        Retake
+                        <ArrowRight className="h-4 w-4" />
+                    </button>
+                ) : (
+                    <LoginRequiredLink
+                        href={`/dashboard/full-mock-test/${test.id}`}
+                        className="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-lg font-bold text-sm hover:opacity-90 transition-all"
+                    >
+                        Start Test
+                        <ArrowRight className="h-4 w-4" />
+                    </LoginRequiredLink>
+                )}
             </div>
+            <PremiumUpgradeDialog open={premiumOpen} onOpenChange={setPremiumOpen} />
         </div>
     );
 }

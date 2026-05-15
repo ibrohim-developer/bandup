@@ -102,15 +102,6 @@ function rawToBand(raw: number): number {
     return 2.5;
 }
 
-function bandDescriptor(band: number): string {
-    if (band >= 8.5) return "Expert User";
-    if (band >= 7.5) return "Very Good User";
-    if (band >= 6.5) return "Competent User";
-    if (band >= 5.5) return "Modest User";
-    if (band >= 4.5) return "Limited User";
-    return "Extremely Limited User";
-}
-
 export default async function FullMockResultsByAttemptPage({
     params,
 }: {
@@ -133,7 +124,8 @@ export default async function FullMockResultsByAttemptPage({
     });
 
     if (!session) notFound();
-    if (session.user?.id !== user.id) notFound();
+    const isAdmin = user.role?.type === "admin" || user.role?.name === "Admin";
+    if (!isAdmin && session.user?.id !== user.id) notFound();
 
     const test = session.test;
     if (!test) notFound();
@@ -196,7 +188,7 @@ export default async function FullMockResultsByAttemptPage({
             label: "Listening",
             icon: Headphones,
             accent: "blue",
-            score: `${listeningRaw}/40`,
+            score: listeningBand ? listeningBand.toString() : "0",
             band: listeningBand,
         },
         {
@@ -204,7 +196,7 @@ export default async function FullMockResultsByAttemptPage({
             label: "Reading",
             icon: BookOpen,
             accent: "emerald",
-            score: `${readingRaw}/40`,
+            score: readingBand ? readingBand.toString() : "0",
             band: readingBand,
         },
         {
@@ -212,7 +204,7 @@ export default async function FullMockResultsByAttemptPage({
             label: "Writing",
             icon: PenTool,
             accent: "purple",
-            score: writingBand ? writingBand.toString() : "—",
+            score: writingBand ? writingBand.toString() : "0",
             band: writingBand,
         },
         {
@@ -220,7 +212,7 @@ export default async function FullMockResultsByAttemptPage({
             label: "Speaking",
             icon: Mic,
             accent: "amber",
-            score: speakingBand ? speakingBand.toString() : "—",
+            score: speakingBand ? speakingBand.toString() : "0",
             band: speakingBand,
         },
     ] as const;
@@ -239,7 +231,7 @@ export default async function FullMockResultsByAttemptPage({
     }));
 
     return (
-        <div className="max-w-5xl mx-auto mt-8 px-4 md:px-6 pb-20">
+        <div className="w-full max-w-5xl mx-auto mt-8 px-4 md:px-6 pb-20 min-w-0">
             <Link
                 href="/dashboard/full-mock-test/history"
                 className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground mb-6 text-sm font-medium"
@@ -247,30 +239,29 @@ export default async function FullMockResultsByAttemptPage({
                 <ArrowLeft className="h-4 w-4" /> Back to History
             </Link>
 
-            <div className="relative overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-primary/10 via-primary/5 to-transparent p-6 md:p-10 mb-8">
+            <div className="relative overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-primary/10 via-primary/5 to-transparent p-5 sm:p-6 md:p-10 mb-8">
                 <div className="absolute -right-12 -top-12 w-64 h-64 bg-primary/10 rounded-full blur-3xl" />
-                <div className="relative flex flex-col md:flex-row md:items-center gap-6 md:gap-10">
-                    <div className="flex items-center gap-4">
-                        <div className="w-16 h-16 md:w-20 md:h-20 rounded-2xl bg-primary/15 flex items-center justify-center shrink-0">
-                            <Trophy className="h-8 w-8 md:h-10 md:w-10 text-primary" />
+                <div className="relative flex flex-col md:flex-row md:items-center gap-5 md:gap-10">
+                    <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+                        <div className="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-2xl bg-primary/15 flex items-center justify-center shrink-0">
+                            <Trophy className="h-6 w-6 sm:h-8 sm:w-8 md:h-10 md:w-10 text-primary" />
                         </div>
-                        <div>
-                            <p className="text-xs md:text-sm font-bold uppercase tracking-widest text-muted-foreground">
+                        <div className="min-w-0">
+                            <p className="text-[10px] sm:text-xs md:text-sm font-bold uppercase tracking-widest text-muted-foreground">
                                 Full Mock Test Result
                             </p>
-                            <h1 className="text-xl md:text-3xl font-black tracking-tight">{test.title}</h1>
+                            <h1 className="text-lg sm:text-xl md:text-3xl font-black tracking-tight break-words">
+                                {test.title}
+                            </h1>
                         </div>
                     </div>
-                    <div className="md:ml-auto flex items-center gap-4 md:gap-6">
-                        <div className="text-right">
-                            <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
+                    <div className="md:ml-auto flex items-center md:gap-6">
+                        <div className="text-left md:text-right w-full">
+                            <p className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-muted-foreground">
                                 Overall Band
                             </p>
-                            <p className="text-6xl md:text-7xl font-black text-primary leading-none">
+                            <p className="text-5xl sm:text-6xl md:text-7xl font-black text-primary leading-none mt-1">
                                 {overallBand || "—"}
-                            </p>
-                            <p className="text-sm font-semibold text-muted-foreground mt-1">
-                                {overallBand ? bandDescriptor(overallBand) : "Pending"}
                             </p>
                         </div>
                     </div>
@@ -313,9 +304,9 @@ export default async function FullMockResultsByAttemptPage({
                             </div>
                             <div className="flex items-baseline gap-2 mb-3">
                                 <span className="text-3xl font-black">{m.score}</span>
-                                {m.band > 0 && (m.key === "listening" || m.key === "reading") && (
+                                {m.band > 0 && (
                                     <span className="text-sm text-muted-foreground font-semibold">
-                                        Band {m.band}
+                                        Band
                                     </span>
                                 )}
                             </div>

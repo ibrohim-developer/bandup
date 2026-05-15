@@ -25,6 +25,7 @@ const getListeningTests = unstable_cache(
         is_published: { $eq: true },
       },
       fields: ["title", "description", "difficulty_level"],
+      sort: ["createdAt:desc"],
       populate: {
         listening_sections: {
           fields: ["section_number"],

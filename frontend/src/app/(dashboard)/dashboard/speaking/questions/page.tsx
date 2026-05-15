@@ -14,6 +14,16 @@ export const metadata: Metadata = {
 
 const speakingFilters = [
   {
+    key: "part",
+    placeholder: "All Parts",
+    options: [
+      { value: "all", label: "All Parts" },
+      { value: "1", label: "Part 1" },
+      { value: "2", label: "Part 2" },
+      { value: "3", label: "Part 3" },
+    ],
+  },
+  {
     key: "difficulty",
     placeholder: "All Levels",
     options: [

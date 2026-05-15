@@ -82,6 +82,22 @@ export async function POST(request: NextRequest) {
     const task = sub.writing_task;
     if (!task) return { submissionDocId: sub.documentId, evaluation: null, task: null };
 
+    // Skip AI evaluation for empty submissions — score them as 0 with a clear note.
+    // Anything under 5 words is effectively blank and not worth burning a Gemini call on.
+    const wordCount = (sub.content ?? "").trim().split(/\s+/).filter(Boolean).length;
+    if (wordCount < 5) {
+      const evaluation = {
+        taskAchievementScore: 0,
+        coherenceScore: 0,
+        lexicalScore: 0,
+        grammarScore: 0,
+        overallBandScore: 0,
+        feedback:
+          "You did not submit an answer for this task, so no band score could be awarded.\n\nIELTS Writing requires at least 150 words for Task 1 and 250 words for Task 2. Write a full response next time to receive a band score and detailed feedback.",
+      };
+      return { submissionDocId: sub.documentId, evaluation, task };
+    }
+
     const evaluation = await evaluateEssay(
       task.prompt,
       task.task_type,

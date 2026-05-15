@@ -21,6 +21,7 @@ export interface SpeakingTestItem {
   title: string;
   difficulty: string;
   topics: SpeakingTopicItem[];
+  createdAt: string;
   isCompleted?: boolean;
 }
 
@@ -32,7 +33,8 @@ const getSpeakingTests = unstable_cache(
         module_type: { $eq: "speaking" },
         is_published: { $eq: true },
       },
-      fields: ["title", "difficulty_level"],
+      fields: ["title", "difficulty_level", "createdAt"],
+      sort: ["createdAt:desc"],
       populate: {
         speaking_topics: {
           fields: ["topic", "part_number", "preparation_time_seconds", "speaking_time_seconds", "questions", "cue_points"],
@@ -46,6 +48,7 @@ const getSpeakingTests = unstable_cache(
       id: test.documentId,
       title: test.title,
       difficulty: test.difficulty_level ?? "medium",
+      createdAt: test.createdAt,
       topics: (test.speaking_topics ?? []).map((t: any) => ({
         id: t.documentId,
         topic: t.topic,
@@ -95,6 +98,10 @@ export async function fetchSpeakingTests(
       }
       if (params.difficulty && params.difficulty !== "all" && test.difficulty !== params.difficulty) {
         return false;
+      }
+      if (params.part && params.part !== "all") {
+        const part = Number(params.part);
+        if (!test.topics.some((t) => t.partNumber === part)) return false;
       }
       if (params.status && params.status !== "all") {
         if (params.status === "completed" && !test.isCompleted) return false;
