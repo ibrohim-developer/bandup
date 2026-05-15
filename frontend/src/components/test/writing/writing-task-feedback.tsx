@@ -129,6 +129,12 @@ export function WritingTaskFeedback({ tasks }: { tasks: WritingTaskItem[] }) {
                   </div>
                 )}
 
+                {hasScores && !task.parsedFeedback && (
+                  <div className="p-4 rounded-lg border border-amber-200 dark:border-amber-800 bg-amber-50/50 dark:bg-amber-950/20 text-sm text-amber-700 dark:text-amber-400">
+                    There is no feedback because your response was too short to evaluate.
+                  </div>
+                )}
+
                 {hasScores && task.parsedFeedback && (
                   <>
                     {/* Criterion scores mini grid */}

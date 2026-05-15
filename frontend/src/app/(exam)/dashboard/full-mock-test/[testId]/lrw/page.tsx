@@ -245,7 +245,7 @@ function LRWExamContent({ testId }: { testId: string }) {
             {
                 icon: Headphones,
                 label: "Listening",
-                duration: "30 min",
+                duration: "40 min",
                 detail: `${listeningSections.length} sections · ${totalListeningQuestions} questions`,
                 accent: "bg-blue-500",
                 accentSoft: "bg-blue-500/10",
@@ -295,7 +295,7 @@ function LRWExamContent({ testId }: { testId: string }) {
                         <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 pt-2 text-sm md:text-base text-muted-foreground">
                             <span className="flex items-center gap-1.5">
                                 <Clock className="h-4 w-4" />
-                                <span className="font-semibold text-foreground">2h 30min</span> total
+                                <span className="font-semibold text-foreground">2h 40min</span> total
                             </span>
                             <span className="h-1 w-1 rounded-full bg-muted-foreground/40" />
                             <span>

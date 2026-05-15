@@ -178,7 +178,9 @@ export function useFullMockLRW(testId: string) {
             setActiveTaskId(writingData.tasks?.[0]?.id ?? "");
 
             // Set timers from backend data
-            const listeningTime = listeningData.totalTimeLimit || TEST_CONFIG.listening.totalTime;
+            // Full mock listening always gets 40 min (30 min audio + 10 min transfer time,
+            // matching paper IELTS) regardless of the per-section sum returned by the backend.
+            const listeningTime = TEST_CONFIG.listening.totalTime;
             const readingTime = readingData.totalTimeLimit || TEST_CONFIG.reading.totalTime;
             const writingTime = writingData.totalTimeLimit || TEST_CONFIG.writing.totalTime;
 

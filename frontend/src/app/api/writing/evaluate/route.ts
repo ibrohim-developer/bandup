@@ -92,8 +92,15 @@ export async function POST(request: NextRequest) {
         lexicalScore: 0,
         grammarScore: 0,
         overallBandScore: 0,
-        feedback:
-          "You did not submit an answer for this task, so no band score could be awarded.\n\nIELTS Writing requires at least 150 words for Task 1 and 250 words for Task 2. Write a full response next time to receive a band score and detailed feedback.",
+        feedback: JSON.stringify({
+          summary: {
+            strengths: [],
+            weaknesses: [
+              "There is no feedback because your response was too short to evaluate.",
+              "IELTS Writing requires at least 150 words for Task 1 and 250 words for Task 2. Write a full response next time to receive a band score and detailed feedback.",
+            ],
+          },
+        }),
       };
       return { submissionDocId: sub.documentId, evaluation, task };
     }
