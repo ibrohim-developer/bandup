@@ -146,8 +146,8 @@ export default async function ProgressPage() {
                   <p className="text-xs text-muted-foreground">{a.date}</p>
                 </div>
                 {(a.module_type === "reading" || a.module_type === "listening") ? (
-                  a.raw_score != null && (
-                    <span className="text-lg font-black">{Math.round((a.raw_score / 40) * 100)}%</span>
+                  a.raw_score != null && a.total_questions != null && (
+                    <span className="text-lg font-black">{a.raw_score}/{a.total_questions}</span>
                   )
                 ) : (
                   a.band_score != null && (

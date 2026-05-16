@@ -82,6 +82,7 @@ export interface ProgressData {
     module_type: string;
     band_score: number | null;
     raw_score: number | null;
+    total_questions: number | null;
     date: string;
     status: string;
   }[];
@@ -104,11 +105,15 @@ export async function fetchProgressData(): Promise<ProgressData | null> {
       "module_type",
       "band_score",
       "raw_score",
+      "total_questions",
       "time_spent_seconds",
       "completed_at",
       "status",
     ],
-    populate: { test: { fields: ["title"] } },
+    populate: {
+      test: { fields: ["title", "is_full_mock_test"] },
+      full_mock_test_attempt: { fields: ["id"] },
+    },
     sort: ["completed_at:asc"],
     pagination: { pageSize: 1000 },
   });
@@ -187,14 +192,15 @@ export async function fetchProgressData(): Promise<ProgressData | null> {
     })
     .filter(Boolean) as ModuleStat[];
 
-  // Recent 6 attempts (any status shown in recent)
-  const allRecent = [...attempts]
+  // Recent 6 attempts (exclude module sub-attempts that belong to a full mock)
+  const allRecent = attempts
+    .filter((a: any) => !a.full_mock_test_attempt && !a.test?.is_full_mock_test)
     .sort(
       (a: any, b: any) =>
         new Date(b.completed_at ?? 0).getTime() -
         new Date(a.completed_at ?? 0).getTime(),
     )
-    .slice(0, 6);
+    .slice(0, 10);
 
   const recentAttempts = allRecent.map((a: any) => ({
     id: a.documentId,
@@ -202,6 +208,7 @@ export async function fetchProgressData(): Promise<ProgressData | null> {
     module_type: a.module_type,
     band_score: a.band_score ?? null,
     raw_score: a.raw_score ?? null,
+    total_questions: a.total_questions ?? null,
     date: new Date(a.completed_at).toLocaleString("en-GB", {
       day: "numeric",
       month: "short",

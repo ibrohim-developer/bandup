@@ -9,7 +9,6 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  ReferenceLine,
 } from "recharts";
 import type { AttemptPoint } from "@/app/(dashboard)/dashboard/progress/actions";
 
@@ -74,8 +73,17 @@ export function BandScoreChart({ data }: { data: AttemptPoint[] }) {
   const [active, setActive] = useState<string>("all");
 
   const isBandMode = BAND_SCORE_MODULES.has(active);
-  const filtered = (active === "all" ? data : data.filter((d) => d.module_type === active))
+  const scored = (active === "all" ? data : data.filter((d) => d.module_type === active))
     .map((d) => ({ ...d, display_score: getDisplayScore(d, isBandMode) }));
+  // Keep only the highest-scoring attempt per date
+  const bestByDate = new Map<string, (typeof scored)[number]>();
+  for (const d of scored) {
+    const existing = bestByDate.get(d.date);
+    if (!existing || d.display_score > existing.display_score) {
+      bestByDate.set(d.date, d);
+    }
+  }
+  const filtered = Array.from(bestByDate.values());
   const hasData = filtered.length > 1;
 
   const yDomain = isBandMode ? [0, 9] : [0, 100];
@@ -88,7 +96,7 @@ export function BandScoreChart({ data }: { data: AttemptPoint[] }) {
         <div>
           <h3 className="font-black text-base leading-none mb-1">Band Score Trend</h3>
           <p className="text-xs text-muted-foreground">
-            All completed tests over time · dashed line = 6.5 target
+            All completed tests over time
           </p>
         </div>
         <div className="flex gap-1 flex-wrap">
@@ -129,14 +137,6 @@ export function BandScoreChart({ data }: { data: AttemptPoint[] }) {
               axisLine={false}
             />
             <Tooltip content={<CustomTooltip isBandMode={isBandMode} />} />
-            {isBandMode && (
-              <ReferenceLine
-                y={6.5}
-                stroke="#10b981"
-                strokeDasharray="4 4"
-                label={{ value: "6.5", fontSize: 10, fill: "#10b981", position: "right" }}
-              />
-            )}
             <Line
               type="monotone"
               dataKey="display_score"
@@ -168,14 +168,6 @@ export function BandScoreChart({ data }: { data: AttemptPoint[] }) {
                 tickLine={false}
                 axisLine={false}
               />
-              {isBandMode && (
-                <ReferenceLine
-                  y={6.5}
-                  stroke="#10b981"
-                  strokeDasharray="4 4"
-                  label={{ value: "6.5", fontSize: 10, fill: "#10b981", position: "right" }}
-                />
-              )}
             </LineChart>
           </ResponsiveContainer>
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">

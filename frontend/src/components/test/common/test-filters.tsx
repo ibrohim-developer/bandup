@@ -77,7 +77,7 @@ function TestFiltersContent({
             value={searchParams.get(filter.key) ?? "all"}
             onValueChange={(value) => updateParams(filter.key, value)}
           >
-            <SelectTrigger className="w-full md:w-40 text-xs font-bold border-neutral-200 dark:border-neutral-700">
+            <SelectTrigger className="w-full md:w-40 text-xs font-bold bg-card border-neutral-200 dark:border-neutral-700">
               <SelectValue placeholder={filter.placeholder} />
             </SelectTrigger>
             <SelectContent>

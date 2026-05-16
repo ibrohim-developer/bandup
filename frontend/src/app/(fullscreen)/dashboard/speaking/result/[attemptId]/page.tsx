@@ -39,7 +39,7 @@ export default async function SpeakingResultPage({
   const userAttempts = user
     ? await find("test-attempts", {
         filters: { user: { id: { $eq: user.id } }, status: { $eq: "completed" } },
-        pagination: { pageSize: 2 },
+        fields: ["id"],
       })
     : [];
   const attemptCount = userAttempts?.length ?? 0;
@@ -302,7 +302,7 @@ export default async function SpeakingResultPage({
       </Tabs>
 
       <FeedbackForm attemptId={attemptId} />
-      {/* <FeedbackModal attemptId={attemptId} attemptCount={attemptCount} /> */}
+      <FeedbackModal attemptId={attemptId} attemptCount={attemptCount} />
     </div>
   );
 }

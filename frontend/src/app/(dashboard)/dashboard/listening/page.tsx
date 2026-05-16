@@ -66,7 +66,7 @@ export default async function ListeningTestsPage({
         </div>
         <Link
           href="/dashboard/listening/history"
-          className="flex items-center gap-2 text-xs font-bold px-3 py-2 md:px-4 border border-border rounded-lg hover:bg-card transition-colors shrink-0"
+          className="flex items-center gap-2 text-xs font-bold px-3 py-2 md:px-4 bg-card border border-border rounded-lg hover:bg-muted transition-colors shrink-0"
         >
           <Clock className="h-3.5 w-3.5" />
           <span className="hidden sm:inline">Completed Tests</span>

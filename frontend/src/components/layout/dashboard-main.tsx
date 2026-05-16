@@ -22,7 +22,7 @@ export function DashboardMain({ children }: { children: React.ReactNode }) {
       <main
         ref={mainRef}
         className={cn(
-          'flex-1 flex flex-col min-w-0 overflow-y-auto bg-background',
+          'flex-1 flex flex-col min-w-0 overflow-y-auto bg-muted/40 dark:bg-background',
           !isTestPage && 'md:pl-64'
         )}
       >

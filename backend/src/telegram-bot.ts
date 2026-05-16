@@ -101,11 +101,8 @@ async function sendLoginCode(
   });
 
   const text = [
-    `Hi ${user.first_name || 'there'}!`,
-    '',
-    `Your BandUp login code is: \`${code}\` (tap to copy)`,
-    '',
-    'Enter this code on bandup.uz to sign in. The code expires in 1 minute.',
+    `✅ Verification code: \`${code}\``,
+    `⌛ Expires in 1 minute.`,
   ].join('\n');
 
   await tg(token, 'sendMessage', {

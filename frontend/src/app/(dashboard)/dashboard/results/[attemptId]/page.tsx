@@ -65,7 +65,7 @@ export default async function ResultsPage({ params }: ResultsPageProps) {
   const userAttempts = user
     ? await find("test-attempts", {
         filters: { user: { id: { $eq: user.id } }, status: { $eq: "completed" } },
-        pagination: { pageSize: 2 },
+        fields: ["id"],
       })
     : [];
   const attemptCount = userAttempts?.length ?? 0;
@@ -258,7 +258,7 @@ function ResultsContent({ attempt, testTitle, answerResults, attemptCount }: {
 
       <div id="review" className="border-1 border-border rounded-xl overflow-hidden mb-12"><AnswerToggle answerResults={answerResults} /></div>
       <FeedbackForm attemptId={attempt.id} />
-      {/* <FeedbackModal attemptId={attempt.id} attemptCount={attemptCount} /> */}
+      <FeedbackModal attemptId={attempt.id} attemptCount={attemptCount} />
       {/* <div className="flex flex-col items-center justify-center gap-6 pb-20 pt-4 text-center">
         <p className="text-base md:text-xl font-bold text-muted-foreground uppercase tracking-tight">Support our mission to keep IELTS practice free for everyone.</p>
         <Button size="lg" className="flex items-center gap-3 px-8 md:px-12 py-6 rounded-xl font-bold text-sm tracking-widest uppercase"><Heart className="h-5 w-5" />Donate to Support</Button>
@@ -419,7 +419,7 @@ function WritingResultsContent({ attempt, testTitle, tasks, submissions, attempt
       </Tabs>
 
       <FeedbackForm attemptId={attempt.id} />
-      {/* <FeedbackModal attemptId={attempt.id} attemptCount={attemptCount} /> */}
+      <FeedbackModal attemptId={attempt.id} attemptCount={attemptCount} />
     </div>
   );
 }

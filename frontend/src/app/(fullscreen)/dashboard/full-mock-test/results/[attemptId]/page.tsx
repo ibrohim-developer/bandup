@@ -17,6 +17,7 @@ import { ModuleReview } from "../../[testId]/results/module-review";
 import { WritingEvalTrigger } from "../../[testId]/results/writing-eval-trigger";
 import { SpeakingEvalTrigger } from "../../[testId]/results/speaking-eval-trigger";
 import { PremiumUpgradeDialog } from "@/components/premium-upgrade-dialog";
+import { FeedbackModal } from "@/components/test/common/feedback-modal";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -126,6 +127,12 @@ export default async function FullMockResultsByAttemptPage({
     if (!session) notFound();
     const isAdmin = user.role?.type === "admin" || user.role?.name === "Admin";
     if (!isAdmin && session.user?.id !== user.id) notFound();
+
+    const userAttempts = await find("test-attempts", {
+        filters: { user: { id: { $eq: user.id } }, status: { $eq: "completed" } },
+        fields: ["id"],
+    });
+    const attemptCount = userAttempts?.length ?? 0;
 
     const test = session.test;
     if (!test) notFound();
@@ -384,6 +391,7 @@ export default async function FullMockResultsByAttemptPage({
                     }
                 />
             </div>
+            <FeedbackModal attemptId={attemptId} attemptCount={attemptCount} />
         </div>
     );
 }

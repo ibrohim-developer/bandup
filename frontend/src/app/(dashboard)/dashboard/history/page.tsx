@@ -49,7 +49,6 @@ export default async function HistoryPage() {
         status: { $eq: 'completed' },
       },
       sort: ['createdAt:desc'],
-      fields: ['module_type', 'band_score', 'raw_score', 'status', 'createdAt'],
       pagination: { pageSize: 50 },
     })
   }
@@ -100,7 +99,14 @@ export default async function HistoryPage() {
               {attempts.map((attempt) => {
                 const cfg = MODULE_CONFIG[attempt.module_type]
                 if (!cfg) return null
-                const score = attempt.band_score ?? attempt.raw_score
+                const isObjective = attempt.module_type === 'listening' || attempt.module_type === 'reading'
+                const scoreDisplay = isObjective
+                  ? attempt.raw_score != null && attempt.total_questions != null
+                    ? `${attempt.raw_score}/${attempt.total_questions}`
+                    : null
+                  : attempt.band_score != null
+                    ? String(attempt.band_score)
+                    : null
                 return (
                   <tr key={attempt.documentId} className="hover:bg-muted/30 transition-colors">
                     <td className="px-5 py-4">
@@ -115,8 +121,8 @@ export default async function HistoryPage() {
                       </div>
                     </td>
                     <td className="px-5 py-4 text-right">
-                      {score != null ? (
-                        <span className={`text-xl font-bold ${cfg.text}`}>{score}</span>
+                      {scoreDisplay != null ? (
+                        <span className={`text-xl font-bold ${cfg.text}`}>{scoreDisplay}</span>
                       ) : (
                         <span className="text-muted-foreground">—</span>
                       )}

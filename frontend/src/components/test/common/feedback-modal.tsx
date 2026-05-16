@@ -26,16 +26,14 @@ export function FeedbackModal({ attemptId, attemptCount, delayMs = 3000 }: Feedb
   const [isDone, setIsDone] = useState(false)
 
   useEffect(() => {
-    if (attemptCount < 2) return
+    if (attemptCount < 3) return
     if (typeof window !== 'undefined' && localStorage.getItem(DISMISSED_KEY)) return
     const t = setTimeout(() => setOpen(true), delayMs)
     return () => clearTimeout(t)
   }, [attemptCount, delayMs])
 
   const handleDismiss = () => {
-    if (!message.trim()) {
-      localStorage.setItem(DISMISSED_KEY, '1')
-    }
+    localStorage.setItem(DISMISSED_KEY, '1')
     setOpen(false)
   }
 
@@ -55,6 +53,7 @@ export function FeedbackModal({ attemptId, attemptCount, delayMs = 3000 }: Feedb
         throw new Error(data.error || 'Failed to submit feedback')
       }
 
+      localStorage.setItem(DISMISSED_KEY, '1')
       setIsDone(true)
       toast.success('Thank you for your feedback!')
       setTimeout(() => setOpen(false), 1500)
@@ -78,16 +77,16 @@ export function FeedbackModal({ attemptId, attemptCount, delayMs = 3000 }: Feedb
           <>
             <DialogHeader className="mb-2">
               <DialogTitle className="text-2xl font-bold uppercase tracking-tight">
-                How was this test?
+                You&apos;ve completed 3 tests!
               </DialogTitle>
-              <DialogDescription className="text-sm text-muted-foreground">
-                Share your thoughts — it only takes a moment.
+              <DialogDescription className="text-sm text-muted-foreground leading-relaxed">
+                Share your feedback — it&apos;s really important to us. BandUp is free and built for IELTS learners like you. Your thoughts on what works, what doesn&apos;t, and what&apos;s missing directly shape what we build next. Even one line helps.
               </DialogDescription>
             </DialogHeader>
 
             <textarea
               className="w-full rounded-xl border border-border focus:border-foreground focus:ring-0 text-base p-4 font-medium placeholder:text-muted-foreground/40 transition-all bg-background resize-none mt-2"
-              placeholder="What did you like or what could be better?"
+              placeholder="What did you like, what could be better, or any bugs you noticed?"
               rows={4}
               value={message}
               onChange={(e) => setMessage(e.target.value)}

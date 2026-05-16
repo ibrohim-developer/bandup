@@ -118,7 +118,6 @@ export function FullMockStats({ attempts }: { attempts: FullMockAttempt[] }) {
               </div>
             )}
           </div>
-          <p className="text-[10px] text-muted-foreground text-center mt-1">Target: 6.5 per section</p>
         </div>
 
         {/* Table */}

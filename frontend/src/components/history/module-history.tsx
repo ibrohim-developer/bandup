@@ -135,9 +135,18 @@ export async function ModuleHistory({ module }: { module: ModuleConfig }) {
             </thead>
             <tbody className="divide-y divide-border">
               {attempts.map((attempt) => {
+                const isObjective = module.type === 'listening' || module.type === 'reading'
                 const rawScore = attempt.raw_score
                 const total = attempt.total_questions ?? totalsByTest.get(attempt.test?.documentId)
+                const bandScore = attempt.band_score
                 const title = attempt.test?.title ?? `${label} Test`
+                const scoreDisplay = isObjective
+                  ? rawScore != null && total
+                    ? `${rawScore}/${total}`
+                    : null
+                  : bandScore != null
+                    ? String(bandScore)
+                    : null
                 return (
                   <tr key={attempt.documentId} className="hover:bg-muted/30 transition-colors">
                     <td className="px-5 py-4">
@@ -148,8 +157,8 @@ export async function ModuleHistory({ module }: { module: ModuleConfig }) {
                       {attempt.time_spent_seconds ? formatTime(attempt.time_spent_seconds) : '—'}
                     </td>
                     <td className="px-5 py-4 text-right">
-                      {rawScore != null && total ? (
-                        <span className={`text-xl font-bold ${textLight} ${textDark}`}>{rawScore}/{total}</span>
+                      {scoreDisplay != null ? (
+                        <span className={`text-xl font-bold ${textLight} ${textDark}`}>{scoreDisplay}</span>
                       ) : (
                         <span className="text-muted-foreground">—</span>
                       )}
