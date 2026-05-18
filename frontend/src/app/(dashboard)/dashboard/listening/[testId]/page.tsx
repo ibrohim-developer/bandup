@@ -12,6 +12,12 @@ import {
 } from "@/components/ui/card";
 import { SubmitDialog } from "@/components/test/common/submit-dialog";
 import { TestOptionsMenu } from "@/components/test/common/test-options-menu";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { AudioPlayer } from "@/components/test/listening/audio-player";
 import { FollowAlongTranscript } from "@/components/test/listening/follow-along-transcript";
 import { ListeningQuestions } from "@/components/test/listening/listening-questions";
@@ -289,7 +295,7 @@ function ListeningTestContent({ testId }: { testId: string }) {
               <Maximize2 className="h-6 w-6" />
             )}
           </button>
-          <TestOptionsMenu {...testOptions} module="listening" showPracticeMode />
+          <TestOptionsMenu {...testOptions} module="listening" />
         </div>
       </header>
 
@@ -314,12 +320,20 @@ function ListeningTestContent({ testId }: { testId: string }) {
             examMode
             onTimeUpdate={(t) => setCurrentTime(t)}
           />
-          <FollowAlongTranscript
-            cues={currentSection.transcriptCues ?? null}
-            currentTime={currentTime}
-            enabled={testOptions.practiceMode}
-            fallbackTranscript={currentSection.transcript}
-          />
+          <Accordion type="single" collapsible className="rounded-md border bg-card">
+            <AccordionItem value="transcript" className="border-b-0">
+              <AccordionTrigger className="px-4 py-3 text-base font-semibold hover:no-underline">
+                Show transcript
+              </AccordionTrigger>
+              <AccordionContent className="px-4 pb-4">
+                <FollowAlongTranscript
+                  cues={currentSection.transcriptCues ?? null}
+                  currentTime={currentTime}
+                  fallbackTranscript={currentSection.transcript}
+                />
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
           <ListeningQuestions
             questionGroups={questionGroups}
             passageQuestions={currentPassage.questions}

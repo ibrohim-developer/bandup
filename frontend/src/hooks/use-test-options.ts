@@ -30,7 +30,6 @@ export function useTestOptions() {
   const [optionsView, setOptionsView] = useState<OptionsView>("main");
   const [contrast, setContrast] = useState<ContrastMode>(initialContrast);
   const [textSize, setTextSize] = useState<TextSizeMode>("regular");
-  const [practiceMode, setPracticeMode] = useState(false);
   const optionsRef = useRef<HTMLDivElement>(null);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
 
@@ -82,8 +81,6 @@ export function useTestOptions() {
     setContrast,
     textSize,
     setTextSize,
-    practiceMode,
-    setPracticeMode,
     optionsRef,
     menuButtonRef,
     toggleOptions,
