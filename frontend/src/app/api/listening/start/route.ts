@@ -129,6 +129,7 @@ export async function POST(request: NextRequest) {
       id: section.documentId,
       sectionNumber: section.section_number,
       transcript: section.transcript,
+      transcriptCues: section.transcript_cues ?? null,
       timeLimit: section.time_limit,
       questionGroups,
       questions: cleanQuestions,

@@ -69,7 +69,7 @@ function TestFiltersContent({
         />
       </div>
       <div
-        className={`grid ${filters.length === 1 ? "grid-cols-1" : "grid-cols-2"} md:flex gap-3 w-full md:w-auto`}
+        className={`grid ${filters.length === 1 ? "grid-cols-1" : "grid-cols-2"} md:flex gap-3 w-full md:w-auto ${filters.length % 2 === 1 && filters.length > 1 ? "[&>*:last-child]:col-span-2 md:[&>*:last-child]:col-span-1" : ""}`}
       >
         {filters.map((filter) => (
           <Select
@@ -107,7 +107,7 @@ function TestFiltersFallback({ filters }: { filters: FilterConfig[] }) {
         />
       </div>
       <div
-        className={`grid ${filters.length === 1 ? "grid-cols-1" : "grid-cols-2"} md:flex gap-3 w-full md:w-auto`}
+        className={`grid ${filters.length === 1 ? "grid-cols-1" : "grid-cols-2"} md:flex gap-3 w-full md:w-auto ${filters.length % 2 === 1 && filters.length > 1 ? "[&>*:last-child]:col-span-2 md:[&>*:last-child]:col-span-1" : ""}`}
       >
         {filters.map((filter) => (
           <div

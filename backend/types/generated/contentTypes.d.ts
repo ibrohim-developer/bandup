@@ -694,6 +694,7 @@ export interface ApiListeningSectionListeningSection
     test: Schema.Attribute.Relation<'manyToOne', 'api::test.test'>;
     time_limit: Schema.Attribute.Integer;
     transcript: Schema.Attribute.RichText;
+    transcript_cues: Schema.Attribute.JSON;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;

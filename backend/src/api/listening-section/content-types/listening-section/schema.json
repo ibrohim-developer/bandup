@@ -23,6 +23,9 @@
     "transcript": {
       "type": "richtext"
     },
+    "transcript_cues": {
+      "type": "json"
+    },
     "time_limit": {
       "type": "integer"
     },

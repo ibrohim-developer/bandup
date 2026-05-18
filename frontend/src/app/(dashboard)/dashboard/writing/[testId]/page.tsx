@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/card";
 import { SplitView } from "@/components/test/common/split-view";
 import { TestTimer } from "@/components/test/common/test-timer";
-import { SubmitDialog } from "@/components/test/common/submit-dialog";
+import { WritingSubmitDialog } from "@/components/test/writing/writing-submit-dialog";
 import { TestOptionsMenu } from "@/components/test/common/test-options-menu";
 import { WritingEditor } from "@/components/test/writing/writing-editor";
 import { useTestStore } from "@/stores/test-store";
@@ -83,7 +83,6 @@ function WritingTestContent({ testId }: { testId: string }) {
     isSubmitting,
     isTimeUp,
     taskCompletions,
-    answeredCount,
     getSubmissionForTask,
     handleSubmit,
     handleTimeUp,
@@ -427,12 +426,18 @@ function WritingTestContent({ testId }: { testId: string }) {
 
       {!isReviewMode && (
         <>
-          <SubmitDialog
+          <WritingSubmitDialog
             open={showSubmitDialog}
             onOpenChange={setShowSubmitDialog}
             onConfirm={handleSubmit}
-            answeredCount={answeredCount}
-            totalQuestions={tasks.length}
+            tasks={tasks.map((task) => ({
+              taskNumber: task.taskNumber,
+              minWords: task.minWords,
+              wordCount: (contents[task.id] || "")
+                .trim()
+                .split(/\s+/)
+                .filter((w) => w).length,
+            }))}
             isSubmitting={isSubmitting}
             timeUp={isTimeUp}
           />

@@ -261,6 +261,16 @@ export function Sidebar({ user }: SidebarProps) {
           <span className="text-xl font-black tracking-tighter text-foreground pointer-events-none">
             band<span className="text-primary">.</span>up
           </span>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setTheme(isDark ? "light" : "dark")}
+              aria-label="Toggle theme"
+              className="flex h-10 w-10 items-center justify-center rounded-full text-muted-foreground hover:bg-muted transition-colors"
+            >
+              <span className="h-5 w-5" suppressHydrationWarning>
+                {mounted && (isDark ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />)}
+              </span>
+            </button>
           {user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -322,15 +332,6 @@ export function Sidebar({ user }: SidebarProps) {
                   ))}
                   <DropdownMenuSeparator className="w-full" />
                   <DropdownMenuItem
-                    className="cursor-pointer w-full justify-center"
-                    onClick={() => setTheme(isDark ? "light" : "dark")}
-                  >
-                    <span className="mr-2 h-4 w-4" suppressHydrationWarning>
-                      {mounted && (isDark ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />)}
-                    </span>
-                    <span>Toggle Theme</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
                     className="cursor-pointer w-full justify-center group"
                     onClick={() => signOut()}
                   >
@@ -348,6 +349,7 @@ export function Sidebar({ user }: SidebarProps) {
               Sign In
             </Link>
           )}
+          </div>
         </div>
       </header>
 

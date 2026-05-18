@@ -10,9 +10,11 @@ import {
   Contrast,
   Type,
   Flag,
+  Headphones,
 } from "lucide-react";
 import type { ContrastMode, TextSizeMode } from "@/hooks/use-test-options";
 import { ReportIssueDialog } from "@/components/report-issue-dialog";
+import { cn } from "@/lib/utils";
 
 interface TestOptionsMenuProps {
   optionsOpen: boolean;
@@ -22,6 +24,9 @@ interface TestOptionsMenuProps {
   setContrast: (mode: ContrastMode) => void;
   textSize: TextSizeMode;
   setTextSize: (size: TextSizeMode) => void;
+  practiceMode?: boolean;
+  setPracticeMode?: (v: boolean) => void;
+  showPracticeMode?: boolean;
   optionsRef: React.RefObject<HTMLDivElement | null>;
   menuButtonRef: React.RefObject<HTMLButtonElement | null>;
   toggleOptions: () => void;
@@ -37,6 +42,9 @@ export function TestOptionsMenu({
   setContrast,
   textSize,
   setTextSize,
+  practiceMode = false,
+  setPracticeMode,
+  showPracticeMode = false,
   optionsRef,
   menuButtonRef,
   toggleOptions,
@@ -92,6 +100,30 @@ export function TestOptionsMenu({
                   </span>
                   <ChevronRight className="h-4 w-4 text-gray-400" />
                 </button>
+                {showPracticeMode && setPracticeMode && (
+                  <button
+                    onClick={() => setPracticeMode(!practiceMode)}
+                    className="w-full flex items-center gap-3 px-3 md:px-4 py-3 hover:bg-gray-50 transition-colors border-t border-gray-100"
+                  >
+                    <Headphones className="h-5 w-5 text-gray-700" />
+                    <span className="text-gray-900 flex-1 text-left">
+                      Practice mode
+                    </span>
+                    <span
+                      className={cn(
+                        "h-5 w-9 rounded-full p-0.5 transition-colors flex items-center",
+                        practiceMode ? "bg-primary" : "bg-gray-300",
+                      )}
+                    >
+                      <span
+                        className={cn(
+                          "block h-4 w-4 rounded-full bg-white transition-transform",
+                          practiceMode && "translate-x-4",
+                        )}
+                      />
+                    </span>
+                  </button>
+                )}
                 <button
                   onClick={() => { closeOptions(); setReportOpen(true); }}
                   className="w-full flex items-center gap-3 px-3 md:px-4 py-3 hover:bg-gray-50 transition-colors border-t border-gray-100"

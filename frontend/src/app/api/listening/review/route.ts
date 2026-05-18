@@ -159,6 +159,7 @@ export async function GET(request: NextRequest) {
       id: section.documentId,
       sectionNumber: section.section_number,
       transcript: section.transcript,
+      transcriptCues: section.transcript_cues ?? null,
       questionGroups,
       questions: cleanQuestions,
     };

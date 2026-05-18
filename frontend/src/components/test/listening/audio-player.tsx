@@ -9,12 +9,13 @@ import { cn } from '@/lib/utils'
 interface AudioPlayerProps {
   audioUrl: string
   onEnded?: () => void
+  onTimeUpdate?: (currentTime: number, duration: number) => void
   allowReplay?: boolean
   autoPlay?: boolean
   examMode?: boolean
 }
 
-export function AudioPlayer({ audioUrl, onEnded, allowReplay = false, autoPlay = false, examMode = false }: AudioPlayerProps) {
+export function AudioPlayer({ audioUrl, onEnded, onTimeUpdate, allowReplay = false, autoPlay = false, examMode = false }: AudioPlayerProps) {
   const [hasEnded, setHasEnded] = useState(false)
   const [isMuted, setIsMuted] = useState(false)
 
@@ -28,6 +29,7 @@ export function AudioPlayer({ audioUrl, onEnded, allowReplay = false, autoPlay =
     setVolume,
   } = useAudioPlayer(audioUrl, {
     autoPlay: autoPlay || examMode,
+    onTimeUpdate,
     onEnded: () => {
       setHasEnded(true)
       onEnded?.()

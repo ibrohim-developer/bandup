@@ -1,6 +1,6 @@
 "use client";
 
-import { use, Suspense, useMemo } from "react";
+import { use, Suspense, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,8 +13,10 @@ import {
 import { SubmitDialog } from "@/components/test/common/submit-dialog";
 import { TestOptionsMenu } from "@/components/test/common/test-options-menu";
 import { AudioPlayer } from "@/components/test/listening/audio-player";
+import { FollowAlongTranscript } from "@/components/test/listening/follow-along-transcript";
 import { ListeningQuestions } from "@/components/test/listening/listening-questions";
 import { useListeningTest } from "@/hooks/use-listening-test";
+import type { TranscriptCue } from "@/lib/transcript-cues";
 import { useFullscreen } from "@/hooks/use-fullscreen";
 import { useNavigationProtection } from "@/hooks/use-navigation-protection";
 import { useQuestionNavigation } from "@/hooks/use-question-navigation";
@@ -56,6 +58,7 @@ interface Section {
   id: string;
   sectionNumber: number;
   transcript: string;
+  transcriptCues?: TranscriptCue[] | null;
   questions: Question[];
   questionGroups?: QuestionGroupData[];
 }
@@ -85,6 +88,7 @@ export default function ListeningTestPage({
 
 function ListeningTestContent({ testId }: { testId: string }) {
   const router = useRouter();
+  const [currentTime, setCurrentTime] = useState(0);
 
   const { isFullscreen, toggleFullscreen } = useFullscreen();
 
@@ -285,7 +289,7 @@ function ListeningTestContent({ testId }: { testId: string }) {
               <Maximize2 className="h-6 w-6" />
             )}
           </button>
-          <TestOptionsMenu {...testOptions} module="listening" />
+          <TestOptionsMenu {...testOptions} module="listening" showPracticeMode />
         </div>
       </header>
 
@@ -305,7 +309,17 @@ function ListeningTestContent({ testId }: { testId: string }) {
 
       <div className="flex-1 min-h-0 overflow-y-auto">
         <div className="max-w-4xl mx-auto p-3 md:p-6 space-y-4 md:space-y-6">
-          <AudioPlayer audioUrl={audioUrl} examMode />
+          <AudioPlayer
+            audioUrl={audioUrl}
+            examMode
+            onTimeUpdate={(t) => setCurrentTime(t)}
+          />
+          <FollowAlongTranscript
+            cues={currentSection.transcriptCues ?? null}
+            currentTime={currentTime}
+            enabled={testOptions.practiceMode}
+            fallbackTranscript={currentSection.transcript}
+          />
           <ListeningQuestions
             questionGroups={questionGroups}
             passageQuestions={currentPassage.questions}

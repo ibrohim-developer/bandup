@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useTestStore } from "@/stores/test-store";
 import { TEST_CONFIG } from "@/lib/constants/test-config";
+import { coerceCues, type TranscriptCue } from "@/lib/transcript-cues";
 
 interface Question {
   id: string;
@@ -30,6 +31,7 @@ interface Section {
   id: string;
   sectionNumber: number;
   transcript: string;
+  transcriptCues?: TranscriptCue[] | null;
   timeLimit: number;
   questions: Question[];
   questionGroups?: QuestionGroupData[];
@@ -92,9 +94,12 @@ export function useListeningTest(
       }
 
       const data = await res.json();
-      setSections(data.sections);
+      const normalizedSections: Section[] = (data.sections ?? []).map(
+        (s: Section) => ({ ...s, transcriptCues: coerceCues(s.transcriptCues) }),
+      );
+      setSections(normalizedSections);
       setAudioUrl(data.audioUrl || "");
-      setActiveSectionId(data.sections[0]?.id ?? "");
+      setActiveSectionId(normalizedSections[0]?.id ?? "");
 
       const reviewMap: ReviewMap = {};
       const unanswered = new Set<string>();
@@ -143,9 +148,12 @@ export function useListeningTest(
       }
 
       const data = await res.json();
-      setSections(data.sections);
+      const normalizedSections: Section[] = (data.sections ?? []).map(
+        (s: Section) => ({ ...s, transcriptCues: coerceCues(s.transcriptCues) }),
+      );
+      setSections(normalizedSections);
       setAudioUrl(data.audioUrl || "");
-      setActiveSectionId(data.sections[0]?.id ?? "");
+      setActiveSectionId(normalizedSections[0]?.id ?? "");
 
       // Use time limit from backend, fallback to config if not available
       const time = data.totalTimeLimit || TEST_CONFIG.listening.totalTime;

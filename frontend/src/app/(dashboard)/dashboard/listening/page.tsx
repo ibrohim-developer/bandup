@@ -55,9 +55,7 @@ export default async function ListeningTestsPage({
 
   return (
     <div className="space-y-6 md:space-y-8 pb-12">
-      <TestFilters filters={listeningFilters} />
-
-      <div className="flex items-start md:items-end justify-between gap-3">
+      <div className="flex items-start md:items-center justify-between gap-4 pb-2 border-b border-border/50">
         <div>
           <h1 className="text-2xl md:text-3xl font-black mb-1">IELTS Listening Practice Tests</h1>
           <p className="text-xs text-muted-foreground font-bold uppercase tracking-widest">
@@ -73,6 +71,8 @@ export default async function ListeningTestsPage({
           <span className="sm:hidden">History</span>
         </Link>
       </div>
+
+      <TestFilters filters={listeningFilters} />
 
       <ListeningVirtualList
         initialTests={initialTests}

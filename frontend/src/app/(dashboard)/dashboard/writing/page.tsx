@@ -53,8 +53,25 @@ export default async function WritingTestsPage({
 
   return (
     <div className="space-y-6 md:space-y-8 pb-12">
+      <div className="flex items-start md:items-center justify-between gap-4 pb-2 border-b border-border/50">
+        <div>
+          <h1 className="text-2xl md:text-3xl font-black mb-1">IELTS Writing Practice Tests</h1>
+          <p className="text-xs text-muted-foreground font-bold uppercase tracking-widest">
+            {totalCount} Available Tests
+          </p>
+        </div>
+        <Link
+          href="/dashboard/writing/history"
+          className="flex items-center gap-2 text-xs font-bold px-3 py-2 md:px-4 bg-card border border-border rounded-lg hover:bg-muted transition-colors shrink-0"
+        >
+          <Clock className="h-3.5 w-3.5" />
+          <span className="hidden sm:inline">Completed Tests</span>
+          <span className="sm:hidden">History</span>
+        </Link>
+      </div>
+
       <TestFilters filters={writingFilters} />
-{/* 
+{/*
       <Link
         href="/dashboard/writing/free"
         className="block group rounded-xl border border-purple-200 dark:border-purple-800 bg-purple-50/50 dark:bg-purple-950/20 p-5 md:p-6 hover:border-purple-300 dark:hover:border-purple-700 transition-colors"
@@ -72,23 +89,6 @@ export default async function WritingTestsPage({
           <ArrowRight className="h-5 w-5 text-muted-foreground group-hover:text-foreground transition-colors shrink-0" />
         </div>
       </Link> */}
-
-      <div className="flex items-start md:items-end justify-between gap-3">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-black mb-1">IELTS Writing Practice Tests</h1>
-          <p className="text-xs text-muted-foreground font-bold uppercase tracking-widest">
-            {totalCount} Available Tests
-          </p>
-        </div>
-        <Link
-          href="/dashboard/writing/history"
-          className="flex items-center gap-2 text-xs font-bold px-3 py-2 md:px-4 bg-card border border-border rounded-lg hover:bg-muted transition-colors shrink-0"
-        >
-          <Clock className="h-3.5 w-3.5" />
-          <span className="hidden sm:inline">Completed Tests</span>
-          <span className="sm:hidden">History</span>
-        </Link>
-      </div>
 
       <WritingVirtualList
         initialTests={initialTests}
