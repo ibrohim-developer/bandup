@@ -56,7 +56,7 @@ export function TrueFalseNotGiven({
 
   return (
     <div id={`question-${questionId}`} className="space-y-2">
-      <p className="text-sm leading-relaxed">
+      <p className="text-base leading-relaxed">
         <span className="mr-2 font-bold">{questionNumber}</span>
         {questionText}
         {getQuestionBadge()}
@@ -93,7 +93,7 @@ export function TrueFalseNotGiven({
               <Label
                 htmlFor={`${questionId}-${option.value}`}
                 className={cn(
-                  "text-sm font-medium tracking-wide text-foreground",
+                  "text-base font-medium tracking-wide text-foreground",
                   !disabled && "cursor-pointer",
                 )}
               >

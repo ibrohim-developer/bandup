@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse, after } from "next/server";
-import { getAuthUser, create } from "@/lib/strapi/api";
+import { getAuthUser, create, resolveTestId } from "@/lib/strapi/api";
 
 // The response itself is fast (~hundreds of ms), but the `after()` background
 // callback awaits the writing/evaluate fetch (~10-30s). Keep the function alive
@@ -9,27 +9,29 @@ export const maxDuration = 60;
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export async function POST(request: NextRequest) {
   const user = await getAuthUser(request);
-  if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
 
-  const { testId, submissions, timeSpentSeconds, fullMockAttemptId } = (await request.json()) as {
+  const { testId: testIdOrSlug, submissions, timeSpentSeconds, fullMockAttemptId } = (await request.json()) as {
     testId: string;
     submissions: Array<{ taskId: string; content: string; typedChars?: number }>;
     timeSpentSeconds: number;
     fullMockAttemptId?: string;
   };
 
-  if (!testId || !submissions?.length) {
+  if (!testIdOrSlug || !submissions?.length) {
     return NextResponse.json(
       { error: "testId and submissions are required" },
       { status: 400 }
     );
   }
 
+  const testId = await resolveTestId(testIdOrSlug);
+  if (!testId) {
+    return NextResponse.json({ error: "Test not found" }, { status: 404 });
+  }
+
   // Create the test attempt with "evaluating" status
   const attempt = await create("test-attempts", {
-    user: user.id,
+    ...(user ? { user: user.id } : {}),
     test: testId,
     module_type: "writing",
     status: "evaluating",
@@ -94,5 +96,5 @@ export async function POST(request: NextRequest) {
     });
   }
 
-  return NextResponse.json({ attemptId: attempt.documentId });
+  return NextResponse.json({ attemptId: attempt.documentId, isGuest: !user });
 }

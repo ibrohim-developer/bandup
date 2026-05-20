@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { findOne } from "@/lib/strapi/api";
+import { findTestBySlugOrId } from "@/lib/strapi/api";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export async function GET(request: NextRequest) {
@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "testId is required" }, { status: 400 });
   }
 
-  const test = await findOne("tests", testId, {
+  const test = await findTestBySlugOrId(testId, {
     fields: ["title"],
     populate: {
       speaking_topics: {

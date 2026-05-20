@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { useTestStore } from "@/stores/test-store";
 import { TEST_CONFIG } from "@/lib/constants/test-config";
 
@@ -181,7 +182,13 @@ export function useReadingTest(
 
       const result = await res.json();
       resetTest();
-      router.replace(`/dashboard/results/${result.attemptId}`);
+      if (result.isGuest) {
+        toast.info("Sign in to see your results");
+        const target = `/dashboard/results/${result.attemptId}?claim=${result.attemptId}`;
+        router.replace(`/sign-in?redirect=${encodeURIComponent(target)}`);
+      } else {
+        router.replace(`/dashboard/results/${result.attemptId}`);
+      }
     } catch {
       setIsSubmitting(false);
     }

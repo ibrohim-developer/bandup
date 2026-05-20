@@ -7,6 +7,7 @@ import { PremiumUpgradeDialog } from "@/components/premium-upgrade-dialog";
 
 export interface FullMockTestItem {
     id: string;
+    slug: string;
     title: string;
     description: string;
     listeningQuestions: number;
@@ -106,7 +107,7 @@ export function FullMockTestCard({ test }: { test: FullMockTestItem }) {
                     </button>
                 ) : (
                     <LoginRequiredLink
-                        href={`/dashboard/full-mock-test/${test.id}`}
+                        href={`/dashboard/full-mock-test/${test.slug}`}
                         className="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-lg font-bold text-sm hover:opacity-90 transition-all"
                     >
                         Start Test

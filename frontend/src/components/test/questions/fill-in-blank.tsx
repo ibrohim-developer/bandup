@@ -56,7 +56,7 @@ export function FillInBlank({
     const parts = questionText.split("_____");
     return (
       <div id={`question-${questionId}`} className="space-y-3">
-        <div className="text-sm leading-relaxed flex flex-wrap items-center gap-1">
+        <div className="text-base leading-relaxed flex flex-wrap items-center gap-1">
           {parts.map((part, index) => (
             <span key={index} className="inline-flex items-center gap-1">
               {part}
@@ -92,7 +92,7 @@ export function FillInBlank({
   return (
     <div id={`question-${questionId}`} className="space-y-3">
       {!isPlaceholderText && (
-        <p className="text-sm leading-relaxed text-gray-800">
+        <p className="text-base leading-relaxed text-gray-800">
           {questionText}
           {getQuestionBadge()}
         </p>

@@ -179,7 +179,7 @@ export default async function SpeakingResultPage({
   // For "Try Again" button — link to the parent test if available.
   // (Single-topic practice flow was removed; speaking is always a full 3-part test.)
   const retryHref = attempt.test?.documentId
-    ? `/dashboard/speaking/${attempt.test.documentId}`
+    ? `/dashboard/speaking/${attempt.test.slug ?? attempt.test.documentId}`
     : null;
 
   const formatTime = (seconds: number) => {

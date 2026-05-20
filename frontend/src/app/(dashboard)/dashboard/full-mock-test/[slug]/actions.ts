@@ -1,6 +1,6 @@
 "use server";
 
-import { findOne, find } from "@/lib/strapi/api";
+import { findTestBySlugOrId, find } from "@/lib/strapi/api";
 import { getToken, getCurrentUser } from "@/lib/strapi/server";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -21,9 +21,9 @@ export interface FullMockTestDetail {
 }
 
 export async function fetchFullMockTestDetail(
-    testId: string,
+    slugOrId: string,
 ): Promise<FullMockTestDetail | null> {
-    const test = await findOne("tests", testId, {
+    const test = await findTestBySlugOrId(slugOrId, {
         fields: ["title", "description", "audio_url"],
         populate: {
             listening_sections: {
@@ -40,6 +40,7 @@ export async function fetchFullMockTestDetail(
     });
 
     if (!test) return null;
+    const testId = test.documentId;
 
     const listenings = test.listening_sections ?? [];
     const readings = test.reading_passages ?? [];

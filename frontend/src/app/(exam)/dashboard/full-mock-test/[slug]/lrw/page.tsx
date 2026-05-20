@@ -50,9 +50,9 @@ const MODULE_LABELS: Record<ActiveModule, { label: string; icon: typeof Headphon
 export default function LRWExamPage({
     params,
 }: {
-    params: Promise<{ testId: string }>;
+    params: Promise<{ slug: string }>;
 }) {
-    const { testId } = use(params);
+    const { slug } = use(params);
 
     // With Next.js `cacheComponents: true`, client component instances persist
     // across same-segment navigation, so `useState` defaults don't re-apply on
@@ -60,7 +60,7 @@ export default function LRWExamPage({
     // of LRWExamContent by bumping a key each time the user navigates to /lrw
     // (i.e. pathname transitions from non-/lrw → /lrw).
     const pathname = usePathname();
-    const lrwPath = `/dashboard/full-mock-test/${testId}/lrw`;
+    const lrwPath = `/dashboard/full-mock-test/${slug}/lrw`;
     const [mountKey, setMountKey] = useState(0);
     const prevPathnameRef = useRef(pathname);
     useEffect(() => {
@@ -82,7 +82,7 @@ export default function LRWExamPage({
                 </div>
             }
         >
-            <LRWExamContent key={mountKey} testId={testId} />
+            <LRWExamContent key={mountKey} testId={slug} />
         </Suspense>
     );
 }

@@ -61,7 +61,7 @@ export function ContextLetterSelect({
 
   return (
     <div className="space-y-4">
-      <div className="rounded-md border p-3 text-sm leading-relaxed">
+      <div className="rounded-md border p-3 text-base leading-relaxed">
         {options.map((opt, i) => {
           const letter = String.fromCharCode(65 + i);
           return (

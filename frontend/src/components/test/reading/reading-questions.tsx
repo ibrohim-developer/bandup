@@ -168,7 +168,7 @@ export function ReadingQuestions({
             <div className="space-y-4">
               {contextHtml && (
                 <div
-                  className="text-sm leading-relaxed rich-html"
+                  className="text-base leading-relaxed rich-html"
                   dangerouslySetInnerHTML={{ __html: contextHtml }}
                 />
               )}
@@ -230,7 +230,7 @@ export function ReadingQuestions({
               <div className="flex-1 space-y-6">
                 {contextHtml && (
                   <div
-                    className="text-sm leading-relaxed rich-html"
+                    className="text-base leading-relaxed rich-html"
                     dangerouslySetInnerHTML={{ __html: contextHtml }}
                   />
                 )}
@@ -297,7 +297,7 @@ export function ReadingQuestions({
           ].includes(group.type)
         ) {
           body = (
-            <div className="text-sm leading-relaxed rich-html">
+            <div className="text-base leading-relaxed rich-html">
               <ContextFillInBlank
                 contextHtml={contextHtml}
                 questions={buildGroupQuestions()}
@@ -311,7 +311,7 @@ export function ReadingQuestions({
             <div className="space-y-6">
               {contextHtml && (
                 <div
-                  className="text-sm leading-relaxed rich-html"
+                  className="text-base leading-relaxed rich-html"
                   dangerouslySetInnerHTML={{ __html: contextHtml }}
                 />
               )}
@@ -344,12 +344,12 @@ export function ReadingQuestions({
               </h3>
               {instructionHtml ? (
                 <div
-                  className="text-sm leading-relaxed rich-html"
+                  className="text-base leading-relaxed rich-html"
                   style={{ color: theme.textMuted }}
                   dangerouslySetInnerHTML={{ __html: instructionHtml }}
                 />
               ) : (
-                <p className="text-sm leading-relaxed" style={{ color: theme.textMuted }}>
+                <p className="text-base leading-relaxed" style={{ color: theme.textMuted }}>
                   {getTypeInstruction(group.type)}
                 </p>
               )}

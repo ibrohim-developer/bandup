@@ -1,17 +1,17 @@
 import type { Metadata } from "next";
 import { cache } from "react";
-import { findOne } from "@/lib/strapi/api";
+import { findTestBySlugOrId } from "@/lib/strapi/api";
 import { TestContextMenu } from "@/components/test/common/test-context-menu";
 
-const getTest = cache(async (testId: string) => {
-  return findOne("tests", testId);
+const getTest = cache(async (slug: string) => {
+  return findTestBySlugOrId(slug);
 });
 
-type Props = { params: Promise<{ testId: string }> };
+type Props = { params: Promise<{ slug: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { testId } = await params;
-  const test = await getTest(testId);
+  const { slug } = await params;
+  const test = await getTest(slug);
   if (!test) return { title: "Test Not Found" };
 
   const title = `Free IELTS Speaking Practice Test: ${test.title || "Practice Exam"} with AI Evaluation (${new Date().getFullYear()}) – BandUp`;
@@ -24,10 +24,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     openGraph: {
       title,
       description,
-      url: `https://bandup.uz/dashboard/speaking/${testId}`,
+      url: `https://bandup.uz/dashboard/speaking/${slug}`,
     },
     alternates: {
-      canonical: `https://bandup.uz/dashboard/speaking/${testId}`,
+      canonical: `https://bandup.uz/dashboard/speaking/${slug}`,
     },
   };
 }

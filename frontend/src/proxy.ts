@@ -6,10 +6,20 @@ export async function proxy(request: NextRequest) {
   const token = request.cookies.get(COOKIE_NAME)?.value
   const isAuthenticated = !!token
 
-  // Public dashboard routes (accessible without auth for SEO)
-  const publicPaths = ['/dashboard/reading', '/dashboard/listening', '/dashboard/writing', '/dashboard/speaking', '/dashboard/full-mock-test']
-  const isPublic = publicPaths.some(path =>
-    request.nextUrl.pathname === path
+  // Public dashboard routes (accessible without auth for SEO + guest test-taking)
+  // Listening, reading, writing test detail pages are open so guests can take a test
+  // before being prompted to sign in at submit. Speaking detail is open too; the
+  // speaking submit endpoint still rejects guests until that flow is built out.
+  const publicPathPrefixes = [
+    '/dashboard/reading',
+    '/dashboard/listening',
+    '/dashboard/writing',
+    '/dashboard/speaking',
+    '/dashboard/full-mock-test',
+  ]
+  const isPublic = publicPathPrefixes.some(path =>
+    request.nextUrl.pathname === path ||
+    request.nextUrl.pathname.startsWith(path + '/')
   )
 
   // Protected routes

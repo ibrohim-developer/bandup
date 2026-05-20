@@ -38,9 +38,9 @@ import {
 export default function WritingTestPage({
   params,
 }: {
-  params: Promise<{ testId: string }>;
+  params: Promise<{ slug: string }>;
 }) {
-  const { testId } = use(params);
+  const { slug } = use(params);
 
   return (
     <Suspense
@@ -53,7 +53,7 @@ export default function WritingTestPage({
         </div>
       }
     >
-      <WritingTestContent testId={testId} />
+      <WritingTestContent testId={slug} />
     </Suspense>
   );
 }

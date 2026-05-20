@@ -19,17 +19,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const [readingPassages, listeningSections, writingTasks] = await Promise.all([
     safeFind("reading-passages", {
       filters: { test: { is_published: { $eq: true } } },
-      populate: { test: { fields: ["title", "updatedAt"] } },
+      populate: { test: { fields: ["title", "updatedAt", "slug"] } },
       fields: ["passage_number"],
     }),
     safeFind("listening-sections", {
       filters: { test: { is_published: { $eq: true } } },
-      populate: { test: { fields: ["title", "updatedAt"] } },
+      populate: { test: { fields: ["title", "updatedAt", "slug"] } },
       fields: ["section_number"],
     }),
     safeFind("writing-tasks", {
       filters: { test: { is_published: { $eq: true } } },
-      populate: { test: { fields: ["title", "updatedAt"] } },
+      populate: { test: { fields: ["title", "updatedAt", "slug"] } },
       fields: ["task_number"],
     }),
   ]);
@@ -59,11 +59,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     for (const row of data) {
       const test = row.test;
       if (!test) continue;
-      const key = `${module}/${test.documentId}`;
+      const slug = test.slug ?? test.documentId;
+      const key = `${module}/${slug}`;
       if (seen.has(key)) continue;
       seen.add(key);
       routes.push({
-        url: `${BASE}/dashboard/${module}/${test.documentId}`,
+        url: `${BASE}/dashboard/${module}/${slug}`,
         lastModified: new Date(test.updatedAt),
         changeFrequency: "weekly" as const,
         priority: 0.8,

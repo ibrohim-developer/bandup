@@ -1,21 +1,21 @@
 import type { Metadata } from "next";
 import { cache } from "react";
-import { findOne } from "@/lib/strapi/api";
+import { findTestBySlugOrId } from "@/lib/strapi/api";
 import { TestContextMenu } from "@/components/test/common/test-context-menu";
 import { JsonLd } from "@/components/json-ld";
 
-const getTest = cache(async (testId: string) => {
-  return findOne("tests", testId);
+const getTest = cache(async (slug: string) => {
+  return findTestBySlugOrId(slug);
 });
 
 type Props = {
-  params: Promise<{ testId: string }>;
+  params: Promise<{ slug: string }>;
   children: React.ReactNode;
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { testId } = await params;
-  const test = await getTest(testId);
+  const { slug } = await params;
+  const test = await getTest(slug);
   if (!test) return { title: "Test Not Found" };
 
   const title = `Free IELTS Reading Practice Test: ${test.title || "Practice Exam"} with Answers`;
@@ -28,19 +28,19 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     openGraph: {
       title,
       description,
-      url: `https://bandup.uz/dashboard/reading/${testId}`,
+      url: `https://bandup.uz/dashboard/reading/${slug}`,
     },
     alternates: {
-      canonical: `https://bandup.uz/dashboard/reading/${testId}`,
+      canonical: `https://bandup.uz/dashboard/reading/${slug}`,
     },
   };
 }
 
 export default async function ReadingTestLayout({ params, children }: Props) {
-  const { testId } = await params;
-  const test = await getTest(testId);
+  const { slug } = await params;
+  const test = await getTest(slug);
   const testName = test?.title || "Practice Exam";
-  const url = `https://bandup.uz/dashboard/reading/${testId}`;
+  const url = `https://bandup.uz/dashboard/reading/${slug}`;
 
   const quizSchema = {
     "@context": "https://schema.org",

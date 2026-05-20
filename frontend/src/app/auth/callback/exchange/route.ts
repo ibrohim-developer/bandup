@@ -25,7 +25,9 @@ export async function GET(request: Request) {
           path: '/',
           maxAge: 30 * 24 * 60 * 60,
         })
-        return NextResponse.redirect(`${SITE_URL}/dashboard`)
+        const stashed = cookieStore.get('post_oauth_redirect')?.value
+        cookieStore.delete('post_oauth_redirect')
+        return NextResponse.redirect(`${SITE_URL}${stashed || '/dashboard'}`)
       }
 
       // Second try: exchange Google access_token for Strapi JWT
@@ -44,7 +46,9 @@ export async function GET(request: Request) {
             path: '/',
             maxAge: 30 * 24 * 60 * 60,
           })
-          return NextResponse.redirect(`${SITE_URL}/dashboard`)
+          const stashed = cookieStore.get('post_oauth_redirect')?.value
+          cookieStore.delete('post_oauth_redirect')
+          return NextResponse.redirect(`${SITE_URL}${stashed || '/dashboard'}`)
         }
       }
     } catch (err) {

@@ -176,7 +176,7 @@ export function ListeningQuestions({
             <div className="space-y-4">
               {contextHtml && (
                 <div
-                  className="text-sm leading-relaxed rich-html"
+                  className="text-base leading-relaxed rich-html"
                   dangerouslySetInnerHTML={{ __html: contextHtml }}
                 />
               )}
@@ -197,7 +197,7 @@ export function ListeningQuestions({
           );
         } else if (contextHtml) {
           body = (
-            <div className="text-sm leading-relaxed [&_h2]:text-base [&_h2]:font-bold [&_h2]:mb-2 [&_h3]:text-base [&_h3]:font-bold [&_h3]:mb-2 [&_strong]:font-semibold [&_ul]:list-disc [&_ul]:ml-5 [&_ol]:list-decimal [&_ol]:ml-5 [&_li]:mb-1 [&_p]:mb-1 [&_table]:w-full [&_table]:border-collapse [&_th]:border [&_th]:border-gray-300 [&_th]:dark:border-gray-600 [&_th]:px-3 [&_th]:py-2 [&_th]:text-left [&_th]:font-bold [&_th]:bg-gray-100 [&_th]:dark:bg-gray-800 [&_td]:border [&_td]:border-gray-300 [&_td]:dark:border-gray-600 [&_td]:px-3 [&_td]:py-2 [&_td]:align-top">
+            <div className="text-base leading-relaxed [&_h2]:text-base [&_h2]:font-bold [&_h2]:mb-2 [&_h3]:text-base [&_h3]:font-bold [&_h3]:mb-2 [&_strong]:font-semibold [&_ul]:list-disc [&_ul]:ml-5 [&_ol]:list-decimal [&_ol]:ml-5 [&_li]:mb-1 [&_p]:mb-1 [&_table]:w-full [&_table]:border-collapse [&_th]:border [&_th]:border-gray-300 [&_th]:dark:border-gray-600 [&_th]:px-3 [&_th]:py-2 [&_th]:text-left [&_th]:font-bold [&_th]:bg-gray-100 [&_th]:dark:bg-gray-800 [&_td]:border [&_td]:border-gray-300 [&_td]:dark:border-gray-600 [&_td]:px-3 [&_td]:py-2 [&_td]:align-top">
               <ContextFillInBlank contextHtml={contextHtml} questions={buildGroupQuestions()} />
             </div>
           );
@@ -220,12 +220,12 @@ export function ListeningQuestions({
               </h3>
               {instructionHtml ? (
                 <div
-                  className="text-sm leading-relaxed [&_strong]:font-bold"
+                  className="text-base leading-relaxed [&_strong]:font-bold"
                   style={{ color: theme.textMuted }}
                   dangerouslySetInnerHTML={{ __html: instructionHtml }}
                 />
               ) : (
-                <p className="text-sm leading-relaxed" style={{ color: theme.textMuted }}>
+                <p className="text-base leading-relaxed" style={{ color: theme.textMuted }}>
                   {getTypeInstruction(group.type)}
                 </p>
               )}

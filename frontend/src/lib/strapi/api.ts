@@ -144,4 +144,41 @@ export async function update(
   return json.data
 }
 
+/**
+ * Find a test by slug, falling back to documentId.
+ * Lets callers transition to slug-based URLs without breaking legacy id links.
+ */
+export async function findTestBySlugOrId(
+  slugOrDocId: string,
+  params: Record<string, any> = {},
+): Promise<any | null> {
+  if (!slugOrDocId) return null
+  const bySlug = await find("tests", {
+    ...params,
+    filters: { ...(params.filters ?? {}), slug: { $eq: slugOrDocId } },
+    pagination: { pageSize: 1 },
+  })
+  if (bySlug?.[0]) return bySlug[0]
+  return findOne("tests", slugOrDocId, params)
+}
+
+/**
+ * Resolve a test slug or documentId to its documentId.
+ * Returns null if no matching test is found.
+ * Accepts the legacy documentId path so callers can keep passing either.
+ */
+export async function resolveTestId(slugOrDocId: string): Promise<string | null> {
+  if (!slugOrDocId) return null
+  // Try slug first — cheaper than a full document fetch
+  const bySlug = await find("tests", {
+    filters: { slug: { $eq: slugOrDocId } },
+    fields: ["documentId"],
+    pagination: { pageSize: 1 },
+  })
+  if (bySlug?.[0]?.documentId) return bySlug[0].documentId
+  // Fall back: assume it's already a documentId
+  const direct = await findOne("tests", slugOrDocId, { fields: ["documentId"] })
+  return direct?.documentId ?? null
+}
+
 export { STRAPI_URL, COOKIE_NAME }

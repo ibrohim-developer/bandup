@@ -5,6 +5,16 @@ import { Label } from '@/components/ui/label'
 import { cn } from '@/lib/utils'
 import { CheckCircle, XCircle } from 'lucide-react'
 
+// Strip block-level wrappers (<p>, <div>) and decode &nbsp; so the question text
+// renders inline next to its number. Source data sometimes includes <p>…</p>
+// wrappers that would otherwise force a line break when nested inside a <p>.
+function normalizeInline(html: string): string {
+  return (html || '')
+    .replace(/<\/?(p|div)[^>]*>/gi, '')
+    .replace(/&nbsp;/g, ' ')
+    .trim()
+}
+
 interface MultipleChoiceProps {
   questionId: string
   questionNumber: number
@@ -53,9 +63,9 @@ export function MultipleChoice({
 
   return (
     <div id={`question-${questionId}`} className="space-y-2">
-      <p className="text-sm leading-relaxed">
+      <p className="text-base leading-relaxed">
         <span className="font-bold mr-2">{questionNumber}</span>
-        <span dangerouslySetInnerHTML={{ __html: questionText }} />
+        <span dangerouslySetInnerHTML={{ __html: normalizeInline(questionText) }} />
         {getQuestionBadge()}
       </p>
 
@@ -81,7 +91,7 @@ export function MultipleChoice({
                 disabled={disabled}
                 className="pointer-events-none shrink-0"
               />
-              <Label className={cn("flex-1 text-sm font-medium text-foreground", !disabled && "cursor-pointer")}>
+              <Label className={cn("flex-1 text-base font-medium text-foreground", !disabled && "cursor-pointer")}>
                 <span className="font-semibold mr-2">{optionLetter}.</span>
                 {option}
               </Label>

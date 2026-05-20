@@ -72,9 +72,9 @@ interface Section {
 export default function ListeningTestPage({
   params,
 }: {
-  params: Promise<{ testId: string }>;
+  params: Promise<{ slug: string }>;
 }) {
-  const { testId } = use(params);
+  const { slug } = use(params);
 
   return (
     <Suspense
@@ -87,7 +87,7 @@ export default function ListeningTestPage({
         </div>
       }
     >
-      <ListeningTestContent testId={testId} />
+      <ListeningTestContent testId={slug} />
     </Suspense>
   );
 }

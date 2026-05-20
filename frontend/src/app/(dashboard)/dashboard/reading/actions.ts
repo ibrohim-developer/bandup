@@ -8,6 +8,7 @@ const PAGE_SIZE = 20;
 
 interface ReadingTest {
   id: string;
+  slug: string;
   title: string;
   description: string;
   difficulty: string;
@@ -26,7 +27,7 @@ const getReadingTests = unstable_cache(
         module_type: { $eq: "reading" },
         is_published: { $eq: true },
       },
-      fields: ["title", "description", "difficulty_level"],
+      fields: ["title", "description", "difficulty_level", "slug"],
       sort: ["createdAt:desc"],
       populate: {
         reading_passages: {
@@ -42,6 +43,7 @@ const getReadingTests = unstable_cache(
       const passages = test.reading_passages ?? [];
       return {
         id: test.documentId,
+        slug: test.slug ?? test.documentId,
         title: test.title,
         description: test.description ?? "",
         difficulty: test.difficulty_level ?? "medium",

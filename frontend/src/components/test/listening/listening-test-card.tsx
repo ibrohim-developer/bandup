@@ -4,6 +4,7 @@ import { LoginRequiredLink } from "@/components/auth/login-required-link";
 
 export interface ListeningTestItem {
   id: string;
+  slug: string;
   title: string;
   difficulty: string;
   duration: number;
@@ -49,7 +50,7 @@ export function ListeningTestCard({
         </div>
       </div>
       <LoginRequiredLink
-        href={`/dashboard/listening/${test.id}`}
+        href={`/dashboard/listening/${test.slug}`}
         className="bg-primary text-primary-foreground px-8 py-3 rounded-lg font-black text-xs tracking-widest hover:opacity-90 transition-all uppercase text-center w-full md:w-auto"
       >
         {test.isCompleted ? "Retake" : "Start Test"}

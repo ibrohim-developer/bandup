@@ -1,26 +1,28 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAuthUser, find, create } from "@/lib/strapi/api";
+import { getAuthUser, find, create, resolveTestId } from "@/lib/strapi/api";
 import { calculateBandScore } from "@/lib/constants/test-config";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export async function POST(request: NextRequest) {
   const user = await getAuthUser(request);
-  if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
 
-  const { testId, answers, timeSpentSeconds, fullMockAttemptId } = (await request.json()) as {
+  const { testId: testIdOrSlug, answers, timeSpentSeconds, fullMockAttemptId } = (await request.json()) as {
     testId: string;
     answers: Record<string, string>;
     timeSpentSeconds: number;
     fullMockAttemptId?: string;
   };
 
-  if (!testId || !answers) {
+  if (!testIdOrSlug || !answers) {
     return NextResponse.json(
       { error: "testId and answers are required" },
       { status: 400 }
     );
+  }
+
+  const testId = await resolveTestId(testIdOrSlug);
+  if (!testId) {
+    return NextResponse.json({ error: "Test not found" }, { status: 404 });
   }
 
   // Fetch correct answers for all answered questions
@@ -76,7 +78,7 @@ export async function POST(request: NextRequest) {
 
   // Create the test attempt
   const attempt = await create("test-attempts", {
-    user: user.id,
+    ...(user ? { user: user.id } : {}),
     test: testId,
     module_type: "reading",
     status: "completed",
@@ -112,5 +114,6 @@ export async function POST(request: NextRequest) {
     rawScore,
     bandScore,
     totalQuestions,
+    isGuest: !user,
   });
 }

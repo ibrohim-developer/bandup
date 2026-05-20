@@ -18,14 +18,14 @@ interface TestData {
 export default function SpeakingTestPage() {
   const params = useParams();
   const router = useRouter();
-  const testId = params.testId as string;
+  const slug = params.slug as string;
 
   const [test, setTest] = useState<TestData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch(`/api/speaking/start-test?testId=${testId}`)
+    fetch(`/api/speaking/start-test?testId=${slug}`)
       .then((res) => res.json())
       .then((data) => {
         if (data.error) setError(data.error);
@@ -33,7 +33,7 @@ export default function SpeakingTestPage() {
       })
       .catch(() => setError("Failed to load test"))
       .finally(() => setLoading(false));
-  }, [testId]);
+  }, [slug]);
 
   const handleSubmit = async (topics: UploadedTopic[], elapsedSeconds: number) => {
     if (!test) return;

@@ -61,7 +61,12 @@
       "Bash(find /c/web/bandup -maxdepth 2 -type f -name .env* -o -name *.env*)",
       "Bash(grep -r from.*supabase /c/web/bandup/frontend/src --include=*.ts --include=*.tsx -h)",
       "Bash(xargs grep:*)",
-      "Bash(grep -r \"SUPABASE\\\\|supabase\" c:webbandup --include=*.json --include=*.ts --include=*.tsx --include=*.md)"
+      "Bash(grep -r \"SUPABASE\\\\|supabase\" c:webbandup --include=*.json --include=*.ts --include=*.tsx --include=*.md)",
+      "Bash(SOURCE_TOKEN=\"eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJsZXZlbDAxLjA1QGdtYWlsLmNvbSIsImlhdCI6MTc3OTIyMDc1OSwiZXhwIjoxNzg2OTk2NzU5fQ.1B-kw3Se9Lt5QeQJrh7AzQo8eomgFjrxBGhfhvsSDGvCnBIozHcYuwHVeTrbV-EnU2ncRxwJzoBw5KSufKCB3A\" STRAPI_URL=\"https://api.bandup.uz\" STRAPI_API_TOKEN=\"0f909114c5b3d571345355fced1fd8e74bbda821b5b1c3a2cf57d45cd64534c55d39de4e64ca26ab3e3f43a4b68450c432472a451d890f6e9d6753f34e207a0eff8db34dd4b58c1763e28b2a0a90c18078af9e5d707bd28ecc65c4957824432a26999fa8a2b95ea18185b917cd41b104f528f1586b6a61d0da24ba2f5cf20085\" node scripts/import-readings.mjs --ids 3287,3284,3281)",
+      "Bash(node -e ' *)",
+      "Bash(SOURCE_TOKEN=\"eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJsZXZlbDAxLjA1QGdtYWlsLmNvbSIsImlhdCI6MTc3OTIyMDc1OSwiZXhwIjoxNzg2OTk2NzU5fQ.1B-kw3Se9Lt5QeQJrh7AzQo8eomgFjrxBGhfhvsSDGvCnBIozHcYuwHVeTrbV-EnU2ncRxwJzoBw5KSufKCB3A\" STRAPI_URL=\"https://api.bandup.uz\" STRAPI_API_TOKEN=\"0f909114c5b3d571345355fced1fd8e74bbda821b5b1c3a2cf57d45cd64534c55d39de4e64ca26ab3e3f43a4b68450c432472a451d890f6e9d6753f34e207a0eff8db34dd4b58c1763e28b2a0a90c18078af9e5d707bd28ecc65c4957824432a26999fa8a2b95ea18185b917cd41b104f528f1586b6a61d0da24ba2f5cf20085\" node scripts/import-readings.mjs --ids 3278,3272,3269,3266,3263,3260,3257,3251,3248,3245 --delay 60)",
+      "Bash(curl -s -H 'Authorization: Bearer 0f909114c5b3d571345355fced1fd8e74bbda821b5b1c3a2cf57d45cd64534c55d39de4e64ca26ab3e3f43a4b68450c432472a451d890f6e9d6753f34e207a0eff8db34dd4b58c1763e28b2a0a90c18078af9e5d707bd28ecc65c4957824432a26999fa8a2b95ea18185b917cd41b104f528f1586b6a61d0da24ba2f5cf20085' https://api.bandup.uz/api/tests/fiy2w2jefppkzz3xjzsaiinq?populate%5Breading_passages%5D=true -o c:/Users/User/web/bandup/frontend/scripts/cache/otaboyev/c9t1.json)",
+      "Bash(curl -s -H 'Authorization: Bearer 0f909114c5b3d571345355fced1fd8e74bbda821b5b1c3a2cf57d45cd64534c55d39de4e64ca26ab3e3f43a4b68450c432472a451d890f6e9d6753f34e207a0eff8db34dd4b58c1763e28b2a0a90c18078af9e5d707bd28ecc65c4957824432a26999fa8a2b95ea18185b917cd41b104f528f1586b6a61d0da24ba2f5cf20085' https://api.bandup.uz/api/tests/o1evqj0grzjp3uav2j55v5y8?populate%5Breading_passages%5D=true -o c:/Users/User/web/bandup/frontend/scripts/cache/otaboyev/c9t2.json)"
     ]
   }
 }

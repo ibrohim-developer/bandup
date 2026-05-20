@@ -52,8 +52,10 @@ export async function GET(request: Request) {
             console.log('[auth/callback] pixel flag check failed:', err)
           }
 
-          const dest = isNewSignup ? `${SITE_URL}/dashboard?signup=1` : `${SITE_URL}/dashboard`
-          return NextResponse.redirect(dest)
+          const stashed = cookieStore.get('post_oauth_redirect')?.value
+          cookieStore.delete('post_oauth_redirect')
+          const defaultDest = isNewSignup ? '/dashboard?signup=1' : '/dashboard'
+          return NextResponse.redirect(`${SITE_URL}${stashed || defaultDest}`)
         }
       }
 

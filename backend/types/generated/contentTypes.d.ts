@@ -1044,8 +1044,7 @@ export interface ApiTestAttemptTestAttempt extends Struct.CollectionTypeSchema {
     user: Schema.Attribute.Relation<
       'manyToOne',
       'plugin::users-permissions.user'
-    > &
-      Schema.Attribute.Required;
+    >;
     user_answers: Schema.Attribute.Relation<
       'oneToMany',
       'api::user-answer.user-answer'
@@ -1163,6 +1162,7 @@ export interface ApiTestTest extends Struct.CollectionTypeSchema {
       'oneToMany',
       'api::reading-passage.reading-passage'
     >;
+    slug: Schema.Attribute.UID<'title'>;
     speaking_topics: Schema.Attribute.Relation<
       'oneToMany',
       'api::speaking-topic.speaking-topic'

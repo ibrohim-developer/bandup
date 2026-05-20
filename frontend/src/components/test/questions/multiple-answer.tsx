@@ -5,6 +5,13 @@ import { Label } from '@/components/ui/label'
 import { cn } from '@/lib/utils'
 import { CheckCircle, XCircle } from 'lucide-react'
 
+function normalizeInline(html: string): string {
+  return (html || '')
+    .replace(/<\/?(p|div)[^>]*>/gi, '')
+    .replace(/&nbsp;/g, ' ')
+    .trim()
+}
+
 interface MultipleAnswerProps {
   questionId: string
   questionNumber: number
@@ -65,9 +72,9 @@ export function MultipleAnswer({
   return (
     <div id={`question-${questionId}`} className="space-y-2">
       <div>
-        <p className="text-sm leading-relaxed">
+        <p className="text-base leading-relaxed">
           <span className="font-bold mr-2">{questionNumber}</span>
-          {questionText}
+          <span dangerouslySetInnerHTML={{ __html: normalizeInline(questionText) }} />
           {getQuestionBadge()}
         </p>
         {!reviewMode && (
@@ -103,7 +110,7 @@ export function MultipleAnswer({
                 disabled={disabled || isDisabledByLimit}
                 className="pointer-events-none shrink-0"
               />
-              <Label className={cn("flex-1 text-sm font-medium text-foreground", !disabled && !isDisabledByLimit && "cursor-pointer")}>
+              <Label className={cn("flex-1 text-base font-medium text-foreground", !disabled && !isDisabledByLimit && "cursor-pointer")}>
                 <span className="font-semibold mr-2">{optionLetter}.</span>
                 {option}
               </Label>

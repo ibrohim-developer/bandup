@@ -46,11 +46,11 @@ export function SentenceEndings({
       {/* Options box showing the sentence endings */}
       {contextHtml ? (
         <div
-          className="border rounded-lg p-4 text-sm leading-relaxed rich-html"
+          className="border rounded-lg p-4 text-base leading-relaxed rich-html"
           dangerouslySetInnerHTML={{ __html: contextHtml }}
         />
       ) : (
-        <div className="border rounded-lg p-4 text-sm leading-relaxed space-y-1">
+        <div className="border rounded-lg p-4 text-base leading-relaxed space-y-1">
           {options.map((option, i) => (
             <p key={i}>
               <strong>{String.fromCharCode(65 + i)}.</strong> {option}
@@ -70,8 +70,8 @@ export function SentenceEndings({
               id={`question-${q.questionId}`}
               className="group/q flex items-center gap-3 py-2.5 border-b border-border last:border-b-0"
             >
-              <span className="font-bold text-sm shrink-0">{q.questionNumber}</span>
-              <span className="flex-1 text-sm leading-relaxed">{q.questionText}</span>
+              <span className="font-bold text-base shrink-0">{q.questionNumber}</span>
+              <span className="flex-1 text-base leading-relaxed">{q.questionText}</span>
               <Select
                 value={q.value || undefined}
                 onValueChange={q.onChange}

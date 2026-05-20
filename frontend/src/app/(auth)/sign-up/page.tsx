@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { Suspense, useState } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from '@/components/no-prefetch-link'
 import { signUp, signInWithGoogle } from '@/actions/auth'
 import { fbEvent } from '@/lib/pixel'
@@ -11,8 +11,11 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { BookOpen, Loader2, Eye, EyeOff } from 'lucide-react'
 import { TelegramTab } from '@/components/auth/telegram-tab'
 
-export default function SignUpPage() {
+function SignUpForm() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const redirectTo = searchParams.get('redirect')
+  const claim = searchParams.get('claim')
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
@@ -36,9 +39,17 @@ export default function SignUpPage() {
       })
     }
 
-    router.push('/dashboard')
+    router.push(redirectTo || '/dashboard')
     router.refresh()
   }
+
+  const signInHref = (() => {
+    const qs = new URLSearchParams()
+    if (redirectTo) qs.set('redirect', redirectTo)
+    if (claim) qs.set('claim', claim)
+    const tail = qs.toString()
+    return tail ? `/sign-in?${tail}` : '/sign-in'
+  })()
 
   const passwordField = (
     <div>
@@ -102,6 +113,13 @@ export default function SignUpPage() {
       </div>
 
       <div className="space-y-6">
+        {/* Claim banner */}
+        {claim && (
+          <div className="p-3 rounded-xl bg-primary/10 text-primary text-sm font-medium text-center">
+            Sign up to see your test results
+          </div>
+        )}
+
         {/* Error message */}
         {error && (
           <div className="p-3 rounded-xl bg-destructive/10 text-destructive text-sm">
@@ -113,7 +131,7 @@ export default function SignUpPage() {
         <button
           type="button"
           disabled={isLoading}
-          onClick={() => signInWithGoogle()}
+          onClick={() => signInWithGoogle(redirectTo)}
           className="w-full flex items-center justify-center gap-3 px-4 py-3 border-2 border-primary/10 hover:border-primary/30 dark:border-primary/20 dark:hover:border-primary/40 rounded-xl bg-card transition-colors group disabled:opacity-50"
         >
           <svg className="w-5 h-5" viewBox="0 0 24 24">
@@ -184,7 +202,7 @@ export default function SignUpPage() {
 
           {/* Telegram tab */}
           <TabsContent value="telegram">
-            <TelegramTab redirectTo={null} />
+            <TelegramTab redirectTo={redirectTo} />
           </TabsContent>
         </Tabs>
 
@@ -192,12 +210,26 @@ export default function SignUpPage() {
         <div className="text-center pt-2">
           <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">
             Already have an account?{' '}
-            <Link href="/sign-in" className="text-primary font-bold hover:underline ml-1">
+            <Link href={signInHref} className="text-primary font-bold hover:underline ml-1">
               Sign in
             </Link>
           </p>
         </div>
       </div>
     </div>
+  )
+}
+
+export default function SignUpPage() {
+  return (
+    <Suspense fallback={
+      <div className="bg-card shadow-2xl rounded-[24px] p-6 sm:p-8 md:p-10 border border-border">
+        <div className="py-8 text-center">
+          <Loader2 className="h-8 w-8 animate-spin mx-auto text-gray-400" />
+        </div>
+      </div>
+    }>
+      <SignUpForm />
+    </Suspense>
   )
 }

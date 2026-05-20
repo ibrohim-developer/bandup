@@ -8,6 +8,7 @@ const PAGE_SIZE = 20;
 
 interface WritingTest {
   id: string;
+  slug: string;
   title: string;
   description: string;
   difficulty: string;
@@ -24,7 +25,7 @@ const getWritingTests = unstable_cache(
         module_type: { $eq: "writing" },
         is_published: { $eq: true },
       },
-      fields: ["title", "description", "difficulty_level"],
+      fields: ["title", "description", "difficulty_level", "slug"],
       sort: ["createdAt:desc"],
       populate: {
         writing_tasks: { fields: ["task_number"] },
@@ -37,6 +38,7 @@ const getWritingTests = unstable_cache(
       const tasks = test.writing_tasks ?? [];
       return {
         id: test.documentId,
+        slug: test.slug ?? test.documentId,
         title: test.title,
         description: test.description ?? "",
         difficulty: test.difficulty_level ?? "medium",

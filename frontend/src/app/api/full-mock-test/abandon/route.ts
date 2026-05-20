@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAuthUser, find, update } from "@/lib/strapi/api";
+import { getAuthUser, find, update, resolveTestId } from "@/lib/strapi/api";
 
 // Mark any in-progress full-mock-test-attempts for this user+test as abandoned.
 // Called on fresh entry to /lrw so the next session GET doesn't reuse a stale attempt.
@@ -7,8 +7,11 @@ export async function POST(request: NextRequest) {
     const user = await getAuthUser(request);
     if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    const { testId } = (await request.json()) as { testId: string };
-    if (!testId) return NextResponse.json({ error: "testId required" }, { status: 400 });
+    const { testId: testIdOrSlug } = (await request.json()) as { testId: string };
+    if (!testIdOrSlug) return NextResponse.json({ error: "testId required" }, { status: 400 });
+
+    const testId = await resolveTestId(testIdOrSlug);
+    if (!testId) return NextResponse.json({ ok: true, abandoned: 0 });
 
     const sessions = await find("full-mock-test-attempts", {
         filters: {

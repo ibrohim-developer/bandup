@@ -22,9 +22,9 @@ import {
 export default function FullMockSpeakingPage({
   params,
 }: {
-  params: Promise<{ testId: string }>;
+  params: Promise<{ slug: string }>;
 }) {
-  const { testId } = use(params);
+  const { slug: testId } = use(params);
   const router = useRouter();
 
   const [topics, setTopics] = useState<SpeakingTopic[]>([]);

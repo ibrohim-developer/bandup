@@ -16,10 +16,26 @@ const CACHE_DIR = path.join(__dirname, 'cache')
 const CACHE_FILE = path.join(CACHE_DIR, 'readings-data.json')
 
 const SOURCE_API = 'https://api.otaboyev-prep.uz/api'
-const SOURCE_AUTH = 'Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJicm9vb29vb21yQGdtYWlsLmNvbSIsImlhdCI6MTc3MjcyMTM0MSwiZXhwIjoxNzgwNDk3MzQxfQ.V9aUM-CJa20ese_Lw6BJHk_MGfzUmjHpXJ_QjHBWZG14LHmS7u4OmggsZ-PAR24fqCnkVD1D5T1ab_DaefVYpw'
+const SOURCE_AUTH = process.env.SOURCE_TOKEN
+  ? `Bearer ${process.env.SOURCE_TOKEN}`
+  : 'Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJicm9vb29vb21yQGdtYWlsLmNvbSIsImlhdCI6MTc3MjcyMTM0MSwiZXhwIjoxNzgwNDk3MzQxfQ.V9aUM-CJa20ese_Lw6BJHk_MGfzUmjHpXJ_QjHBWZG14LHmS7u4OmggsZ-PAR24fqCnkVD1D5T1ab_DaefVYpw'
 
 const STRAPI_URL = process.env.STRAPI_URL || 'http://localhost:1337'
 const STRAPI_TOKEN = process.env.STRAPI_API_TOKEN || '285233ea2f0c0de2e18ad9fe3cb335372c6d73e4c232eda058b7d5c45718fbc68ec47387be21676bba42f9f58cc1d03572229c5f877e9df83575fe93bfc1095b87bebc31438cf3c33ca7e423fd76929675a7769a2d28e56b8a4e81c72c5d33f1b408ae2bc9242075837f5569d7a9e853b99b41d4d53e729ad3e65593ed3e02d0'
+
+// Optional --ids 3303,3293,3290 to override the list filter
+const ARG_IDS = (() => {
+  const i = process.argv.indexOf('--ids')
+  if (i < 0) return null
+  return process.argv[i + 1].split(',').map((s) => Number(s.trim()))
+})()
+
+// Pause between source API fetches (seconds). Spreads submit attempts on the source account.
+const ARG_DELAY_SEC = (() => {
+  const i = process.argv.indexOf('--delay')
+  if (i < 0) return null
+  return Number(process.argv[i + 1])
+})()
 
 // Question type mapping: source API → Strapi enum
 const TYPE_MAP = {
@@ -82,21 +98,27 @@ async function fetchCorrectAnswers(id, totalQuestions) {
 // ── Phase A: Fetch & Cache ────────────────────────────────────────────────
 
 async function phaseA() {
-  // Check if cache exists
-  if (fs.existsSync(CACHE_FILE)) {
-    console.log('Cache exists, skipping API fetches. Delete cache/readings-data.json to re-fetch.')
-    return JSON.parse(fs.readFileSync(CACHE_FILE, 'utf-8'))
+  const cacheKey = ARG_IDS ? `readings-${ARG_IDS.join('-')}.json` : 'readings-data.json'
+  const cacheFile = path.join(CACHE_DIR, cacheKey)
+
+  if (fs.existsSync(cacheFile)) {
+    console.log(`Cache exists at ${cacheFile}, skipping API fetches.`)
+    return JSON.parse(fs.readFileSync(cacheFile, 'utf-8'))
   }
 
-  console.log('Fetching reading list...')
-  const listData = await fetchSourceList()
-  const allItems = listData.content || listData
-
-  // Filter to Reading Challenge + null playlist
-  const targetItems = allItems.filter(
-    (item) => item.playlist === null || item.playlist === 'Reading Challenge'
-  )
-  console.log(`Found ${targetItems.length} items to import`)
+  let targetItems
+  if (ARG_IDS) {
+    console.log(`Using ${ARG_IDS.length} explicit --ids`)
+    targetItems = ARG_IDS.map((id) => ({ id, title: `(id ${id})`, playlist: null }))
+  } else {
+    console.log('Fetching reading list...')
+    const listData = await fetchSourceList()
+    const allItems = listData.content || listData
+    targetItems = allItems.filter(
+      (item) => item.playlist === null || item.playlist === 'Reading Challenge'
+    )
+    console.log(`Found ${targetItems.length} items to import`)
+  }
 
   const cached = []
 
@@ -127,14 +149,18 @@ async function phaseA() {
       submitResult,
     })
 
-    // Small delay to be nice to the source API
-    await new Promise((r) => setTimeout(r, 300))
+    // Pause between readings — defaults to 300ms but configurable via --delay <sec>
+    const delayMs = ARG_DELAY_SEC != null ? ARG_DELAY_SEC * 1000 : 300
+    if (delayMs > 0) {
+      console.log(`    sleeping ${delayMs}ms...`)
+      await new Promise((r) => setTimeout(r, delayMs))
+    }
   }
 
   // Save cache
   fs.mkdirSync(CACHE_DIR, { recursive: true })
-  fs.writeFileSync(CACHE_FILE, JSON.stringify(cached, null, 2))
-  console.log(`Cached ${cached.length} readings to ${CACHE_FILE}`)
+  fs.writeFileSync(cacheFile, JSON.stringify(cached, null, 2))
+  console.log(`Cached ${cached.length} readings to ${cacheFile}`)
 
   return cached
 }
@@ -165,6 +191,41 @@ function mapQuestionType(sourceType, subQuestionCount) {
     return 'mcq_multiple'
   }
   return TYPE_MAP[sourceType] || 'gap_fill'
+}
+
+// Treat source "----" placeholder as empty.
+function stripPlaceholder(s) {
+  if (s == null) return ''
+  const trimmed = String(s).trim()
+  if (trimmed === '----' || trimmed === '---' || /^-+$/.test(trimmed)) return ''
+  return s
+}
+
+// For richtext fields (instruction, context, explanation) — keep HTML but strip placeholder.
+function cleanRichText(s) {
+  return stripPlaceholder(s)
+}
+
+// For plain-text fields (question_text) — strip HTML tags, decode entities, drop placeholder.
+function cleanText(s) {
+  const v = stripPlaceholder(s)
+  if (!v) return ''
+  let t = String(v)
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&rsquo;/g, '’')
+    .replace(/&lsquo;/g, '‘')
+    .replace(/&rdquo;/g, '”')
+    .replace(/&ldquo;/g, '“')
+    .replace(/&hellip;/g, '…')
+    .replace(/&mdash;/g, '—')
+    .replace(/&ndash;/g, '–')
+  t = t.replace(/<\/?[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()
+  return t
 }
 
 function buildAnswerMap(submitResult) {
@@ -199,8 +260,8 @@ async function importReading(cached) {
   console.log(`  Creating test: ${globalTitle}`)
   const test = await strapiCreate('tests', {
     title: globalTitle,
-    description: `Imported from source API (ID: ${listItem.id})`,
     difficulty_level: difficulty,
+    module_type: 'reading',
     is_published: true,
   })
 
@@ -228,12 +289,16 @@ async function importReading(cached) {
       const subQuestions = srcGroup.questions || []
       const mappedType = mapQuestionType(srcGroup.type, subQuestions.length)
 
-      // Create QuestionGroup
+      // For MCQ groups, the real prompt + options live on the GROUP, not the sub-questions.
+      // The "context" field is only meaningful for shared-prompt types (TFNG, summary, etc.)
+      const isMcqLike = mappedType === 'mcq_single' || mappedType === 'mcq_multiple'
+
+      // Create QuestionGroup — instruction and context are richtext (keep HTML)
       const group = await strapiCreate('question-groups', {
         group_number: gi + 1,
         question_type: mappedType,
-        instruction: srcGroup.instruction || '',
-        context: srcGroup.questionText || '',
+        instruction: cleanRichText(srcGroup.instruction),
+        context: isMcqLike ? '' : cleanRichText(srcGroup.questionText),
         points: srcGroup.points || subQuestions.length,
         reading_passage: passage.documentId,
         options: srcGroup.options || null,
@@ -254,6 +319,16 @@ async function importReading(cached) {
       // Create individual questions
       for (const subQ of questionsToCreate) {
         const answer = answerMap[subQ.questionNumber] || {}
+        // For MCQ-like groups, the real prompt + options live on the group, not the sub.
+        // The sub typically has questionText="----" and no options.
+        const subText = cleanText(subQ.questionText)
+        const groupText = cleanText(srcGroup.questionText)
+        const questionText = isMcqLike
+          ? (subText || groupText || cleanText(answer.questionText))
+          : (subText || cleanText(answer.questionText))
+        const opts = (subQ.options && subQ.options.length ? subQ.options : null)
+          || (isMcqLike ? srcGroup.options : null)
+          || null
 
         await strapiCreate('questions', {
           module_type: 'reading',
@@ -261,10 +336,10 @@ async function importReading(cached) {
           question_group: group.documentId,
           question_number: subQ.questionNumber,
           question_type: mappedType,
-          question_text: subQ.questionText || answer.questionText || '',
-          options: subQ.options || null,
+          question_text: questionText,
+          options: opts,
           correct_answer: answer.correctAnswer || '',
-          explanation: answer.explanation || '',
+          explanation: cleanText(answer.explanation),
           points: subQ.points || 1,
           metadata: {
             source_question_id: subQ.id,

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { useTestStore } from "@/stores/test-store";
 import { TEST_CONFIG } from "@/lib/constants/test-config";
 import { coerceCues, type TranscriptCue } from "@/lib/transcript-cues";
@@ -207,7 +208,13 @@ export function useListeningTest(
       }
 
       const result = await res.json();
-      router.push(`/dashboard/results/${result.attemptId}`);
+      if (result.isGuest) {
+        toast.info("Sign in to see your results");
+        const target = `/dashboard/results/${result.attemptId}?claim=${result.attemptId}`;
+        router.push(`/sign-in?redirect=${encodeURIComponent(target)}`);
+      } else {
+        router.push(`/dashboard/results/${result.attemptId}`);
+      }
     } catch {
       setIsSubmitting(false);
     }

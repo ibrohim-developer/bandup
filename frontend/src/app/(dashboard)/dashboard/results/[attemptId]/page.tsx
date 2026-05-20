@@ -1,5 +1,5 @@
 import Link from "@/components/no-prefetch-link";
-import { find } from "@/lib/strapi/api";
+import { find, update } from "@/lib/strapi/api";
 import { getCurrentUser } from "@/lib/strapi/server";
 import { Button } from "@/components/ui/button";
 import {
@@ -22,6 +22,7 @@ import { FeedbackModal } from "@/components/test/common/feedback-modal";
 /* eslint-disable @typescript-eslint/no-explicit-any */
 interface ResultsPageProps {
   params: Promise<{ attemptId: string }>;
+  searchParams: Promise<{ claim?: string }>;
 }
 
 interface AnswerResult {
@@ -33,16 +34,28 @@ interface AnswerResult {
   isCorrect: boolean;
 }
 
-export default async function ResultsPage({ params }: ResultsPageProps) {
+export default async function ResultsPage({ params, searchParams }: ResultsPageProps) {
   const { attemptId } = await params;
+  const { claim } = await searchParams;
 
-  const [attempts, user] = await Promise.all([
-    find("test-attempts", {
+  const user = await getCurrentUser();
+
+  // If the user just signed in to claim a guest attempt, link the orphan
+  // attempt to them before the ownership check runs below.
+  if (claim === attemptId && user) {
+    const [orphan] = await find("test-attempts", {
       filters: { documentId: { $eq: attemptId } },
-      populate: ["test", "user"],
-    }),
-    getCurrentUser(),
-  ]);
+      populate: { user: { fields: ["id"] } },
+    });
+    if (orphan && !orphan.user) {
+      await update("test-attempts", attemptId, { user: user.id });
+    }
+  }
+
+  const attempts = await find("test-attempts", {
+    filters: { documentId: { $eq: attemptId } },
+    populate: ["test", "user"],
+  });
 
   const attempt = attempts?.[0];
 
@@ -85,6 +98,7 @@ export default async function ResultsPage({ params }: ResultsPageProps) {
   }
 
   const testDocId = attempt.test?.documentId;
+  const testSlug = attempt.test?.slug ?? testDocId;
   const testTitle = attempt.test?.title || `${attempt.module_type} Test`;
 
   const userAnswers = await find("user-answers", {
@@ -163,7 +177,7 @@ export default async function ResultsPage({ params }: ResultsPageProps) {
       <WritingResultsContent
         attempt={{
           id: attempt.documentId,
-          test_id: testDocId,
+          test_id: testSlug,
           module_type: attempt.module_type,
           status: attempt.status,
           raw_score: attempt.raw_score,
@@ -188,7 +202,7 @@ export default async function ResultsPage({ params }: ResultsPageProps) {
     <ResultsContent
       attempt={{
         id: attempt.documentId,
-        test_id: testDocId,
+        test_id: testSlug,
         module_type: attempt.module_type,
         status: attempt.status,
         raw_score: attempt.raw_score,

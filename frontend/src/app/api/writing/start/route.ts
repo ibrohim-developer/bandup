@@ -1,19 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAuthUser, find } from "@/lib/strapi/api";
+import { find, resolveTestId } from "@/lib/strapi/api";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export async function POST(request: NextRequest) {
-  const user = await getAuthUser(request);
-  if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  const { testId } = await request.json();
-  if (!testId) {
+  const { testId: testIdOrSlug } = await request.json();
+  if (!testIdOrSlug) {
     return NextResponse.json(
       { error: "testId is required" },
       { status: 400 }
     );
+  }
+
+  const testId = await resolveTestId(testIdOrSlug);
+  if (!testId) {
+    return NextResponse.json({ error: "Test not found" }, { status: 404 });
   }
 
   const tasks = await find("writing-tasks", {

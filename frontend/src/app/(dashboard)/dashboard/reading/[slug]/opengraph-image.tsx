@@ -1,5 +1,5 @@
 import { ImageResponse } from "next/og";
-import { findOne } from "@/lib/strapi/api";
+import { findTestBySlugOrId } from "@/lib/strapi/api";
 
 export const alt = "BandUp IELTS Reading Practice Test";
 export const size = { width: 1200, height: 630 };
@@ -8,10 +8,10 @@ export const contentType = "image/png";
 export default async function Image({
   params,
 }: {
-  params: Promise<{ testId: string }>;
+  params: Promise<{ slug: string }>;
 }) {
-  const { testId } = await params;
-  const test = await findOne("tests", testId, { fields: ["title"] });
+  const { slug } = await params;
+  const test = await findTestBySlugOrId(slug, { fields: ["title"] });
 
   return new ImageResponse(
     (

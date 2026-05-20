@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAuthUser, create, update, find, findOne } from "@/lib/strapi/api";
+import { getAuthUser, create, update, find, findOne, resolveTestId } from "@/lib/strapi/api";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -10,8 +10,11 @@ export async function POST(request: NextRequest) {
     const user = await getAuthUser(request);
     if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    const { testId } = (await request.json()) as { testId: string };
-    if (!testId) return NextResponse.json({ error: "testId required" }, { status: 400 });
+    const { testId: testIdOrSlug } = (await request.json()) as { testId: string };
+    if (!testIdOrSlug) return NextResponse.json({ error: "testId required" }, { status: 400 });
+
+    const testId = await resolveTestId(testIdOrSlug);
+    if (!testId) return NextResponse.json({ error: "Test not found" }, { status: 404 });
 
     const session = await create("full-mock-test-attempts", {
         user: user.id,
@@ -105,8 +108,11 @@ export async function GET(request: NextRequest) {
     if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const { searchParams } = new URL(request.url);
-    const testId = searchParams.get("testId");
-    if (!testId) return NextResponse.json({ error: "testId required" }, { status: 400 });
+    const testIdOrSlug = searchParams.get("testId");
+    if (!testIdOrSlug) return NextResponse.json({ error: "testId required" }, { status: 400 });
+
+    const testId = await resolveTestId(testIdOrSlug);
+    if (!testId) return NextResponse.json({ sessionId: null });
 
     // Must use admin token: Strapi 5 rejects `user` as a filter key with user JWT.
     const sessions = await find("full-mock-test-attempts", {

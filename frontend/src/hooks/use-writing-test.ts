@@ -194,9 +194,15 @@ const handleSubmit = useCallback(async () => {
 
       const result = await res.json();
 
-      // Redirect immediately — EvaluatingBanner will trigger evaluation
-      // and refresh the page once it completes
-      router.push(`/dashboard/results/${result.attemptId}`);
+      if (result.isGuest) {
+        toast.info("Sign in to see your results");
+        const target = `/dashboard/results/${result.attemptId}?claim=${result.attemptId}`;
+        router.push(`/sign-in?redirect=${encodeURIComponent(target)}`);
+      } else {
+        // Redirect immediately — EvaluatingBanner will trigger evaluation
+        // and refresh the page once it completes
+        router.push(`/dashboard/results/${result.attemptId}`);
+      }
     } catch {
       setIsSubmitting(false);
       setShowSubmitDialog(false);

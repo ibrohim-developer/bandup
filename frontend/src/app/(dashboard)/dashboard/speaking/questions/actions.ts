@@ -18,6 +18,7 @@ export interface SpeakingTopicItem {
 
 export interface SpeakingTestItem {
   id: string;
+  slug: string;
   title: string;
   difficulty: string;
   topics: SpeakingTopicItem[];
@@ -33,7 +34,7 @@ const getSpeakingTests = unstable_cache(
         module_type: { $eq: "speaking" },
         is_published: { $eq: true },
       },
-      fields: ["title", "difficulty_level", "createdAt"],
+      fields: ["title", "difficulty_level", "createdAt", "slug"],
       sort: ["createdAt:desc"],
       populate: {
         speaking_topics: {
@@ -46,6 +47,7 @@ const getSpeakingTests = unstable_cache(
 
     return tests.map((test: any) => ({
       id: test.documentId,
+      slug: test.slug ?? test.documentId,
       title: test.title,
       difficulty: test.difficulty_level ?? "medium",
       createdAt: test.createdAt,

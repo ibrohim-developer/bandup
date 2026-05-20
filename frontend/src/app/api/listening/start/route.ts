@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAuthUser, find, findOne } from "@/lib/strapi/api";
+import { find, findOne, resolveTestId } from "@/lib/strapi/api";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -39,14 +39,14 @@ function normalizeFlowChartOptions(options: any): any[] | null {
 }
 
 export async function POST(request: NextRequest) {
-  const user = await getAuthUser(request);
-  if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const { testId: testIdOrSlug } = await request.json();
+  if (!testIdOrSlug) {
+    return NextResponse.json({ error: "testId is required" }, { status: 400 });
   }
 
-  const { testId } = await request.json();
+  const testId = await resolveTestId(testIdOrSlug);
   if (!testId) {
-    return NextResponse.json({ error: "testId is required" }, { status: 400 });
+    return NextResponse.json({ error: "Test not found" }, { status: 404 });
   }
 
   // Fetch the test to get audio_url

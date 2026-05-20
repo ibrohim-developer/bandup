@@ -11,6 +11,7 @@ import { PremiumUpgradeDialog } from "@/components/premium-upgrade-dialog";
 const LOCKED_PREVIEWS = [
     {
         id: "placeholder-1",
+        slug: "placeholder-1",
         title: "IELTS Full Mock Test 2 — Academic",
         description: "A complete IELTS Academic mock test with new passages, audio, and writing prompts.",
         listeningQuestions: 40, listeningSections: 4,
@@ -20,6 +21,7 @@ const LOCKED_PREVIEWS = [
     },
     {
         id: "placeholder-2",
+        slug: "placeholder-2",
         title: "IELTS Full Mock Test 3 — Academic",
         description: "Fresh content across all modules. Ideal for tracking your progress over multiple attempts.",
         listeningQuestions: 40, listeningSections: 4,
@@ -29,6 +31,7 @@ const LOCKED_PREVIEWS = [
     },
     {
         id: "placeholder-3",
+        slug: "placeholder-3",
         title: "IELTS Full Mock Test 4 — Academic",
         description: "Advanced difficulty passages and tasks designed to push your band score higher.",
         listeningQuestions: 40, listeningSections: 4,

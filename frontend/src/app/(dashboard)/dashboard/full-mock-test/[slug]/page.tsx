@@ -16,10 +16,10 @@ import { fetchFullMockTestDetail } from "./actions";
 export async function generateMetadata({
     params,
 }: {
-    params: Promise<{ testId: string }>;
+    params: Promise<{ slug: string }>;
 }) {
-    const { testId } = await params;
-    const test = await fetchFullMockTestDetail(testId);
+    const { slug } = await params;
+    const test = await fetchFullMockTestDetail(slug);
     if (!test) return { title: "Test Not Found" };
 
     return {
@@ -31,9 +31,9 @@ export async function generateMetadata({
 export default async function FullMockTestDetailPage({
     params,
 }: {
-    params: Promise<{ testId: string }>;
+    params: Promise<{ slug: string }>;
 }) {
-    const { testId } = await params;
+    const { slug: testId } = await params;
     const test = await fetchFullMockTestDetail(testId);
 
     if (!test) notFound();

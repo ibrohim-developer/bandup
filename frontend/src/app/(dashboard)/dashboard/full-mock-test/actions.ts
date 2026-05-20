@@ -8,6 +8,7 @@ const PAGE_SIZE = 20;
 
 export interface FullMockTest {
   id: string;
+  slug: string;
   title: string;
   description: string;
   listeningQuestions: number;
@@ -28,7 +29,7 @@ const getFullMockTests = unstable_cache(
         is_full_mock_test: { $eq: true },
         is_published: { $eq: true },
       },
-      fields: ["title", "description"],
+      fields: ["title", "description", "slug"],
       populate: {
         listening_sections: {
           fields: ["section_number"],
@@ -62,6 +63,7 @@ const getFullMockTests = unstable_cache(
 
       return {
         id: test.documentId,
+        slug: test.slug ?? test.documentId,
         title: test.title,
         description: test.description ?? "",
         listeningQuestions: listeningQ,

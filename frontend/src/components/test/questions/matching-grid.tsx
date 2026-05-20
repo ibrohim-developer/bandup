@@ -153,7 +153,7 @@ function MobileCircleCard({
     >
       <div className="flex items-start gap-2">
         <span className="font-bold shrink-0">{q.questionNumber}.</span>
-        <span className="flex-1 text-sm leading-relaxed">{q.questionText}</span>
+        <span className="flex-1 text-base leading-relaxed">{q.questionText}</span>
         {onToggleFlag && (
           <button type="button" onClick={() => onToggleFlag(q.questionId)} className="shrink-0 p-0.5">
             <Bookmark className={cn("h-5 w-5", isFlagged ? "fill-black text-black dark:fill-white dark:text-white" : "text-muted-foreground/40")} />
@@ -302,7 +302,7 @@ export function MatchingGrid({ options, questions, flaggedQuestions, onToggleFla
 
       {/* Desktop: table grid */}
       <div className="hidden md:block overflow-x-auto">
-        <table className="w-full border-collapse text-sm">
+        <table className="w-full border-collapse text-base">
           <thead>
             <tr>
               <th className="text-left p-2 border-b border-border" />

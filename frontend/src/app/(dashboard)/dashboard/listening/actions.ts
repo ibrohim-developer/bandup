@@ -8,6 +8,7 @@ const PAGE_SIZE = 20;
 
 interface ListeningTest {
   id: string;
+  slug: string;
   title: string;
   description: string;
   difficulty: string;
@@ -24,7 +25,7 @@ const getListeningTests = unstable_cache(
         module_type: { $eq: "listening" },
         is_published: { $eq: true },
       },
-      fields: ["title", "description", "difficulty_level"],
+      fields: ["title", "description", "difficulty_level", "slug"],
       sort: ["createdAt:desc"],
       populate: {
         listening_sections: {
@@ -40,6 +41,7 @@ const getListeningTests = unstable_cache(
       const sections = test.listening_sections ?? [];
       return {
         id: test.documentId,
+        slug: test.slug ?? test.documentId,
         title: test.title,
         description: test.description ?? "",
         difficulty: test.difficulty_level ?? "medium",

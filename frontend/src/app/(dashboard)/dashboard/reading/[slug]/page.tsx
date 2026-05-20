@@ -41,9 +41,9 @@ import {
 export default function ReadingTestPage({
   params,
 }: {
-  params: Promise<{ testId: string }>;
+  params: Promise<{ slug: string }>;
 }) {
-  const { testId } = use(params);
+  const { slug } = use(params);
 
   return (
     <Suspense
@@ -56,7 +56,7 @@ export default function ReadingTestPage({
         </div>
       }
     >
-      <ReadingTestContent testId={testId} />
+      <ReadingTestContent testId={slug} />
     </Suspense>
   );
 }

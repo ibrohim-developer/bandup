@@ -534,6 +534,7 @@ async function main() {
   // ── 1. Create the Test entry ─────────────────────────────────────────────
   const test = await createEntry("tests", {
     title: "IELTS Full Mock Test 1 — Academic",
+    slug: "ielts-full-mock-test-1-academic",
     description:
       "A complete IELTS Academic mock test covering all four modules: Listening (40 questions), Reading (40 questions), Writing (2 tasks), and Speaking (3 parts). Simulates real exam conditions with timed sections.",
     difficulty_level: "medium",

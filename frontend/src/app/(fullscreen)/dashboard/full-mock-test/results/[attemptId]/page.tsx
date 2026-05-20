@@ -13,9 +13,9 @@ import {
     Sparkles,
     Trophy,
 } from "lucide-react";
-import { ModuleReview } from "../../[testId]/results/module-review";
-import { WritingEvalTrigger } from "../../[testId]/results/writing-eval-trigger";
-import { SpeakingEvalTrigger } from "../../[testId]/results/speaking-eval-trigger";
+import { ModuleReview } from "../../[slug]/results/module-review";
+import { WritingEvalTrigger } from "../../[slug]/results/writing-eval-trigger";
+import { SpeakingEvalTrigger } from "../../[slug]/results/speaking-eval-trigger";
 import { PremiumUpgradeDialog } from "@/components/premium-upgrade-dialog";
 import { FeedbackModal } from "@/components/test/common/feedback-modal";
 
