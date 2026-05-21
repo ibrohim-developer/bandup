@@ -942,6 +942,7 @@ export interface ApiSpeakingTopicSpeakingTopic
       Schema.Attribute.DefaultTo<0>;
     publishedAt: Schema.Attribute.DateTime;
     questions: Schema.Attribute.JSON;
+    sample_answers: Schema.Attribute.JSON;
     speaking_time_seconds: Schema.Attribute.Integer &
       Schema.Attribute.DefaultTo<120>;
     test: Schema.Attribute.Relation<'manyToOne', 'api::test.test'>;

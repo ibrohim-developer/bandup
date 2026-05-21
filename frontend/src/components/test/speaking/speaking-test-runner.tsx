@@ -12,7 +12,23 @@ import {
   Clock,
   AlertTriangle,
   Sparkles,
+  Eye,
+  EyeOff,
+  BookOpen,
+  Lightbulb,
 } from "lucide-react";
+
+export interface SampleVocabulary {
+  word: string;
+  meaning?: string;
+  example?: string;
+}
+
+export interface SampleAnswer {
+  band?: number;
+  answer: string;
+  vocabulary?: SampleVocabulary[];
+}
 
 export interface SpeakingTopic {
   documentId: string;
@@ -22,6 +38,7 @@ export interface SpeakingTopic {
   speakingTime: number;
   questions: string[];
   cuePoints?: string[];
+  sampleAnswers?: (SampleAnswer | null)[];
 }
 
 export interface UploadedTopic {
@@ -76,6 +93,8 @@ export function SpeakingTestRunner({
   const [submitting, setSubmitting] = useState(false);
   const [evaluating, setEvaluating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const [sampleRevealed, setSampleRevealed] = useState(false);
 
   const [elapsed, setElapsed] = useState(0);
   const startTimeRef = useRef(Date.now());
@@ -135,6 +154,16 @@ export function SpeakingTestRunner({
   const currentQuestion = currentTopic.questions[currentQuestionIndex];
   const currentKey = recordingKey(currentTopic.documentId, currentQuestionIndex);
   const hasCurrentRecording = recordings.has(currentKey);
+  const currentSample =
+    currentTopic.sampleAnswers?.[currentQuestionIndex] ?? null;
+
+  useEffect(() => {
+    setSampleRevealed(false);
+  }, [currentTopicIndex, currentQuestionIndex]);
+
+  useEffect(() => {
+    if (isRecording) setSampleRevealed(false);
+  }, [isRecording]);
 
   const isLastQuestionInTopic =
     currentQuestionIndex === currentTopic.questions.length - 1;
@@ -383,6 +412,86 @@ export function SpeakingTestRunner({
           onRecordingStateChange={setIsRecording}
           disabled={submitting || evaluating}
         />
+
+        {currentSample?.answer && (
+          <div className="rounded-xl border border-dashed border-primary/30 bg-primary/[0.03] overflow-hidden">
+            <button
+              type="button"
+              onClick={() => setSampleRevealed((v) => !v)}
+              disabled={isRecording}
+              className="w-full flex items-center justify-between gap-3 px-4 py-3 text-left hover:bg-primary/[0.06] transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent"
+              aria-expanded={sampleRevealed}
+            >
+              <div className="flex items-center gap-2.5 min-w-0">
+                <Sparkles className="h-4 w-4 text-primary shrink-0" />
+                <div className="min-w-0">
+                  <div className="text-sm font-semibold">
+                    High-Band Sample Answer
+                  </div>
+                  {!sampleRevealed && (
+                    <div className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1">
+                      <Lightbulb className="h-3 w-3" />
+                      Try recording your own answer first
+                    </div>
+                  )}
+                </div>
+              </div>
+              <span className="flex items-center gap-1.5 text-xs font-medium text-primary shrink-0">
+                {sampleRevealed ? (
+                  <>
+                    <EyeOff className="h-3.5 w-3.5" />
+                    Hide
+                  </>
+                ) : (
+                  <>
+                    <Eye className="h-3.5 w-3.5" />
+                    Reveal
+                  </>
+                )}
+              </span>
+            </button>
+
+            {sampleRevealed && (
+              <div className="border-t border-primary/20 px-4 py-4 space-y-4">
+                <p className="text-sm leading-relaxed whitespace-pre-line">
+                  {currentSample.answer}
+                </p>
+
+                {currentSample.vocabulary &&
+                  currentSample.vocabulary.length > 0 && (
+                    <div>
+                      <h5 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2 flex items-center gap-1.5">
+                        <BookOpen className="h-3.5 w-3.5" />
+                        Topic Related Vocabulary
+                      </h5>
+                      <div className="grid sm:grid-cols-2 gap-2">
+                        {currentSample.vocabulary.map((v, i) => (
+                          <div
+                            key={i}
+                            className="p-3 rounded-lg border bg-background text-sm"
+                          >
+                            <div className="font-semibold text-primary">
+                              {v.word}
+                            </div>
+                            {v.meaning && (
+                              <p className="text-muted-foreground text-xs mt-0.5">
+                                {v.meaning}
+                              </p>
+                            )}
+                            {v.example && (
+                              <p className="text-xs italic mt-1 text-muted-foreground">
+                                &ldquo;{v.example}&rdquo;
+                              </p>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Question dots within part */}
         {currentTopic.questions.length > 1 && (

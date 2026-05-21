@@ -30,6 +30,9 @@
     "cue_points": {
       "type": "json"
     },
+    "sample_answers": {
+      "type": "json"
+    },
     "preparation_time_seconds": {
       "type": "integer",
       "default": 0

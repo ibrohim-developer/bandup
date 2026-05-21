@@ -20,6 +20,7 @@ import { PassageDisplay } from "@/components/test/reading/passage-display";
 import { AudioPlayer } from "@/components/test/listening/audio-player";
 import { WritingEditor } from "@/components/test/writing/writing-editor";
 import { ListeningQuestions } from "@/components/test/listening/listening-questions";
+import { HighlightableArea } from "@/components/test/common/highlightable-area";
 import { ReadingQuestions } from "@/components/test/reading/reading-questions";
 import { useFullMockLRW, type ActiveModule } from "@/hooks/use-full-mock-lrw";
 import { useFullscreen } from "@/hooks/use-fullscreen";
@@ -589,14 +590,16 @@ function LRWExamContent({ testId }: { testId: string }) {
                     <div className="h-full overflow-y-auto">
                         <div className="max-w-4xl mx-auto p-3 md:p-6 space-y-4 md:space-y-6">
                             <AudioPlayer audioUrl={audioUrl} examMode />
-                            <ListeningQuestions
-                                questionGroups={questionGroups}
-                                passageQuestions={currentPassage.questions}
-                                questionOffset={questionOffset}
-                                answers={answers}
-                                onAnswer={handleAnswer}
-                                theme={{ border: theme.border, textMuted: theme.textMuted }}
-                            />
+                            <HighlightableArea highlight={theme.highlight}>
+                                <ListeningQuestions
+                                    questionGroups={questionGroups}
+                                    passageQuestions={currentPassage.questions}
+                                    questionOffset={questionOffset}
+                                    answers={answers}
+                                    onAnswer={handleAnswer}
+                                    theme={{ border: theme.border, textMuted: theme.textMuted }}
+                                />
+                            </HighlightableArea>
                         </div>
                     </div>
                 )}

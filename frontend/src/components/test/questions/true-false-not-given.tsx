@@ -21,7 +21,7 @@ interface TrueFalseNotGivenProps {
 const options = [
   { value: "TRUE", label: "TRUE" },
   { value: "FALSE", label: "FALSE" },
-  { value: "NOT_GIVEN", label: "NOT GIVEN" },
+  { value: "NOT GIVEN", label: "NOT GIVEN" },
 ];
 
 export function TrueFalseNotGiven({

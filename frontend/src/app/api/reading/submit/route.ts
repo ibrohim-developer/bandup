@@ -44,7 +44,11 @@ export async function POST(request: NextRequest) {
   );
 
   const normalizeAnswer = (answer: string) =>
-    answer.split(",").map((s) => s.trim().toLowerCase()).sort().join(",");
+    answer
+      .split(",")
+      .map((s) => s.trim().toLowerCase().replace(/_/g, " ").replace(/\s+/g, " "))
+      .sort()
+      .join(",");
 
   let rawScore = 0;
   const scoredAnswers = questionDocIds.map((questionId) => {

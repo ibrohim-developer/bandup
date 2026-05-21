@@ -21,6 +21,7 @@ import {
 import { AudioPlayer } from "@/components/test/listening/audio-player";
 import { FollowAlongTranscript } from "@/components/test/listening/follow-along-transcript";
 import { ListeningQuestions } from "@/components/test/listening/listening-questions";
+import { HighlightableArea } from "@/components/test/common/highlightable-area";
 import { useListeningTest } from "@/hooks/use-listening-test";
 import type { TranscriptCue } from "@/lib/transcript-cues";
 import { useFullscreen } from "@/hooks/use-fullscreen";
@@ -320,28 +321,30 @@ function ListeningTestContent({ testId }: { testId: string }) {
             examMode
             onTimeUpdate={(t) => setCurrentTime(t)}
           />
-          <Accordion type="single" collapsible className="rounded-md border bg-card">
-            <AccordionItem value="transcript" className="border-b-0">
-              <AccordionTrigger className="px-4 py-3 text-base font-semibold hover:no-underline">
-                Show transcript
-              </AccordionTrigger>
-              <AccordionContent className="px-4 pb-4">
-                <FollowAlongTranscript
-                  cues={currentSection.transcriptCues ?? null}
-                  currentTime={currentTime}
-                  fallbackTranscript={currentSection.transcript}
-                />
-              </AccordionContent>
-            </AccordionItem>
-          </Accordion>
-          <ListeningQuestions
-            questionGroups={questionGroups}
-            passageQuestions={currentPassage.questions}
-            questionOffset={questionOffset}
-            answers={answers}
-            onAnswer={handleAnswer}
-            theme={{ border: theme.border, textMuted: theme.textMuted }}
-          />
+          <HighlightableArea className="space-y-4 md:space-y-6">
+            <Accordion type="single" collapsible className="rounded-md border bg-card">
+              <AccordionItem value="transcript" className="border-b-0">
+                <AccordionTrigger className="px-4 py-3 text-base font-semibold hover:no-underline">
+                  Show transcript
+                </AccordionTrigger>
+                <AccordionContent className="px-4 pb-4">
+                  <FollowAlongTranscript
+                    cues={currentSection.transcriptCues ?? null}
+                    currentTime={currentTime}
+                    fallbackTranscript={currentSection.transcript}
+                  />
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
+            <ListeningQuestions
+              questionGroups={questionGroups}
+              passageQuestions={currentPassage.questions}
+              questionOffset={questionOffset}
+              answers={answers}
+              onAnswer={handleAnswer}
+              theme={{ border: theme.border, textMuted: theme.textMuted }}
+            />
+          </HighlightableArea>
         </div>
       </div>
 

@@ -79,7 +79,7 @@ async function fetchSourceReading(id) {
   return await res.json()
 }
 
-async function fetchCorrectAnswers(id, totalQuestions) {
+async function fetchCorrectAnswers(id, totalQuestions, attempt = 1) {
   const answers = []
   for (let i = 1; i <= totalQuestions; i++) {
     answers.push({ questionNumber: i, answerText: null })
@@ -92,7 +92,23 @@ async function fetchCorrectAnswers(id, totalQuestions) {
     },
     body: JSON.stringify({ readingId: id, answers }),
   })
-  return await res.json()
+  const text = await res.text()
+  let data
+  try { data = JSON.parse(text) } catch { data = null }
+  const withAns = (data?.questionResults || []).filter((q) => q.correctAnswer && String(q.correctAnswer).length > 0).length
+  if (!res.ok || withAns === 0) {
+    if (attempt < 4) {
+      const wait = 5 * attempt
+      console.log(`    submit HTTP ${res.status} or no answers, retrying in ${wait}s (attempt ${attempt + 1}/4)...`)
+      await new Promise((r) => setTimeout(r, wait * 1000))
+      return fetchCorrectAnswers(id, totalQuestions, attempt + 1)
+    }
+    throw new Error(`submit ${id} failed after retries: HTTP ${res.status}, answers=${withAns}/${totalQuestions}, body=${text.slice(0, 200)}`)
+  }
+  if (withAns < totalQuestions) {
+    console.warn(`    WARN: submit ${id} returned only ${withAns}/${totalQuestions} answers (may have empty fields legitimately)`)
+  }
+  return data
 }
 
 // ── Phase A: Fetch & Cache ────────────────────────────────────────────────
