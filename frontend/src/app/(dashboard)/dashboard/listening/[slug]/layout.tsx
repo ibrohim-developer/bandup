@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { cache } from "react";
+import { redirect } from "next/navigation";
 import { findTestBySlugOrId } from "@/lib/strapi/api";
 import { TestContextMenu } from "@/components/test/common/test-context-menu";
 import { JsonLd } from "@/components/json-ld";
@@ -39,6 +40,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function ListeningTestLayout({ params, children }: Props) {
   const { slug } = await params;
   const test = await getTest(slug);
+  // 301 documentId URLs to the canonical slug URL so Google consolidates the
+  // index entries. The slug fallback still serves the same content if the slug
+  // field is missing.
+  if (test?.slug && slug !== test.slug) {
+    redirect(`/dashboard/listening/${test.slug}`);
+  }
   const testName = test?.title || "Practice Exam";
   const url = `https://bandup.uz/dashboard/listening/${slug}`;
 

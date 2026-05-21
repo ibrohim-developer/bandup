@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { cache } from "react";
+import { redirect } from "next/navigation";
 import { findTestBySlugOrId } from "@/lib/strapi/api";
 import { TestContextMenu } from "@/components/test/common/test-context-menu";
 import { JsonLd } from "@/components/json-ld";
@@ -39,6 +40,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function WritingTestLayout({ params, children }: Props) {
   const { slug } = await params;
   const test = await getTest(slug);
+  if (test?.slug && slug !== test.slug) {
+    redirect(`/dashboard/writing/${test.slug}`);
+  }
   const testName = test?.title || "Practice Exam";
   const url = `https://bandup.uz/dashboard/writing/${slug}`;
 
