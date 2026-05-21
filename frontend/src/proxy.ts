@@ -7,20 +7,25 @@ export async function proxy(request: NextRequest) {
   const isAuthenticated = !!token
 
   // Public dashboard routes (accessible without auth for SEO + guest test-taking)
-  // Listening, reading, writing test detail pages are open so guests can take a test
-  // before being prompted to sign in at submit. Speaking detail is open too; the
-  // speaking submit endpoint still rejects guests until that flow is built out.
+  // L/R/W: list + test detail pages — guests can take a test, sign-in is required at submit
+  // Speaking + full-mock: list only — detail pages still require auth (separate flow TBD)
   const publicPathPrefixes = [
     '/dashboard/reading',
     '/dashboard/listening',
     '/dashboard/writing',
+  ]
+  const publicExactPaths = [
     '/dashboard/speaking',
+    '/dashboard/speaking/questions',
+    '/dashboard/speaking/mock-exam',
     '/dashboard/full-mock-test',
   ]
-  const isPublic = publicPathPrefixes.some(path =>
-    request.nextUrl.pathname === path ||
-    request.nextUrl.pathname.startsWith(path + '/')
-  )
+  const isPublic =
+    publicPathPrefixes.some(path =>
+      request.nextUrl.pathname === path ||
+      request.nextUrl.pathname.startsWith(path + '/'),
+    ) ||
+    publicExactPaths.includes(request.nextUrl.pathname)
 
   // Protected routes
   const protectedPaths = ['/dashboard', '/test', '/results', '/profile']
