@@ -18,6 +18,7 @@ import { WritingEvalTrigger } from "../../[slug]/results/writing-eval-trigger";
 import { SpeakingEvalTrigger } from "../../[slug]/results/speaking-eval-trigger";
 import { PremiumUpgradeDialog } from "@/components/premium-upgrade-dialog";
 import { FeedbackModal } from "@/components/test/common/feedback-modal";
+import { TelegramCta } from "@/components/test/common/telegram-cta";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -392,6 +393,9 @@ export default async function FullMockResultsByAttemptPage({
                 />
             </div>
             <FeedbackModal attemptId={attemptId} attemptCount={attemptCount} />
+            <div className="mt-10">
+                <TelegramCta />
+            </div>
         </div>
     );
 }

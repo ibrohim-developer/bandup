@@ -37,7 +37,7 @@ export function FeedbackForm({ attemptId }: { attemptId: string }) {
 
   if (isSubmitted) {
     return (
-      <div className="mb-16 space-y-4">
+      <div className="mb-10 space-y-4">
         <div className="rounded-xl border border-primary/20 bg-primary/10 p-6">
           <p className="text-sm font-medium leading-relaxed">
             BandUp is free and built for IELTS learners like you. Your feedback — what worked, what didn&apos;t, what&apos;s missing — directly shapes what we build next. Even one line helps.
@@ -52,7 +52,7 @@ export function FeedbackForm({ attemptId }: { attemptId: string }) {
   }
 
   return (
-    <div className="mb-16 space-y-4">
+    <div className="mb-10 space-y-4">
       <div className="rounded-xl border border-primary/20 bg-primary/10 p-6">
         <p className="text-sm font-medium leading-relaxed">
           BandUp is free and built for IELTS learners like you. Your feedback — what worked, what didn&apos;t, what&apos;s missing — directly shapes what we build next. Even one line helps.

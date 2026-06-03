@@ -16,6 +16,7 @@ import { SpeakingQuestionFeedback } from "@/components/test/speaking/speaking-qu
 import { SpeakingRecommendations } from "@/components/test/speaking/speaking-recommendations";
 import { SpeakingEvaluatingBanner } from "./evaluating-banner";
 import { FeedbackModal } from "@/components/test/common/feedback-modal";
+import { TelegramCta } from "@/components/test/common/telegram-cta";
 import { FeedbackForm } from "@/app/(dashboard)/dashboard/results/[attemptId]/feedback-form";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -303,6 +304,7 @@ export default async function SpeakingResultPage({
 
       <FeedbackForm attemptId={attemptId} />
       <FeedbackModal attemptId={attemptId} attemptCount={attemptCount} />
+      <TelegramCta />
     </div>
   );
 }
