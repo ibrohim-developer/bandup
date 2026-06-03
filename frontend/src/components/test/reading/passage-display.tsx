@@ -2,7 +2,8 @@
 
 import { useState, useRef, useCallback, useEffect, useMemo } from "react";
 import { createPortal } from "react-dom";
-import { Highlighter, StickyNote } from "lucide-react";
+import { Highlighter, StickyNote, Copy } from "lucide-react";
+import { toast } from "sonner";
 import { useWordDefinition } from "@/hooks/use-word-definition";
 import { WordDefinitionPopup } from "./word-definition-popup";
 
@@ -269,6 +270,20 @@ export function PassageDisplay({
     closePopup();
   }, [highlight.bg, highlight.color, onHighlight, closePopup]);
 
+  const handleCopy = useCallback(async () => {
+    const text = pendingSelectedTextRef.current;
+    if (!text) return;
+
+    try {
+      await navigator.clipboard.writeText(text);
+      toast.success("Copied to clipboard");
+    } catch {
+      toast.error("Couldn't copy. Please try again.");
+    }
+    window.getSelection()?.removeAllRanges();
+    closePopup();
+  }, [closePopup]);
+
   const handleNoteClick = useCallback(() => {
     const range = pendingRangeRef.current;
     const text = pendingSelectedTextRef.current;
@@ -315,6 +330,14 @@ export function PassageDisplay({
               backgroundColor: "#1f2937",
             }}
           >
+            <button
+              onClick={handleCopy}
+              className="cursor-pointer flex items-center gap-1.5 text-white text-sm font-medium px-3 py-2 hover:bg-white/10 transition-colors whitespace-nowrap"
+            >
+              <Copy className="h-3.5 w-3.5" />
+              Copy
+            </button>
+            <div className="w-px h-5 bg-white/20" />
             <button
               onClick={handleNoteClick}
               className="cursor-pointer flex items-center gap-1.5 text-white text-sm font-medium px-3 py-2 hover:bg-white/10 transition-colors whitespace-nowrap"

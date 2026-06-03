@@ -159,7 +159,16 @@ export default function RootLayout({
             </QueryProvider>
           </TelegramProvider>
         </Suspense>
-        <Toaster position="top-center" richColors />
+        <Toaster
+          position="top-center"
+          toastOptions={{
+            style: {
+              background: "#000000",
+              color: "#ffffff",
+              border: "1px solid #000000",
+            },
+          }}
+        />
       </body>
     </html>
   );
