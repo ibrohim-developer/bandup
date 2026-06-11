@@ -257,10 +257,19 @@ Return ONLY JSON.`;
 
     const parsed = JSON.parse(content);
 
-    let taskAchievementScore = Number(parsed.criterion_scores?.task_achievement_or_response) || 0;
-    let coherenceScore = Number(parsed.criterion_scores?.coherence_and_cohesion) || 0;
-    let lexicalScore = Number(parsed.criterion_scores?.lexical_resource) || 0;
-    let grammarScore = Number(parsed.criterion_scores?.grammatical_range_and_accuracy) || 0;
+    // Clamp to the valid IELTS band range [0, 9]. The candidate's essay is
+    // concatenated into the prompt, so a prompt-injection attempt could try to
+    // make the model emit an out-of-range score (e.g. 99) — never trust it raw.
+    const clampBand = (n: unknown): number => {
+      const v = Number(n);
+      if (!Number.isFinite(v)) return 0;
+      return Math.min(9, Math.max(0, v));
+    };
+
+    let taskAchievementScore = clampBand(parsed.criterion_scores?.task_achievement_or_response);
+    let coherenceScore = clampBand(parsed.criterion_scores?.coherence_and_cohesion);
+    let lexicalScore = clampBand(parsed.criterion_scores?.lexical_resource);
+    let grammarScore = clampBand(parsed.criterion_scores?.grammatical_range_and_accuracy);
 
     // Enforce official IELTS under-length penalty in code:
     // Under the minimum word count, Task Achievement/Response cannot exceed Band 5.

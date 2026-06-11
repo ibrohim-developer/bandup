@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import { getAuthUser, find, create, resolveTestId } from "@/lib/strapi/api";
+import { getAuthUser, find, create, del, resolveTestId } from "@/lib/strapi/api";
 import { calculateBandScore } from "@/lib/constants/test-config";
 import { isAnswerCorrect } from "@/lib/scoring";
 import { GUEST_ATTEMPTS_COOKIE, GUEST_ATTEMPTS_MAX_AGE, addGuestAttempt } from "@/lib/guest-claim";
@@ -117,14 +117,23 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  for (const sa of scoredAnswers) {
-    await create("user-answers", {
-      test_attempt: attempt.documentId,
-      question: sa.questionId,
-      user_answer: sa.userAnswer,
-      is_correct: sa.isCorrect,
-      points_earned: sa.isCorrect ? 1 : 0,
-    });
+  // Insert all user answers. If any insert fails, roll back the attempt so we
+  // never leave a completed attempt with partial answers — and so a client
+  // retry creates one clean attempt instead of a duplicate.
+  try {
+    for (const sa of scoredAnswers) {
+      await create("user-answers", {
+        test_attempt: attempt.documentId,
+        question: sa.questionId,
+        user_answer: sa.userAnswer,
+        is_correct: sa.isCorrect,
+        points_earned: sa.isCorrect ? 1 : 0,
+      });
+    }
+  } catch (err) {
+    console.error("[listening/submit] answer insert failed, rolling back attempt:", err);
+    await del("test-attempts", attempt.documentId);
+    return NextResponse.json({ error: "Failed to save answers" }, { status: 500 });
   }
 
   return NextResponse.json({
