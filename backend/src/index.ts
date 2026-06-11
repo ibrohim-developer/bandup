@@ -64,6 +64,9 @@ export default {
       'api::writing-task',
       'api::speaking-topic',
       'api::question',
+      'api::ai-usage-log',
+      'api::issue-report',
+      'api::test-feedback',
     ];
 
     const authenticatedRevokeUids = [
@@ -84,6 +87,11 @@ export default {
       'api::feature-notification',
       // Telegram login codes + phone PII
       'api::telegram-auth-code',
+      // Internal / user-submitted data that must only be reached through route
+      // handlers (admin token), never read or written directly via REST.
+      'api::ai-usage-log',
+      'api::issue-report',
+      'api::test-feedback',
     ];
 
     // Apply permissions
