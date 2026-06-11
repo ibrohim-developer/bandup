@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAuthUser, create, findOne } from "@/lib/strapi/api";
+import { resolveSafeAudioUrl } from "@/lib/safe-audio-url";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -39,6 +40,17 @@ export async function POST(request: NextRequest) {
 
   if (!topicGroups.length || topicGroups.some((g) => !g.recordings?.length)) {
     return NextResponse.json({ error: "Missing recordings" }, { status: 400 });
+  }
+
+  // SSRF guard: audio_url is fetched server-side during evaluation, so every
+  // recording must point at a trusted uploads location — never an arbitrary
+  // host (e.g. cloud metadata or internal services).
+  for (const group of topicGroups) {
+    for (const rec of group.recordings) {
+      if (!resolveSafeAudioUrl(rec.audioUrl)) {
+        return NextResponse.json({ error: "Invalid audio reference" }, { status: 400 });
+      }
+    }
   }
 
   const fullMockAttemptId: string | undefined = body.fullMockAttemptId;

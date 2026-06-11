@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAuthUser, find, update } from "@/lib/strapi/api";
 import { evaluateSpeaking } from "@/lib/evaluate-speaking";
+import { resolveSafeAudioUrl } from "@/lib/safe-audio-url";
 
 export const maxDuration = 120;
 
@@ -64,17 +65,19 @@ export async function POST(request: NextRequest) {
 
   // Evaluate all submissions in parallel. A full mock has ~9 questions; running them
   // serially took ~3 min because each Gemini Pro call is ~20s. Parallel = ~20-30s total.
-  const STRAPI_URL = process.env.NEXT_PUBLIC_STRAPI_URL || "http://localhost:1337";
-
   const results = await Promise.all(
     submissions.map(async (sub: any) => {
       const topic = sub.speaking_topic;
       const questions = Array.isArray(topic?.questions) ? topic.questions : [];
       const questionText = questions[sub.question_index] || `Question ${sub.question_index + 1}`;
 
-      const audioUrl = sub.audio_url?.startsWith("http")
-        ? sub.audio_url
-        : `${STRAPI_URL}${sub.audio_url}`;
+      // SSRF guard: only fetch trusted uploads URLs (defense-in-depth — submit
+      // already rejects unsafe values, but this also protects legacy rows).
+      const audioUrl = resolveSafeAudioUrl(sub.audio_url);
+      if (!audioUrl) {
+        console.error(`[speaking/evaluate] Rejected unsafe audio_url: ${sub.audio_url}`);
+        return null;
+      }
 
       try {
         const audioRes = await fetch(audioUrl);
