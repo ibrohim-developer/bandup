@@ -2,6 +2,7 @@
 
 import { redirect } from 'next/navigation'
 import { setToken, clearToken, getCurrentUser, STRAPI_URL } from '@/lib/strapi/server'
+import { safeRedirectPath } from '@/lib/safe-redirect'
 
 export async function signUp(formData: FormData) {
   const password = formData.get('password') as string
@@ -74,7 +75,7 @@ export async function signIn(formData: FormData) {
     return { error: 'Something went wrong' }
   }
 
-  redirect(redirectTo || '/dashboard')
+  redirect(safeRedirectPath(redirectTo))
 }
 
 export async function signOut() {
