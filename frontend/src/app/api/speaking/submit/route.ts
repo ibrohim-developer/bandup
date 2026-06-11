@@ -20,20 +20,13 @@ export async function POST(request: NextRequest) {
   const timeSpentSeconds: number = body.timeSpentSeconds ?? 0;
 
   // Normalize: support both multi-topic and legacy single-topic payload
-  let testDocumentId: string | null = null;
   let topicGroups: TopicRecordings[];
 
   if (body.topics && Array.isArray(body.topics)) {
     // New multi-topic format: { testId, topics: [...], timeSpentSeconds }
-    testDocumentId = body.testId ?? null;
     topicGroups = body.topics;
   } else if (body.topicId && body.recordings) {
     // Legacy single-topic format: { topicId, recordings: [...], timeSpentSeconds }
-    const topic = await findOne("speaking-topics", body.topicId, { populate: ["test"] });
-    if (!topic) {
-      return NextResponse.json({ error: "Topic not found" }, { status: 404 });
-    }
-    testDocumentId = topic.test?.documentId || null;
     topicGroups = [{ topicId: body.topicId, recordings: body.recordings }];
   } else {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
@@ -51,6 +44,29 @@ export async function POST(request: NextRequest) {
       if (!resolveSafeAudioUrl(rec.audioUrl)) {
         return NextResponse.json({ error: "Invalid audio reference" }, { status: 400 });
       }
+    }
+  }
+
+  // Validate every topic exists and derive the authoritative test from them.
+  // We deliberately ignore the client-supplied testId so a user can't attach
+  // submissions to an arbitrary/mismatched test, and we reject a payload whose
+  // topics don't all belong to the same test.
+  let testDocumentId: string | null = null;
+  let firstTopic = true;
+  for (const group of topicGroups) {
+    const topic = await findOne("speaking-topics", group.topicId, {
+      fields: ["id"],
+      populate: { test: { fields: ["documentId"] } },
+    });
+    if (!topic) {
+      return NextResponse.json({ error: "Topic not found" }, { status: 404 });
+    }
+    const topicTestId = (topic as any).test?.documentId ?? null;
+    if (firstTopic) {
+      testDocumentId = topicTestId;
+      firstTopic = false;
+    } else if (topicTestId !== testDocumentId) {
+      return NextResponse.json({ error: "Topics belong to different tests" }, { status: 400 });
     }
   }
 

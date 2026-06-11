@@ -26,7 +26,20 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { signOut } from "@/actions/auth";
+import { useTestStore } from "@/stores/test-store";
 import { useTheme } from "next-themes";
+
+// Clear any persisted in-progress test answers before signing out, so the next
+// user on this browser can't inherit them from sessionStorage.
+function handleSignOut() {
+  try {
+    useTestStore.getState().resetTest();
+    useTestStore.persist.clearStorage();
+  } catch {
+    // best-effort — still sign out
+  }
+  signOut();
+}
 
 interface SidebarProps {
   user?: {
@@ -235,7 +248,7 @@ export function Sidebar({ user }: SidebarProps) {
                   <DropdownMenuSeparator className="w-full" />
                   <DropdownMenuItem
                     className="cursor-pointer w-full justify-center group"
-                    onClick={() => signOut()}
+                    onClick={handleSignOut}
                   >
                     <LogOut className="mr-2 h-4 w-4 text-foreground group-hover:text-white dark:group-hover:text-white" />
                     <span>Sign Out</span>
@@ -333,7 +346,7 @@ export function Sidebar({ user }: SidebarProps) {
                   <DropdownMenuSeparator className="w-full" />
                   <DropdownMenuItem
                     className="cursor-pointer w-full justify-center group"
-                    onClick={() => signOut()}
+                    onClick={handleSignOut}
                   >
                     <LogOut className="mr-2 h-4 w-4 text-foreground group-hover:text-white dark:group-hover:text-white" />
                     <span>Sign Out</span>

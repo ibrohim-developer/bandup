@@ -67,6 +67,8 @@ export default {
       'api::ai-usage-log',
       'api::issue-report',
       'api::test-feedback',
+      'api::flashcard',
+      'api::video-lesson',
     ];
 
     const authenticatedRevokeUids = [
@@ -92,6 +94,9 @@ export default {
       'api::ai-usage-log',
       'api::issue-report',
       'api::test-feedback',
+      // Learn content — also served only via route handlers.
+      'api::flashcard',
+      'api::video-lesson',
     ];
 
     // Apply permissions
