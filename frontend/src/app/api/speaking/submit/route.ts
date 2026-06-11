@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAuthUser, create, findOne } from "@/lib/strapi/api";
 import { resolveSafeAudioUrl } from "@/lib/safe-audio-url";
+import { ownsFullMockSession } from "@/lib/full-mock";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -54,6 +55,12 @@ export async function POST(request: NextRequest) {
   }
 
   const fullMockAttemptId: string | undefined = body.fullMockAttemptId;
+
+  // Only link this attempt to a full-mock session the caller actually owns,
+  // otherwise a user could inject their attempt into a stranger's session.
+  if (fullMockAttemptId && !(await ownsFullMockSession(fullMockAttemptId, user.id))) {
+    return NextResponse.json({ error: "Invalid full mock session" }, { status: 403 });
+  }
 
   // Create ONE test attempt
   const attempt = await create("test-attempts", {
