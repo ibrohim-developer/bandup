@@ -61,6 +61,28 @@ export default async function SpeakingResultPage({
     );
   }
 
+  // Ownership guard: an attempt that belongs to a user is private (owner or
+  // admin only), including for anonymous visitors. Unowned guest attempts stay
+  // viewable by link. Without this, anyone with the documentId could read any
+  // user's speaking transcripts and scores.
+  const isAdmin = user?.role?.type === "admin" || user?.role?.name === "Admin";
+  const isOwnedAttempt = !!attempt.user?.id;
+  const isOwner = !!user && attempt.user?.id === user.id;
+  if (isOwnedAttempt && !isOwner && !isAdmin) {
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4 text-center">
+          <p className="text-destructive font-medium">
+            Test attempt not found.
+          </p>
+          <Link href="/dashboard">
+            <Button variant="outline">Back to Dashboard</Button>
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   if (attempt.status === "evaluating") {
     return <SpeakingEvaluatingBanner attemptId={attemptId} />;
   }

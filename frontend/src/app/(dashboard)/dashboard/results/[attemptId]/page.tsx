@@ -61,7 +61,15 @@ export default async function ResultsPage({ params, searchParams }: ResultsPageP
   const attempt = attempts?.[0];
 
   const isAdmin = user?.role?.type === "admin" || user?.role?.name === "Admin";
-  if (attempt && user && !isAdmin && attempt.user?.id !== user.id) {
+  // An attempt that belongs to a user is private: only its owner (or an admin)
+  // may view it. Crucially this must hold for anonymous visitors too — when
+  // `user` is null an owned attempt must NOT render (previously the `user &&`
+  // here short-circuited the whole check, leaking results to anyone with the
+  // documentId). Unowned guest attempts stay viewable by link so a guest can
+  // see results before signing in to claim them (the `?claim=` flow above).
+  const isOwnedAttempt = !!attempt?.user?.id;
+  const isOwner = !!user && attempt?.user?.id === user.id;
+  if (attempt && isOwnedAttempt && !isOwner && !isAdmin) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="flex flex-col items-center gap-4 text-center">

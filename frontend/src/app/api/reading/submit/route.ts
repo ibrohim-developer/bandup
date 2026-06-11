@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAuthUser, find, create, resolveTestId } from "@/lib/strapi/api";
 import { calculateBandScore } from "@/lib/constants/test-config";
+import { isAnswerCorrect } from "@/lib/scoring";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export async function POST(request: NextRequest) {
@@ -29,7 +30,7 @@ export async function POST(request: NextRequest) {
   const questionDocIds = Object.keys(answers);
   const questions = await find("questions", {
     filters: { documentId: { $in: questionDocIds } },
-    fields: ["correct_answer"],
+    fields: ["correct_answer", "question_type"],
   });
 
   if (!questions?.length) {
@@ -42,21 +43,19 @@ export async function POST(request: NextRequest) {
   const correctAnswerMap = new Map(
     questions.map((q: any) => [q.documentId, q.correct_answer])
   );
-
-  const normalizeAnswer = (answer: string) =>
-    answer
-      .split(",")
-      .map((s) => s.trim().toLowerCase().replace(/_/g, " ").replace(/\s+/g, " "))
-      .sort()
-      .join(",");
+  const questionTypeMap = new Map(
+    questions.map((q: any) => [q.documentId, q.question_type])
+  );
 
   let rawScore = 0;
   const scoredAnswers = questionDocIds.map((questionId) => {
     const userAnswer = answers[questionId];
     const correctAnswer = correctAnswerMap.get(questionId);
-    const isCorrect =
-      correctAnswer !== undefined &&
-      normalizeAnswer(userAnswer) === normalizeAnswer(correctAnswer);
+    const isCorrect = isAnswerCorrect(
+      questionTypeMap.get(questionId),
+      userAnswer,
+      correctAnswer
+    );
     if (isCorrect) rawScore++;
     return { questionId, userAnswer, isCorrect };
   });
