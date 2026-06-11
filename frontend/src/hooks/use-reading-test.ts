@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useTestStore } from "@/stores/test-store";
@@ -44,6 +44,9 @@ export function useReadingTest(
   const [error, setError] = useState<string | null>(null);
   const [hasStarted, setHasStarted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  // Synchronous re-entry guard: `isSubmitting` state is async, so a timeout +
+  // manual click (or double-click) can both pass it and create two attempts.
+  const submittingRef = useRef(false);
   const [isTimeUp, setIsTimeUp] = useState(false);
   const [showSubmitDialog, setShowSubmitDialog] = useState(false);
   const [reviewData, setReviewData] = useState<ReviewMap>({});
@@ -155,7 +158,8 @@ export function useReadingTest(
   }, [isReviewMode, loadReviewMode, startTest]);
 
   const handleSubmit = useCallback(async () => {
-    if (!testId) return;
+    if (!testId || submittingRef.current) return;
+    submittingRef.current = true;
     setIsSubmitting(true);
 
     try {
@@ -190,6 +194,7 @@ export function useReadingTest(
         router.replace(`/dashboard/results/${result.attemptId}`);
       }
     } catch {
+      submittingRef.current = false;
       setIsSubmitting(false);
     }
   }, [testId, answers, timeRemaining, totalTime, router, resetTest]);

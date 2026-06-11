@@ -165,8 +165,10 @@ export function useWritingTest(
     typedCharsRef.current[taskId] = (typedCharsRef.current[taskId] ?? 0) + delta;
   }, []);
 
+const submittingRef = useRef(false);
 const handleSubmit = useCallback(async () => {
-    if (!testId) return;
+    if (!testId || submittingRef.current) return;
+    submittingRef.current = true;
     setIsSubmitting(true);
 
     try {
@@ -204,6 +206,7 @@ const handleSubmit = useCallback(async () => {
         router.push(`/dashboard/results/${result.attemptId}`);
       }
     } catch {
+      submittingRef.current = false;
       setIsSubmitting(false);
       setShowSubmitDialog(false);
       toast.error("Couldn't submit your test. Your work is saved — please try again.");
