@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
+import { cookies } from "next/headers";
 import { getAuthUser, find, create, resolveTestId } from "@/lib/strapi/api";
 import { calculateBandScore } from "@/lib/constants/test-config";
 import { isAnswerCorrect } from "@/lib/scoring";
+import { GUEST_ATTEMPTS_COOKIE, GUEST_ATTEMPTS_MAX_AGE, addGuestAttempt } from "@/lib/guest-claim";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export async function POST(request: NextRequest) {
@@ -98,6 +100,22 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       { error: "Failed to create test attempt" },
       { status: 500 }
+    );
+  }
+
+  // Guest attempt: bind it to this browser so only this browser can claim it.
+  if (!user) {
+    const cookieStore = await cookies();
+    cookieStore.set(
+      GUEST_ATTEMPTS_COOKIE,
+      addGuestAttempt(cookieStore.get(GUEST_ATTEMPTS_COOKIE)?.value, attempt.documentId),
+      {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        path: "/",
+        maxAge: GUEST_ATTEMPTS_MAX_AGE,
+      },
     );
   }
 

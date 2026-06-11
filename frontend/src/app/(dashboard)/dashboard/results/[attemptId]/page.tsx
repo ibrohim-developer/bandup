@@ -1,6 +1,8 @@
 import Link from "@/components/no-prefetch-link";
+import { cookies } from "next/headers";
 import { find, update } from "@/lib/strapi/api";
 import { getCurrentUser } from "@/lib/strapi/server";
+import { GUEST_ATTEMPTS_COOKIE, canClaimAttempt } from "@/lib/guest-claim";
 import { Button } from "@/components/ui/button";
 import {
   PenTool,
@@ -42,14 +44,20 @@ export default async function ResultsPage({ params, searchParams }: ResultsPageP
   const user = await getCurrentUser();
 
   // If the user just signed in to claim a guest attempt, link the orphan
-  // attempt to them before the ownership check runs below.
+  // attempt to them before the ownership check runs below — but only if this
+  // browser is the one that created the attempt (it holds it in a signed
+  // cookie). Otherwise any logged-in user could claim a stranger's attempt.
   if (claim === attemptId && user) {
-    const [orphan] = await find("test-attempts", {
-      filters: { documentId: { $eq: attemptId } },
-      populate: { user: { fields: ["id"] } },
-    });
-    if (orphan && !orphan.user) {
-      await update("test-attempts", attemptId, { user: user.id });
+    const cookieStore = await cookies();
+    const allowed = canClaimAttempt(cookieStore.get(GUEST_ATTEMPTS_COOKIE)?.value, attemptId);
+    if (allowed) {
+      const [orphan] = await find("test-attempts", {
+        filters: { documentId: { $eq: attemptId } },
+        populate: { user: { fields: ["id"] } },
+      });
+      if (orphan && !orphan.user) {
+        await update("test-attempts", attemptId, { user: user.id });
+      }
     }
   }
 
