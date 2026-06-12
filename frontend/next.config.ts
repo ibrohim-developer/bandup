@@ -50,7 +50,7 @@ const nextConfig: NextConfig = {
       "default-src 'self'",
       // 'unsafe-inline' for the GA/Pixel inline bootstraps; 'wasm-unsafe-eval'
       // for opus-recorder's WASM encoder.
-      "script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://www.googletagmanager.com https://connect.facebook.net",
+      "script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://www.googletagmanager.com https://connect.facebook.net https://telegram.org",
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data: blob: https:",
       "media-src 'self' blob: https:",
