@@ -1,11 +1,9 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import Script from "next/script";
 import { Plus_Jakarta_Sans, Geist_Mono } from "next/font/google";
 import { QueryProvider } from "@/components/query-provider";
 import { GoogleAnalytics } from "@/components/google-analytics";
 import { JsonLd } from "@/components/json-ld";
-import { TelegramProvider } from "@/components/telegram/telegram-provider";
 import { Toaster } from "sonner";
 import "./globals.css";
 import MetaPixel from "@/components/MetaPixel";
@@ -143,21 +141,15 @@ export default function RootLayout({
       <body
         className={`${plusJakartaSans.variable} ${geistMono.variable} antialiased`}
       >
-        <Script
-          src="https://telegram.org/js/telegram-web-app.js"
-          strategy="lazyOnload"
-        />
         <JsonLd data={organizationSchema} />
         <JsonLd data={websiteSchema} />
         <JsonLd data={softwareSchema} />
         <GoogleAnalytics />
         <Suspense fallback={null}>
           <MetaPixel />
-          <TelegramProvider>
-            <QueryProvider>
-              {children}
-            </QueryProvider>
-          </TelegramProvider>
+          <QueryProvider>
+            {children}
+          </QueryProvider>
         </Suspense>
         <Toaster
           position="top-center"
