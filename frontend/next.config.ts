@@ -35,15 +35,12 @@ const nextConfig: NextConfig = {
       },
     ];
 
-    // Content-Security-Policy. Shipped in *Report-Only* mode first: a wrong
-    // policy would break real features — opus-recorder needs WASM + web-workers
-    // (speaking module), video lessons embed YouTube iframes, and the GA/Meta-
-    // Pixel bootstraps are inline scripts. Report-Only logs violations to the
-    // browser console without blocking anything.
-    //
-    // TO ENFORCE: verify in a browser (record a speaking answer, play a video
-    // lesson, watch the console for CSP violations), then change the header key
-    // below from "Content-Security-Policy-Report-Only" to "Content-Security-Policy".
+    // Content-Security-Policy (enforcing). Verified in a browser that the
+    // speaking recorder (opus-recorder WASM + web-workers), YouTube video
+    // lessons, and the GA/Meta-Pixel inline bootstraps all work under this
+    // policy with no violations. If a future feature needs a new source, add it
+    // here — or temporarily switch the header key back to
+    // "Content-Security-Policy-Report-Only" while diagnosing.
     const csp = [
       "default-src 'self'",
       // 'unsafe-inline' for the GA/Pixel inline bootstraps; 'wasm-unsafe-eval'
@@ -76,7 +73,7 @@ const nextConfig: NextConfig = {
         headers: [
           ...securityHeaders,
           { key: "X-Frame-Options", value: "SAMEORIGIN" },
-          { key: "Content-Security-Policy-Report-Only", value: csp },
+          { key: "Content-Security-Policy", value: csp },
         ],
       },
     ];
