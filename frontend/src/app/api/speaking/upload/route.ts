@@ -9,6 +9,18 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  // Reject oversized uploads up-front, before buffering the whole body into
+  // memory. 3 MB audio cap + multipart overhead → a 4 MB ceiling on the raw
+  // request. (The exact file.size check below remains the authoritative limit.)
+  const MAX_REQUEST_BYTES = 4 * 1024 * 1024;
+  const contentLength = Number(request.headers.get("content-length") ?? 0);
+  if (contentLength > MAX_REQUEST_BYTES) {
+    return NextResponse.json(
+      { error: "Recording too large. Speaking answers must be under 2 minutes." },
+      { status: 413 }
+    );
+  }
+
   const formData = await request.formData();
   const file = formData.get("file") as File | null;
   if (!file) {

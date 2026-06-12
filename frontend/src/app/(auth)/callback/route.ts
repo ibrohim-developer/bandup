@@ -1,5 +1,6 @@
 import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
+import { safeRedirectPath } from '@/lib/safe-redirect'
 
 const STRAPI_URL = process.env.NEXT_PUBLIC_STRAPI_URL || 'http://localhost:1337'
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
@@ -26,7 +27,7 @@ export async function GET(request: Request) {
         })
         const stashed = cookieStore.get('post_oauth_redirect')?.value
         cookieStore.delete('post_oauth_redirect')
-        return NextResponse.redirect(`${SITE_URL}${stashed || '/dashboard/reading'}`)
+        return NextResponse.redirect(`${SITE_URL}${safeRedirectPath(stashed, '/dashboard/reading')}`)
       }
     } catch {
       // Fall through to error redirect

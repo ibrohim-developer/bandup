@@ -1,4 +1,5 @@
 import type { Core } from '@strapi/strapi';
+import crypto from 'crypto';
 
 const TELEGRAM_API = 'https://api.telegram.org';
 const POLL_TIMEOUT_SEC = 30;
@@ -32,7 +33,9 @@ interface TelegramUpdate {
 }
 
 function generateCode(): string {
-  return String(Math.floor(100000 + Math.random() * 900000));
+  // Cryptographically secure 6-digit code (100000–999999). Math.random is
+  // predictable and must never be used to mint authentication secrets.
+  return String(crypto.randomInt(100000, 1000000));
 }
 
 async function tg<T = unknown>(

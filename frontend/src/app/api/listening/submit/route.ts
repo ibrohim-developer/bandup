@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAuthUser, find, create, resolveTestId } from "@/lib/strapi/api";
+import { cookies } from "next/headers";
+import { getAuthUser, find, create, del, resolveTestId } from "@/lib/strapi/api";
 import { calculateBandScore } from "@/lib/constants/test-config";
+import { isAnswerCorrect } from "@/lib/scoring";
+import { GUEST_ATTEMPTS_COOKIE, GUEST_ATTEMPTS_MAX_AGE, addGuestAttempt } from "@/lib/guest-claim";
+import { ownsFullMockSession } from "@/lib/full-mock";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export async function POST(request: NextRequest) {
@@ -25,10 +29,16 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Test not found" }, { status: 404 });
   }
 
+  // Only link this attempt to a full-mock session the caller actually owns,
+  // otherwise a user could inject their attempt into a stranger's session.
+  if (fullMockAttemptId && !(await ownsFullMockSession(fullMockAttemptId, user?.id))) {
+    return NextResponse.json({ error: "Invalid full mock session" }, { status: 403 });
+  }
+
   const questionDocIds = Object.keys(answers);
   const questions = await find("questions", {
     filters: { documentId: { $in: questionDocIds } },
-    fields: ["correct_answer"],
+    fields: ["correct_answer", "question_type"],
   });
 
   if (!questions?.length) {
@@ -41,21 +51,19 @@ export async function POST(request: NextRequest) {
   const correctAnswerMap = new Map(
     questions.map((q: any) => [q.documentId, q.correct_answer])
   );
-
-  const normalizeAnswer = (answer: string) =>
-    answer
-      .split(",")
-      .map((s) => s.trim().toLowerCase().replace(/_/g, " ").replace(/\s+/g, " "))
-      .sort()
-      .join(",");
+  const questionTypeMap = new Map(
+    questions.map((q: any) => [q.documentId, q.question_type])
+  );
 
   let rawScore = 0;
   const scoredAnswers = questionDocIds.map((questionId) => {
     const userAnswer = answers[questionId];
     const correctAnswer = correctAnswerMap.get(questionId);
-    const isCorrect =
-      correctAnswer !== undefined &&
-      normalizeAnswer(userAnswer) === normalizeAnswer(correctAnswer);
+    const isCorrect = isAnswerCorrect(
+      questionTypeMap.get(questionId),
+      userAnswer,
+      correctAnswer
+    );
     if (isCorrect) rawScore++;
     return { questionId, userAnswer, isCorrect };
   });
@@ -93,14 +101,39 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  for (const sa of scoredAnswers) {
-    await create("user-answers", {
-      test_attempt: attempt.documentId,
-      question: sa.questionId,
-      user_answer: sa.userAnswer,
-      is_correct: sa.isCorrect,
-      points_earned: sa.isCorrect ? 1 : 0,
-    });
+  // Guest attempt: bind it to this browser so only this browser can claim it.
+  if (!user) {
+    const cookieStore = await cookies();
+    cookieStore.set(
+      GUEST_ATTEMPTS_COOKIE,
+      addGuestAttempt(cookieStore.get(GUEST_ATTEMPTS_COOKIE)?.value, attempt.documentId),
+      {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        path: "/",
+        maxAge: GUEST_ATTEMPTS_MAX_AGE,
+      },
+    );
+  }
+
+  // Insert all user answers. If any insert fails, roll back the attempt so we
+  // never leave a completed attempt with partial answers — and so a client
+  // retry creates one clean attempt instead of a duplicate.
+  try {
+    for (const sa of scoredAnswers) {
+      await create("user-answers", {
+        test_attempt: attempt.documentId,
+        question: sa.questionId,
+        user_answer: sa.userAnswer,
+        is_correct: sa.isCorrect,
+        points_earned: sa.isCorrect ? 1 : 0,
+      });
+    }
+  } catch (err) {
+    console.error("[listening/submit] answer insert failed, rolling back attempt:", err);
+    await del("test-attempts", attempt.documentId);
+    return NextResponse.json({ error: "Failed to save answers" }, { status: 500 });
   }
 
   return NextResponse.json({

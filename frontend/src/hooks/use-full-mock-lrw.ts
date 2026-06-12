@@ -287,8 +287,10 @@ export function useFullMockLRW(testId: string) {
     );
 
     // Submit all modules
+    const submittingRef = useRef(false);
     const handleSubmit = useCallback(async () => {
-        if (!testId) return;
+        if (!testId || submittingRef.current) return;
+        submittingRef.current = true;
         setIsSubmitting(true);
 
         try {
@@ -399,6 +401,7 @@ export function useFullMockLRW(testId: string) {
             // Save silently — results are revealed after speaking completes
             router.push(`/dashboard/full-mock-test/${testId}`);
         } catch {
+            submittingRef.current = false;
             setIsSubmitting(false);
         }
     }, [

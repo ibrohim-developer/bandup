@@ -24,36 +24,80 @@ export default {
 
     if (!publicRole || !authenticatedRole) return;
 
-    // Define permissions
+    // Define permissions.
+    //
+    // SECURITY: the browser never talks to Strapi's REST API directly — every
+    // data path goes through Next.js route handlers that use the server-side
+    // full-access admin token (which bypasses these role permissions). So the
+    // Public/Authenticated roles need *almost nothing*. Granting REST access
+    // here only opens a direct-to-Strapi attack surface:
+    //   - reading `api::question` (or populating it from a passage/section)
+    //     leaks the answer key before submission.
+    //   - reading/updating attempts/answers/submissions is cross-user IDOR.
+    //   - reading `api::telegram-auth-code` leaks live login codes + phone PII.
+    // Keep these maps minimal; serve all test content through route handlers.
     const publicPermissions: Record<string, string[]> = {
-      'api::test': ['find', 'findOne'],
-      'api::reading-passage': ['find', 'findOne'],
-      'api::listening-section': ['find', 'findOne'],
-      'api::writing-task': ['find', 'findOne'],
-      'api::speaking-topic': ['find', 'findOne'],
-      'api::question': ['find', 'findOne'],
+      // Contact form is the only thing the public may write directly.
       'api::business-inquiry': ['create'],
     };
 
     const authenticatedPermissions: Record<string, string[]> = {
-      // Content (read-only)
-      'api::test': ['find', 'findOne'],
-      'api::reading-passage': ['find', 'findOne'],
-      'api::listening-section': ['find', 'findOne'],
-      'api::writing-task': ['find', 'findOne'],
-      'api::speaking-topic': ['find', 'findOne'],
-      'api::question': ['find', 'findOne'],
-      'api::business-inquiry': ['create'],
-      // User data (CRUD own)
-      'api::test-attempt': ['find', 'findOne', 'create', 'update'],
-      'api::user-answer': ['find', 'findOne', 'create'],
-      'api::writing-submission': ['find', 'findOne', 'create', 'update'],
-      'api::speaking-submission': ['find', 'findOne', 'create', 'update'],
-      'api::test-progress': ['find', 'findOne', 'create', 'update'],
-      'api::full-mock-test-attempt': ['find', 'findOne', 'create', 'update'],
-      'api::feature-notification': ['find', 'create'],
-      'api::telegram-auth-code': ['find', 'create', 'update'],
+      // Intentionally empty. Every authenticated data path is proxied through
+      // a Next.js route handler using the admin token, so no content-type or
+      // user-data REST grant is required here. Adding any `find`/`update`
+      // grant on user-scoped collections re-introduces cross-user IDOR.
     };
+
+    // Content types whose direct REST access must be fully removed for a role.
+    // We match by api UID *prefix* and delete EVERY action under it
+    // (find/findOne/create/update/delete) regardless of how Strapi spells the
+    // action string — the real actions are `api::test-attempt.test-attempt.find`
+    // etc., not `api::test-attempt.find`. setPermissions only ever *adds*, and
+    // some of these grants were set through the admin UI, so they must be
+    // explicitly deleted to converge existing databases (including prod) on
+    // restart. The trailing dot in the prefix avoids collisions
+    // (`api::test.` never matches `api::test-attempt.`).
+    const publicRevokeUids = [
+      'api::test',
+      'api::reading-passage',
+      'api::listening-section',
+      'api::writing-task',
+      'api::speaking-topic',
+      'api::question',
+      'api::ai-usage-log',
+      'api::issue-report',
+      'api::test-feedback',
+      'api::flashcard',
+      'api::video-lesson',
+    ];
+
+    const authenticatedRevokeUids = [
+      // Test content (would leak the answer key / sample answers)
+      'api::test',
+      'api::reading-passage',
+      'api::listening-section',
+      'api::writing-task',
+      'api::speaking-topic',
+      'api::question',
+      // User-scoped data (cross-user IDOR + tampering)
+      'api::test-attempt',
+      'api::user-answer',
+      'api::writing-submission',
+      'api::speaking-submission',
+      'api::test-progress',
+      'api::full-mock-test-attempt',
+      'api::feature-notification',
+      // Telegram login codes + phone PII
+      'api::telegram-auth-code',
+      // Internal / user-submitted data that must only be reached through route
+      // handlers (admin token), never read or written directly via REST.
+      'api::ai-usage-log',
+      'api::issue-report',
+      'api::test-feedback',
+      // Learn content — also served only via route handlers.
+      'api::flashcard',
+      'api::video-lesson',
+    ];
 
     // Apply permissions
     const setPermissions = async (
@@ -85,10 +129,38 @@ export default {
       }
     };
 
+    // Remove every REST permission whose action belongs to one of the given
+    // content types, for this role. Format-agnostic and idempotent.
+    const revokeByUid = async (
+      roleId: number,
+      uids: string[]
+    ): Promise<number> => {
+      const prefixes = uids.map((u) => `${u}.`);
+      const existing: Array<{ id: number; action: string }> = await strapi
+        .query('plugin::users-permissions.permission')
+        .findMany({ where: { role: roleId } });
+      const toDelete = existing.filter((p) =>
+        prefixes.some((prefix) => p.action.startsWith(prefix))
+      );
+      for (const perm of toDelete) {
+        await strapi
+          .query('plugin::users-permissions.permission')
+          .delete({ where: { id: perm.id } });
+      }
+      return toDelete.length;
+    };
+
     await setPermissions(publicRole.id, publicPermissions);
     await setPermissions(authenticatedRole.id, authenticatedPermissions);
+    const revokedPublic = await revokeByUid(publicRole.id, publicRevokeUids);
+    const revokedAuth = await revokeByUid(
+      authenticatedRole.id,
+      authenticatedRevokeUids
+    );
 
-    console.log('✅ Permissions configured');
+    console.log(
+      `✅ Permissions configured (revoked ${revokedPublic} public + ${revokedAuth} authenticated REST grants on test content / user data)`
+    );
 
     // One-time backfill: mark all pre-existing users as having fired the pixel,
     // so the next login of a legacy user doesn't get counted as a new signup.

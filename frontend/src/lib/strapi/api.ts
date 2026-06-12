@@ -87,7 +87,11 @@ export async function find(
   })
   const json = await res.json()
   if (!res.ok) {
+    // Do NOT swallow errors as an empty result: a 5xx/timeout returning [] is
+    // indistinguishable from "no data", which lets callers (e.g. submit routes)
+    // record a completed attempt with totalQuestions=0. Fail loudly instead.
     console.error(`[strapi] find(${collection}) ${res.status}:`, JSON.stringify(json))
+    throw new Error(`Strapi find(${collection}) failed with ${res.status}`)
   }
   return json.data || []
 }
@@ -142,6 +146,25 @@ export async function update(
   const json = await res.json()
   if (json.error) throw new Error(json.error.message)
   return json.data
+}
+
+/** Delete an entry by documentId. Returns whether the delete succeeded.
+ * Used for best-effort rollback, so it does not throw. */
+export async function del(
+  collection: string,
+  documentId: string,
+  token?: string,
+): Promise<boolean> {
+  const url = `${STRAPI_URL}/api/${collection}/${documentId}`
+  try {
+    const res = await fetch(url, {
+      method: 'DELETE',
+      headers: getHeaders(token || getAdminToken()),
+    })
+    return res.ok
+  } catch {
+    return false
+  }
 }
 
 /**

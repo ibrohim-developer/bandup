@@ -2,21 +2,39 @@ import type { Core } from '@strapi/strapi';
 import crypto from 'crypto';
 
 const PLACEHOLDER_EMAIL_DOMAIN = 'telegram.bandup.uz';
-const MAX_VERIFY_PER_IP_PER_15MIN = 10;
+const MAX_FAILED_VERIFY_PER_IP = 8;
+const RATE_WINDOW_MS = 15 * 60 * 1000;
+const MAX_TRACKED_IPS = 10000;
 
-const ipAttempts = new Map<string, { count: number; resetAt: number }>();
+// Failed-attempt tracking per IP. Only *failed* attempts count, so a legitimate
+// user who mistypes once isn't penalised, while a brute-forcer is throttled
+// quickly. NOTE: this is in-memory and per-instance — it resets on restart and
+// is not shared across instances. It's a speed-bump that, combined with
+// crypto-random, single-use, 60-second codes, makes guessing impractical; a
+// multi-instance deployment should move this to shared storage (e.g. Redis).
+const ipFailures = new Map<string, { count: number; resetAt: number }>();
 
-function rateLimit(ip: string): boolean {
+function isRateLimited(ip: string): boolean {
+  const entry = ipFailures.get(ip);
+  return (
+    !!entry && entry.resetAt >= Date.now() && entry.count >= MAX_FAILED_VERIFY_PER_IP
+  );
+}
+
+function recordFailedAttempt(ip: string): void {
   const now = Date.now();
-  const window = 15 * 60 * 1000;
-  const entry = ipAttempts.get(ip);
-  if (!entry || entry.resetAt < now) {
-    ipAttempts.set(ip, { count: 1, resetAt: now + window });
-    return true;
+  // Bound memory: prune expired entries if the map grows large.
+  if (ipFailures.size > MAX_TRACKED_IPS) {
+    for (const [key, entry] of ipFailures) {
+      if (entry.resetAt < now) ipFailures.delete(key);
+    }
   }
-  if (entry.count >= MAX_VERIFY_PER_IP_PER_15MIN) return false;
+  const entry = ipFailures.get(ip);
+  if (!entry || entry.resetAt < now) {
+    ipFailures.set(ip, { count: 1, resetAt: now + RATE_WINDOW_MS });
+    return;
+  }
   entry.count += 1;
-  return true;
 }
 
 export default ({ strapi }: { strapi: Core.Strapi }) => ({
@@ -24,11 +42,12 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
     const { code } = ctx.request.body || {};
     const ip = ctx.request.ip || 'unknown';
 
-    if (!rateLimit(ip)) {
+    if (isRateLimited(ip)) {
       return ctx.tooManyRequests('Too many attempts. Try again later.');
     }
 
     if (!code || typeof code !== 'string' || !/^\d{6}$/.test(code)) {
+      recordFailedAttempt(ip);
       return ctx.badRequest('Invalid code format');
     }
 
@@ -46,10 +65,12 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
 
     const record = Array.isArray(records) ? records[0] : null;
     if (!record) {
+      recordFailedAttempt(ip);
       return ctx.badRequest('Invalid or expired code');
     }
 
     if (new Date(record.expires_at).getTime() < Date.now()) {
+      recordFailedAttempt(ip);
       return ctx.badRequest('Code has expired. Open the bot and tap Start again.');
     }
 

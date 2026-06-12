@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse, after } from "next/server";
+import { cookies } from "next/headers";
 import { getAuthUser, create, resolveTestId } from "@/lib/strapi/api";
+import { GUEST_ATTEMPTS_COOKIE, GUEST_ATTEMPTS_MAX_AGE, addGuestAttempt } from "@/lib/guest-claim";
+import { ownsFullMockSession } from "@/lib/full-mock";
 
 // The response itself is fast (~hundreds of ms), but the `after()` background
 // callback awaits the writing/evaluate fetch (~10-30s). Keep the function alive
@@ -29,6 +32,12 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Test not found" }, { status: 404 });
   }
 
+  // Only link this attempt to a full-mock session the caller actually owns,
+  // otherwise a user could inject their attempt into a stranger's session.
+  if (fullMockAttemptId && !(await ownsFullMockSession(fullMockAttemptId, user?.id))) {
+    return NextResponse.json({ error: "Invalid full mock session" }, { status: 403 });
+  }
+
   // Create the test attempt with "evaluating" status
   const attempt = await create("test-attempts", {
     ...(user ? { user: user.id } : {}),
@@ -44,6 +53,22 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       { error: "Failed to create test attempt" },
       { status: 500 }
+    );
+  }
+
+  // Guest attempt: bind it to this browser so only this browser can claim it.
+  if (!user) {
+    const cookieStore = await cookies();
+    cookieStore.set(
+      GUEST_ATTEMPTS_COOKIE,
+      addGuestAttempt(cookieStore.get(GUEST_ATTEMPTS_COOKIE)?.value, attempt.documentId),
+      {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        path: "/",
+        maxAge: GUEST_ATTEMPTS_MAX_AGE,
+      },
     );
   }
 

@@ -12,7 +12,9 @@ export async function GET(request: NextRequest) {
     fields: ["title"],
     populate: {
       speaking_topics: {
-        fields: ["topic", "part_number", "preparation_time_seconds", "speaking_time_seconds", "questions", "cue_points", "sample_answers"],
+        // NOTE: sample_answers is intentionally NOT fetched here — it must not
+        // be sent to the client at test start (it's shown only after scoring).
+        fields: ["topic", "part_number", "preparation_time_seconds", "speaking_time_seconds", "questions", "cue_points"],
       },
     },
   });
@@ -31,7 +33,6 @@ export async function GET(request: NextRequest) {
       speakingTime: t.speaking_time_seconds,
       questions: Array.isArray(t.questions) ? t.questions : [],
       cuePoints: Array.isArray(t.cue_points) ? t.cue_points : [],
-      sampleAnswers: Array.isArray(t.sample_answers) ? t.sample_answers : [],
     }));
 
   return NextResponse.json({

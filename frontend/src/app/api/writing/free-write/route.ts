@@ -25,6 +25,16 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  // Cap input size before it reaches Gemini. 20k chars is ~3000+ words — far
+  // beyond any real IELTS essay, but blocks multi-MB bodies racking up cost.
+  const MAX_ESSAY_CHARS = 20000;
+  if (content.length > MAX_ESSAY_CHARS) {
+    return NextResponse.json(
+      { error: "Essay is too long." },
+      { status: 400 }
+    );
+  }
+
   const wordCount = content
     .trim()
     .split(/\s+/)

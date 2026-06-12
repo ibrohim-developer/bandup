@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
+import { cookies } from "next/headers";
 import { getAuthUser, find, update } from "@/lib/strapi/api";
+import { GUEST_ATTEMPTS_COOKIE, canClaimAttempt } from "@/lib/guest-claim";
 
 export async function POST(request: NextRequest) {
   const user = await getAuthUser(request);
@@ -10,6 +12,14 @@ export async function POST(request: NextRequest) {
   const { attemptId } = (await request.json()) as { attemptId?: string };
   if (!attemptId) {
     return NextResponse.json({ error: "attemptId required" }, { status: 400 });
+  }
+
+  // Only the browser that created this guest attempt (and therefore holds it in
+  // its signed cookie) may claim it. Without this, any logged-in user could
+  // claim any orphaned attempt by guessing its documentId.
+  const cookieStore = await cookies();
+  if (!canClaimAttempt(cookieStore.get(GUEST_ATTEMPTS_COOKIE)?.value, attemptId)) {
+    return NextResponse.json({ error: "Not allowed to claim this attempt" }, { status: 403 });
   }
 
   const [attempt] = await find("test-attempts", {

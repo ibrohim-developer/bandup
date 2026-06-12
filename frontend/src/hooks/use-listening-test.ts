@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useTestStore } from "@/stores/test-store";
@@ -181,8 +181,10 @@ export function useListeningTest(
     }
   }, [isReviewMode, loadReviewMode, startTest]);
 
+  const submittingRef = useRef(false);
   const handleSubmit = useCallback(async () => {
-    if (!testId) return;
+    if (!testId || submittingRef.current) return;
+    submittingRef.current = true;
     setIsSubmitting(true);
 
     try {
@@ -216,6 +218,7 @@ export function useListeningTest(
         router.push(`/dashboard/results/${result.attemptId}`);
       }
     } catch {
+      submittingRef.current = false;
       setIsSubmitting(false);
     }
   }, [testId, answers, timeRemaining, totalTime, router]);

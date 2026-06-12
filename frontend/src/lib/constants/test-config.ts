@@ -36,7 +36,8 @@ export const LISTENING_BAND_SCORE_MAP: Record<number, number> = {
   22: 5.5, 21: 5.5, 20: 5.5, 19: 5.5, 18: 5.5,
   17: 5.0, 16: 5.0,
   15: 4.5, 14: 4.5, 13: 4.5,
-  12: 4.0, 11: 4.0, 10: 4.0,
+  12: 4.0, 11: 4.0,
+  10: 3.5,
 }
 
 export const READING_BAND_SCORE_MAP: Record<number, number> = {

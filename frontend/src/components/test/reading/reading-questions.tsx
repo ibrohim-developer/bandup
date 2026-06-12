@@ -4,6 +4,7 @@ import { Bookmark } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { MultipleChoice } from "@/components/test/questions/multiple-choice";
 import { MultipleAnswer } from "@/components/test/questions/multiple-answer";
+import { MultipleAnswerGroup } from "@/components/test/questions/multiple-answer-group";
 import { TrueFalseNotGiven } from "@/components/test/questions/true-false-not-given";
 import { FillInBlank } from "@/components/test/questions/fill-in-blank";
 import { ContextFillInBlank } from "@/components/test/questions/context-fill-in-blank";
@@ -225,36 +226,25 @@ export function ReadingQuestions({
             </div>
           );
         } else if (group.type === "mcq_multiple" && groupOptions.length > 0) {
+          // One shared multi-select for the whole group: every sub-question
+          // stores the same combined value (e.g. "C,E"), which is what each
+          // row's correct_answer is graded against — so the natural "pick TWO"
+          // interaction scores full marks. (Matches the listening module; the
+          // previous per-question widgets scored 0/2 for the intuitive answer.)
           body = (
             <div className="group/q flex items-start gap-1">
-              <div className="flex-1 space-y-6">
+              <div className="flex-1 space-y-4">
                 {contextHtml && (
                   <div
                     className="text-base leading-relaxed rich-html"
                     dangerouslySetInnerHTML={{ __html: contextHtml }}
                   />
                 )}
-                {group.questions.map((question) => {
-                  const globalIdx = passageQuestions.findIndex((pq) => pq.id === question.id);
-                  const value = answers[question.id]?.answer || "";
-                  return (
-                    <MultipleAnswer
-                      key={question.id}
-                      questionId={question.id}
-                      questionNumber={questionOffset + globalIdx + 1}
-                      questionText={question.text}
-                      options={groupOptions as string[]}
-                      value={value}
-                      onChange={(val: string) => onAnswer(question.id, val)}
-                      disabled={false}
-                      maxSelections={
-                        (group.metadata?.maxSelections as number | undefined) ??
-                        (question.metadata?.maxSelections as number | undefined) ??
-                        2
-                      }
-                    />
-                  );
-                })}
+                <MultipleAnswerGroup
+                  options={groupOptions as string[]}
+                  questions={buildGroupQuestions()}
+                  disabled={false}
+                />
               </div>
               {showBookmarks && (
                 <BookmarkButton

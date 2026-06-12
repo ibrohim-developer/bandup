@@ -64,7 +64,13 @@ Rules:
 
 export async function POST(request: NextRequest) {
   try {
+    // Require auth: quiz generation triggers billable Gemini calls and admin
+    // writes to the shared lesson record, so it must not be anonymous.
     const user = await getAuthUser(request);
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { videoId } = await request.json();
     if (!videoId) {
       return NextResponse.json({ error: "videoId is required" }, { status: 400 });
