@@ -3,19 +3,11 @@
 import { unstable_cache } from "next/cache";
 import { find } from "@/lib/strapi/api";
 import { getToken, getCurrentUser } from "@/lib/strapi/server";
+import { buildBookTabResult, type FlatTest } from "@/lib/tests/book-grouping";
 
 const PAGE_SIZE = 20;
 
-interface WritingTest {
-  id: string;
-  slug: string;
-  title: string;
-  description: string;
-  difficulty: string;
-  duration: number;
-  tasks: number;
-  taskNumbers: number[];
-}
+type WritingTest = Omit<FlatTest, "isCompleted">;
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 const getWritingTests = unstable_cache(
@@ -25,7 +17,7 @@ const getWritingTests = unstable_cache(
         module_type: { $eq: "writing" },
         is_published: { $eq: true },
       },
-      fields: ["title", "description", "difficulty_level", "slug"],
+      fields: ["title", "difficulty_level", "slug"],
       sort: ["createdAt:desc"],
       populate: {
         writing_tasks: { fields: ["task_number"] },
@@ -35,16 +27,14 @@ const getWritingTests = unstable_cache(
     if (!tests?.length) return [];
 
     return tests.map((test: any) => {
-      const tasks = test.writing_tasks ?? [];
+      const taskCount = (test.writing_tasks ?? []).length;
       return {
         id: test.documentId,
         slug: test.slug ?? test.documentId,
         title: test.title,
-        description: test.description ?? "",
         difficulty: test.difficulty_level ?? "medium",
-        duration: 60,
-        tasks: tasks.length,
-        taskNumbers: tasks.map((t: any) => t.task_number as number).sort(),
+        metric: `${taskCount} ${taskCount === 1 ? "task" : "tasks"}`,
+        type: "academic",
       };
     });
   },
@@ -78,7 +68,7 @@ export async function fetchWritingTests(
     }
   }
 
-  const filtered = allTests
+  const filtered: FlatTest[] = allTests
     .map((test) => ({ ...test, isCompleted: completedTestIds.has(test.id) }))
     .filter((test) => {
       if (
@@ -94,10 +84,6 @@ export async function fetchWritingTests(
       ) {
         return false;
       }
-      if (params.task && params.task !== "all") {
-        const taskNum = Number(params.task.replace("task", ""));
-        if (test.tasks !== taskNum) return false;
-      }
       if (params.status && params.status !== "all") {
         if (params.status === "completed" && !test.isCompleted) return false;
         if (params.status === "new" && test.isCompleted) return false;
@@ -105,12 +91,5 @@ export async function fetchWritingTests(
       return true;
     });
 
-  const start = page * PAGE_SIZE;
-  const items = filtered.slice(start, start + PAGE_SIZE);
-
-  return {
-    items,
-    totalCount: filtered.length,
-    hasMore: start + PAGE_SIZE < filtered.length,
-  };
+  return buildBookTabResult(filtered, params.tab, page, PAGE_SIZE);
 }

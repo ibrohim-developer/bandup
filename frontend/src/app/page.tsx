@@ -84,12 +84,12 @@ export default function HomePage() {
 
       <main className="flex-1">
         <Hero />
+        {/* <Testimonials /> */}
         <PainPoints />
         <Features />
         <HowItWorks />
         <AiDemo />
         <DashboardPreview />
-        {/* <Testimonials /> */}
         {/* <Pricing /> */}
         <FAQ />
         <FinalCTA />

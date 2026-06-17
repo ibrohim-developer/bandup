@@ -3,21 +3,11 @@
 import { unstable_cache } from "next/cache";
 import { find } from "@/lib/strapi/api";
 import { getToken, getCurrentUser } from "@/lib/strapi/server";
+import { buildBookTabResult, type FlatTest } from "@/lib/tests/book-grouping";
 
 const PAGE_SIZE = 20;
 
-interface ReadingTest {
-  id: string;
-  slug: string;
-  title: string;
-  description: string;
-  difficulty: string;
-  duration: number;
-  questions: number;
-  passages: number;
-  part: number;
-  type: string;
-}
+type ReadingTest = Omit<FlatTest, "isCompleted">;
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 const getReadingTests = unstable_cache(
@@ -27,7 +17,7 @@ const getReadingTests = unstable_cache(
         module_type: { $eq: "reading" },
         is_published: { $eq: true },
       },
-      fields: ["title", "description", "difficulty_level", "slug"],
+      fields: ["title", "difficulty_level", "slug"],
       sort: ["createdAt:desc"],
       populate: {
         reading_passages: {
@@ -41,19 +31,16 @@ const getReadingTests = unstable_cache(
 
     return tests.map((test: any) => {
       const passages = test.reading_passages ?? [];
+      const questions = passages.reduce(
+        (sum: number, p: any) => sum + (p.questions?.length ?? 0),
+        0,
+      );
       return {
         id: test.documentId,
         slug: test.slug ?? test.documentId,
         title: test.title,
-        description: test.description ?? "",
         difficulty: test.difficulty_level ?? "medium",
-        duration: 20,
-        questions: passages.reduce(
-          (sum: number, p: any) => sum + (p.questions?.length ?? 0),
-          0,
-        ),
-        passages: passages.length,
-        part: passages[0]?.passage_number || 1,
+        metric: `${questions} questions`,
         type: "academic",
       };
     });
@@ -88,7 +75,7 @@ export async function fetchReadingTests(
     }
   }
 
-  const filtered = allTests
+  const filtered: FlatTest[] = allTests
     .map((test) => ({ ...test, isCompleted: completedTestIds.has(test.id) }))
     .filter((test) => {
       if (
@@ -107,13 +94,6 @@ export async function fetchReadingTests(
       if (params.type && params.type !== "all" && test.type !== params.type) {
         return false;
       }
-      if (
-        params.part &&
-        params.part !== "all" &&
-        test.part !== Number(params.part)
-      ) {
-        return false;
-      }
       if (params.status && params.status !== "all") {
         if (params.status === "completed" && !test.isCompleted) return false;
         if (params.status === "new" && test.isCompleted) return false;
@@ -121,12 +101,5 @@ export async function fetchReadingTests(
       return true;
     });
 
-  const start = page * PAGE_SIZE;
-  const items = filtered.slice(start, start + PAGE_SIZE);
-
-  return {
-    items,
-    totalCount: filtered.length,
-    hasMore: start + PAGE_SIZE < filtered.length,
-  };
+  return buildBookTabResult(filtered, params.tab, page, PAGE_SIZE);
 }
