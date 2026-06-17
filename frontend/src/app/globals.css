@@ -167,3 +167,36 @@
   0%, 100% { transform: scaleY(0.4); }
   50% { transform: scaleY(1); }
 }
+
+/* Testimonials "living wall" marquee */
+@keyframes bu-marquee-left {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+@keyframes bu-marquee-right {
+  from { transform: translateX(-50%); }
+  to { transform: translateX(0); }
+}
+
+.bu-marquee-lane {
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent);
+}
+.bu-marquee-track {
+  display: flex;
+  gap: 20px;
+  width: max-content;
+  animation: bu-marquee-left var(--bu-duration, 52s) linear infinite;
+}
+.bu-marquee-track[data-dir="right"] {
+  animation-name: bu-marquee-right;
+}
+.bu-marquee-lane:hover .bu-marquee-track {
+  animation-play-state: paused;
+}
+@media (prefers-reduced-motion: reduce) {
+  .bu-marquee-track {
+    animation: none;
+  }
+}

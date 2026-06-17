@@ -35,6 +35,31 @@ const nextConfig: NextConfig = {
       },
     ];
 
+    // Content-Security-Policy (enforcing). Verified in a browser that the
+    // speaking recorder (opus-recorder WASM + web-workers), YouTube video
+    // lessons, and the GA/Meta-Pixel inline bootstraps all work under this
+    // policy with no violations. If a future feature needs a new source, add it
+    // here — or temporarily switch the header key back to
+    // "Content-Security-Policy-Report-Only" while diagnosing.
+    const csp = [
+      "default-src 'self'",
+      // 'unsafe-inline' for the GA/Pixel inline bootstraps; 'wasm-unsafe-eval'
+      // for opus-recorder's WASM encoder.
+      "script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://www.googletagmanager.com https://connect.facebook.net",
+      "style-src 'self' 'unsafe-inline'",
+      "img-src 'self' data: blob: https:",
+      "media-src 'self' blob: https:",
+      "font-src 'self' data: https:",
+      "connect-src 'self' https:",
+      "worker-src 'self' blob:",
+      "frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com",
+      // Site is no longer embedded as a Telegram Mini App, so block framing.
+      "frame-ancestors 'self'",
+      "object-src 'none'",
+      "base-uri 'self'",
+      "form-action 'self'",
+    ].join("; ");
+
     return [
       {
         source: "/api/:path*",
@@ -44,9 +69,12 @@ const nextConfig: NextConfig = {
         ],
       },
       {
-        // Page routes: no X-Frame-Options to allow Telegram Mini App iframe
         source: "/((?!api).*)",
-        headers: securityHeaders,
+        headers: [
+          ...securityHeaders,
+          { key: "X-Frame-Options", value: "SAMEORIGIN" },
+          { key: "Content-Security-Policy", value: csp },
+        ],
       },
     ];
   },

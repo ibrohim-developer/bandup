@@ -2,14 +2,12 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { VirtualTestList } from "@/components/test/common/virtual-test-list";
-import {
-  ListeningTestCard,
-  type ListeningTestItem,
-} from "./listening-test-card";
+import { BookTestCard } from "@/components/test/common/book-test-card";
+import type { BookGroup } from "@/lib/tests/book-grouping";
 import { fetchListeningTests } from "@/app/(dashboard)/dashboard/listening/actions";
 
 interface Props {
-  initialTests: ListeningTestItem[];
+  initialTests: BookGroup[];
   hasMore: boolean;
   filterParams: Record<string, string | undefined>;
 }
@@ -44,8 +42,8 @@ export function ListeningVirtualList({
   return (
     <VirtualTestList
       items={tests}
-      renderCard={(test, index) => (
-        <ListeningTestCard test={test} index={index} />
+      renderCard={(group) => (
+        <BookTestCard group={group} basePath="/dashboard/listening" />
       )}
       emptyMessage="No listening tests available yet."
       hasMore={hasMore}

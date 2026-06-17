@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "@/components/no-prefetch-link";
 import { Clock, PenTool, ArrowRight } from "lucide-react";
 import { TestFilters } from "@/components/test/common/test-filters";
+import { CollectionTabs } from "@/components/test/common/collection-tabs";
 import { WritingVirtualList } from "@/components/test/writing/writing-virtual-list";
 import { fetchWritingTests } from "./actions";
 
@@ -24,15 +25,6 @@ const writingFilters = [
     ],
   },
   {
-    key: "task",
-    placeholder: "All Tasks",
-    options: [
-      { value: "all", label: "All Tasks" },
-      { value: "task1", label: "Task 1" },
-      { value: "task2", label: "Task 2" },
-    ],
-  },
-  {
     key: "status",
     placeholder: "All Status",
     options: [
@@ -49,7 +41,12 @@ export default async function WritingTestsPage({
   searchParams: Promise<{ [key: string]: string | undefined }>;
 }) {
   const params = await searchParams;
-  const { items: initialTests, totalCount, hasMore } = await fetchWritingTests(params, 0);
+  const {
+    items: initialTests,
+    totalCount,
+    hasMore,
+    counts,
+  } = await fetchWritingTests(params, 0);
 
   return (
     <div className="space-y-6 md:space-y-8 pb-12">
@@ -62,15 +59,17 @@ export default async function WritingTestsPage({
         </div>
         <Link
           href="/dashboard/writing/history"
-          className="flex items-center gap-2 text-xs font-bold px-3 py-2 md:px-4 bg-card border border-border rounded-lg hover:bg-muted transition-colors shrink-0"
+          className="flex items-center gap-2 text-sm font-bold px-4 py-3 md:px-5 bg-card border border-border rounded-lg hover:bg-muted transition-colors shrink-0"
         >
-          <Clock className="h-3.5 w-3.5" />
+          <Clock className="h-4 w-4" />
           <span className="hidden sm:inline">Completed Tests</span>
           <span className="sm:hidden">History</span>
         </Link>
       </div>
 
-      <TestFilters filters={writingFilters} />
+      <TestFilters filters={writingFilters} size="lg" />
+
+      <CollectionTabs counts={counts} />
 {/*
       <Link
         href="/dashboard/writing/free"

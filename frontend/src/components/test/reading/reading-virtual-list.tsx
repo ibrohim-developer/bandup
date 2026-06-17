@@ -2,11 +2,12 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { VirtualTestList } from "@/components/test/common/virtual-test-list";
-import { ReadingTestCard, type ReadingTestItem } from "./reading-test-card";
+import { BookTestCard } from "@/components/test/common/book-test-card";
+import type { BookGroup } from "@/lib/tests/book-grouping";
 import { fetchReadingTests } from "@/app/(dashboard)/dashboard/reading/actions";
 
 interface Props {
-  initialTests: ReadingTestItem[];
+  initialTests: BookGroup[];
   hasMore: boolean;
   filterParams: Record<string, string | undefined>;
 }
@@ -41,7 +42,9 @@ export function ReadingVirtualList({
   return (
     <VirtualTestList
       items={tests}
-      renderCard={(test) => <ReadingTestCard test={test} />}
+      renderCard={(group) => (
+        <BookTestCard group={group} basePath="/dashboard/reading" />
+      )}
       emptyMessage="No reading tests available yet."
       hasMore={hasMore}
       isLoading={isLoading}

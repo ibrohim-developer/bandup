@@ -3,19 +3,11 @@
 import { unstable_cache } from "next/cache";
 import { find } from "@/lib/strapi/api";
 import { getToken, getCurrentUser } from "@/lib/strapi/server";
+import { buildBookTabResult, type FlatTest } from "@/lib/tests/book-grouping";
 
 const PAGE_SIZE = 20;
 
-interface ListeningTest {
-  id: string;
-  slug: string;
-  title: string;
-  description: string;
-  difficulty: string;
-  duration: number;
-  questions: number;
-  sections: number;
-}
+type ListeningTest = Omit<FlatTest, "isCompleted">;
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 const getListeningTests = unstable_cache(
@@ -25,7 +17,7 @@ const getListeningTests = unstable_cache(
         module_type: { $eq: "listening" },
         is_published: { $eq: true },
       },
-      fields: ["title", "description", "difficulty_level", "slug"],
+      fields: ["title", "difficulty_level", "slug"],
       sort: ["createdAt:desc"],
       populate: {
         listening_sections: {
@@ -39,18 +31,17 @@ const getListeningTests = unstable_cache(
 
     return tests.map((test: any) => {
       const sections = test.listening_sections ?? [];
+      const questions = sections.reduce(
+        (sum: number, s: any) => sum + (s.questions?.length ?? 0),
+        0,
+      );
       return {
         id: test.documentId,
         slug: test.slug ?? test.documentId,
         title: test.title,
-        description: test.description ?? "",
         difficulty: test.difficulty_level ?? "medium",
-        duration: 30,
-        questions: sections.reduce(
-          (sum: number, s: any) => sum + (s.questions?.length ?? 0),
-          0,
-        ),
-        sections: sections.length,
+        metric: `${questions} questions`,
+        type: "academic",
       };
     });
   },
@@ -84,7 +75,7 @@ export async function fetchListeningTests(
     }
   }
 
-  const filtered = allTests
+  const filtered: FlatTest[] = allTests
     .map((test) => ({ ...test, isCompleted: completedTestIds.has(test.id) }))
     .filter((test) => {
       if (
@@ -100,13 +91,6 @@ export async function fetchListeningTests(
       ) {
         return false;
       }
-      if (
-        params.sections &&
-        params.sections !== "all" &&
-        test.sections !== Number(params.sections)
-      ) {
-        return false;
-      }
       if (params.status && params.status !== "all") {
         if (params.status === "completed" && !test.isCompleted) return false;
         if (params.status === "new" && test.isCompleted) return false;
@@ -114,12 +98,5 @@ export async function fetchListeningTests(
       return true;
     });
 
-  const start = page * PAGE_SIZE;
-  const items = filtered.slice(start, start + PAGE_SIZE);
-
-  return {
-    items,
-    totalCount: filtered.length,
-    hasMore: start + PAGE_SIZE < filtered.length,
-  };
+  return buildBookTabResult(filtered, params.tab, page, PAGE_SIZE);
 }

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "@/components/no-prefetch-link";
 import { Clock } from "lucide-react";
 import { TestFilters } from "@/components/test/common/test-filters";
+import { CollectionTabs } from "@/components/test/common/collection-tabs";
 import { ListeningVirtualList } from "@/components/test/listening/listening-virtual-list";
 import { fetchListeningTests } from "./actions";
 
@@ -24,17 +25,6 @@ const listeningFilters = [
     ],
   },
   {
-    key: "sections",
-    placeholder: "All Sections",
-    options: [
-      { value: "all", label: "All Sections" },
-      { value: "1", label: "Section 1" },
-      { value: "2", label: "Section 2" },
-      { value: "3", label: "Section 3" },
-      { value: "4", label: "Section 4" },
-    ],
-  },
-  {
     key: "status",
     placeholder: "All Status",
     options: [
@@ -51,7 +41,12 @@ export default async function ListeningTestsPage({
   searchParams: Promise<{ [key: string]: string | undefined }>;
 }) {
   const params = await searchParams;
-  const { items: initialTests, totalCount, hasMore } = await fetchListeningTests(params, 0);
+  const {
+    items: initialTests,
+    totalCount,
+    hasMore,
+    counts,
+  } = await fetchListeningTests(params, 0);
 
   return (
     <div className="space-y-6 md:space-y-8 pb-12">
@@ -64,15 +59,17 @@ export default async function ListeningTestsPage({
         </div>
         <Link
           href="/dashboard/listening/history"
-          className="flex items-center gap-2 text-xs font-bold px-3 py-2 md:px-4 bg-card border border-border rounded-lg hover:bg-muted transition-colors shrink-0"
+          className="flex items-center gap-2 text-sm font-bold px-4 py-3 md:px-5 bg-card border border-border rounded-lg hover:bg-muted transition-colors shrink-0"
         >
-          <Clock className="h-3.5 w-3.5" />
+          <Clock className="h-4 w-4" />
           <span className="hidden sm:inline">Completed Tests</span>
           <span className="sm:hidden">History</span>
         </Link>
       </div>
 
-      <TestFilters filters={listeningFilters} />
+      <TestFilters filters={listeningFilters} size="lg" />
+
+      <CollectionTabs counts={counts} />
 
       <ListeningVirtualList
         initialTests={initialTests}
