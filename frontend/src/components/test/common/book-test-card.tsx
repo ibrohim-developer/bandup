@@ -13,14 +13,17 @@ import type { BookGroup } from "@/lib/tests/book-grouping";
 export function BookTestCard({
   group,
   basePath,
+  collapseSingle = true,
 }: {
   group: BookGroup;
   basePath: string;
+  /** When true, a group with one test renders as a flat card. */
+  collapseSingle?: boolean;
 }) {
   const typeLabel = group.type.charAt(0).toUpperCase() + group.type.slice(1);
   const testCount = group.tests.length;
 
-  if (testCount === 1) {
+  if (collapseSingle && testCount === 1) {
     const test = group.tests[0];
     return (
       <div className="bg-card border border-border rounded-2xl p-5 md:p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
