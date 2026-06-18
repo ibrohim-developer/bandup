@@ -37,7 +37,8 @@ export function BookTestCard({
             )}
           </div>
           <p className="mt-1.5 text-xs md:text-[13px] font-semibold text-muted-foreground">
-            {typeLabel} · {test.metric}
+            {typeLabel}
+            {test.metric ? ` · ${test.metric}` : ""}
           </p>
           <div className="mt-3">
             <DifficultyDots difficulty={test.difficulty} />
@@ -68,7 +69,8 @@ export function BookTestCard({
             {group.bookTitle}
           </h3>
           <p className="mt-1.5 text-xs md:text-[13px] font-semibold text-muted-foreground">
-            {typeLabel} · {testCount} {testCount === 1 ? "test" : "tests"}
+            {typeLabel} · {testCount}{" "}
+            {testCount === 1 ? group.memberNoun : `${group.memberNoun}s`}
           </p>
         </div>
         {uniformDifficulty && (
@@ -95,7 +97,11 @@ export function BookTestCard({
                 </span>
               )}
             </div>
-            <span className="text-xs text-muted-foreground">{test.metric}</span>
+            {test.metric && (
+              <span className="text-xs text-muted-foreground">
+                {test.metric}
+              </span>
+            )}
             <span className="flex items-center gap-0.5 text-xs font-bold text-primary">
               {test.isCompleted ? "Retake" : "Start"}
               <ChevronRight className="h-3.5 w-3.5" />

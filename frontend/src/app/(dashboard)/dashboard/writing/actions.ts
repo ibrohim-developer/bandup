@@ -3,7 +3,11 @@
 import { unstable_cache } from "next/cache";
 import { find } from "@/lib/strapi/api";
 import { getToken, getCurrentUser } from "@/lib/strapi/server";
-import { buildBookTabResult, type FlatTest } from "@/lib/tests/book-grouping";
+import {
+  buildBookTabResult,
+  parseWritingTaskTest,
+  type FlatTest,
+} from "@/lib/tests/book-grouping";
 
 const PAGE_SIZE = 20;
 
@@ -27,13 +31,14 @@ const getWritingTests = unstable_cache(
     if (!tests?.length) return [];
 
     return tests.map((test: any) => {
-      const taskCount = (test.writing_tasks ?? []).length;
       return {
         id: test.documentId,
         slug: test.slug ?? test.documentId,
         title: test.title,
         difficulty: test.difficulty_level ?? "medium",
-        metric: `${taskCount} ${taskCount === 1 ? "task" : "tasks"}`,
+        // Members are tasks (one record per task), so the per-tile metric is
+        // redundant with the "Task N" label — leave it empty.
+        metric: "",
         type: "academic",
       };
     });
@@ -91,5 +96,8 @@ export async function fetchWritingTests(
       return true;
     });
 
-  return buildBookTabResult(filtered, params.tab, page, PAGE_SIZE);
+  return buildBookTabResult(filtered, params.tab, page, PAGE_SIZE, {
+    parse: parseWritingTaskTest,
+    memberNoun: "task",
+  });
 }
