@@ -34,14 +34,14 @@ function CollectionTabsContent({ counts }: CollectionTabsProps) {
   );
 
   return (
-    <div className="flex gap-6 md:gap-8 border-b border-border">
+    <div className="flex gap-5 md:gap-8 border-b border-border overflow-x-auto no-scrollbar">
       {TABS.map((tab) => {
         const isActive = active === tab.key;
         return (
           <button
             key={tab.key}
             onClick={() => selectTab(tab.key)}
-            className={`relative flex items-center gap-2 pb-3 -mb-px border-b-2 text-lg font-bold transition-colors ${
+            className={`relative flex flex-1 justify-center md:flex-initial md:justify-start items-center gap-2 whitespace-nowrap pb-3 -mb-px border-b-2 text-base md:text-lg font-bold transition-colors ${
               isActive
                 ? "border-primary text-foreground"
                 : "border-transparent text-muted-foreground hover:text-foreground"

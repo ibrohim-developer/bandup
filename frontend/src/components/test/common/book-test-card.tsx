@@ -79,12 +79,12 @@ export function BookTestCard({
       </div>
 
       {/* Tests inside the book */}
-      <div className="flex flex-col sm:flex-row gap-3">
+      <div className="grid grid-cols-2 gap-3 sm:flex sm:flex-row">
         {group.tests.map((test) => (
           <LoginRequiredLink
             key={test.id}
             href={`${basePath}/${test.slug}`}
-            className="group flex-1 min-w-0 flex flex-col items-start gap-2 text-left border border-border rounded-xl px-4 py-3.5 hover:border-primary hover:bg-primary/5 transition-colors"
+            className="group sm:flex-1 min-w-0 flex flex-col items-start gap-2 text-left border border-border rounded-xl px-4 py-3.5 hover:border-primary hover:bg-primary/5 transition-colors"
           >
             <div className="flex w-full items-center justify-between gap-2">
               <span className="font-bold text-[15px]">{test.testLabel}</span>
