@@ -16,13 +16,27 @@ interface TrueFalseNotGivenProps {
   correctAnswer?: string;
   isCorrect?: boolean;
   isUnanswered?: boolean;
+  /**
+   * "tfng" → TRUE/FALSE/NOT GIVEN, "ynng" → YES/NO/NOT GIVEN. The two share the
+   * same logical answer space but Yes/No/Not Given questions (writer's claims)
+   * must show YES/NO so the buttons match the question's own instruction text
+   * and the stored answer key. Defaults to "tfng".
+   */
+  variant?: "tfng" | "ynng";
 }
 
-const options = [
-  { value: "TRUE", label: "TRUE" },
-  { value: "FALSE", label: "FALSE" },
-  { value: "NOT GIVEN", label: "NOT GIVEN" },
-];
+const OPTIONS_BY_VARIANT = {
+  tfng: [
+    { value: "TRUE", label: "TRUE" },
+    { value: "FALSE", label: "FALSE" },
+    { value: "NOT GIVEN", label: "NOT GIVEN" },
+  ],
+  ynng: [
+    { value: "YES", label: "YES" },
+    { value: "NO", label: "NO" },
+    { value: "NOT GIVEN", label: "NOT GIVEN" },
+  ],
+} as const;
 
 export function TrueFalseNotGiven({
   questionId,
@@ -35,7 +49,9 @@ export function TrueFalseNotGiven({
   correctAnswer,
   isCorrect,
   isUnanswered,
+  variant = "tfng",
 }: TrueFalseNotGivenProps) {
+  const options = OPTIONS_BY_VARIANT[variant];
   const getQuestionBadge = () => {
     if (!reviewMode) return null;
 

@@ -110,7 +110,13 @@ export function ReadingQuestions({
         );
       case "tfng":
       case "ynng":
-        return <TrueFalseNotGiven key={question.id} {...commonProps} />;
+        return (
+          <TrueFalseNotGiven
+            key={question.id}
+            {...commonProps}
+            variant={question.type === "ynng" ? "ynng" : "tfng"}
+          />
+        );
       case "gap_fill":
       case "short_answer":
       case "summary_completion":
