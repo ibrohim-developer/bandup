@@ -30,6 +30,17 @@ interface MatchingGridProps {
   onToggleFlag?: (questionId: string) => void;
 }
 
+// The stored answer value is the option's LETTER (A, B, C, …) — same convention
+// as MatchingSelect and the letter-based `correct_answer` in the database. If the
+// option is already a single letter we keep it; otherwise the letter is derived
+// from its position. (Storing the full option text here was a grading bug: the
+// student's answer never matched the letter answer key, so every matching answer
+// rendered through this grid scored 0.)
+const letterFor = (option: string, index: number): string => {
+  const trimmed = option.trim();
+  return /^[A-Z]$/.test(trimmed) ? trimmed : String.fromCharCode(65 + index);
+};
+
 function OptionButton({
   option,
   isSelected,
@@ -133,6 +144,7 @@ function OptionButton({
 function MobileCircleCard({
   q,
   options,
+  optionLetters,
   isIncorrect,
   isCorrectReview,
   isFlagged,
@@ -140,6 +152,7 @@ function MobileCircleCard({
 }: {
   q: QuestionData;
   options: string[];
+  optionLetters: string[];
   isIncorrect: boolean;
   isCorrectReview: boolean;
   isFlagged?: boolean;
@@ -161,13 +174,14 @@ function MobileCircleCard({
         )}
       </div>
       <div className="flex flex-wrap gap-2 justify-center">
-        {options.map((option) => {
-          const isSelected = q.value === option;
-          const isCorrectOption = q.reviewMode && q.correctAnswer === option;
+        {options.map((option, i) => {
+          const letter = optionLetters[i];
+          const isSelected = q.value === letter;
+          const isCorrectOption = q.reviewMode && q.correctAnswer === letter;
 
           return (
             <OptionButton
-              key={option}
+              key={letter}
               option={option}
               isSelected={isSelected}
               isCorrectOption={!!isCorrectOption}
@@ -176,7 +190,7 @@ function MobileCircleCard({
               isUnanswered={!!q.isUnanswered}
               disabled={q.disabled}
               reviewMode={q.reviewMode}
-              onClick={() => !q.disabled && q.onChange(option)}
+              onClick={() => !q.disabled && q.onChange(letter)}
               size="md"
             />
           );
@@ -193,11 +207,13 @@ function MobileCircleCard({
 function MobileSelectCard({
   q,
   options,
+  optionLetters,
   isFlagged,
   onToggleFlag,
 }: {
   q: QuestionData;
   options: string[];
+  optionLetters: string[];
   isFlagged?: boolean;
   onToggleFlag?: (id: string) => void;
 }) {
@@ -232,16 +248,13 @@ function MobileSelectCard({
             />
           </SelectTrigger>
           <SelectContent>
-            {options
-              .filter((o) => o !== "")
-              .map((option, index) => {
-                const letter = String.fromCharCode(65 + index);
-                return (
-                  <SelectItem key={`${index}-${option}`} value={option}>
-                    {letter}. {option}
-                  </SelectItem>
-                );
-              })}
+            {options.map((option, index) =>
+              option === "" ? null : (
+                <SelectItem key={`${index}-${option}`} value={optionLetters[index]}>
+                  {optionLetters[index]}. {option}
+                </SelectItem>
+              ),
+            )}
           </SelectContent>
         </Select>
         {q.reviewMode && !q.isUnanswered && q.isCorrect && (
@@ -268,6 +281,7 @@ function MobileSelectCard({
 export function MatchingGrid({ options, questions, flaggedQuestions, onToggleFlag }: MatchingGridProps) {
   const isShortOptions = options.every((o) => o.trim().length <= 2);
   const showBookmarks = !!(flaggedQuestions && onToggleFlag);
+  const optionLetters = options.map((o, i) => letterFor(o, i));
 
   return (
     <>
@@ -283,6 +297,7 @@ export function MatchingGrid({ options, questions, flaggedQuestions, onToggleFla
               key={q.questionId}
               q={q}
               options={options}
+              optionLetters={optionLetters}
               isIncorrect={!!isIncorrect}
               isCorrectReview={isCorrectReview}
               isFlagged={isFlagged}
@@ -293,6 +308,7 @@ export function MatchingGrid({ options, questions, flaggedQuestions, onToggleFla
               key={q.questionId}
               q={q}
               options={options}
+              optionLetters={optionLetters}
               isFlagged={isFlagged}
               onToggleFlag={onToggleFlag}
             />
@@ -332,11 +348,12 @@ export function MatchingGrid({ options, questions, flaggedQuestions, onToggleFla
                       <span className="leading-relaxed">{q.questionText}</span>
                     </div>
                   </td>
-                  {options.map((option) => {
-                    const isSelected = q.value === option;
-                    const isCorrectOption = q.reviewMode && q.correctAnswer === option;
+                  {options.map((option, optIndex) => {
+                    const letter = optionLetters[optIndex];
+                    const isSelected = q.value === letter;
+                    const isCorrectOption = q.reviewMode && q.correctAnswer === letter;
                     return (
-                      <td key={option} className="p-2 text-center">
+                      <td key={letter} className="p-2 text-center">
                         <OptionButton
                           option={option}
                           isSelected={isSelected}
@@ -346,7 +363,7 @@ export function MatchingGrid({ options, questions, flaggedQuestions, onToggleFla
                           isUnanswered={!!q.isUnanswered}
                           disabled={q.disabled}
                           reviewMode={q.reviewMode}
-                          onClick={() => !q.disabled && q.onChange(option)}
+                          onClick={() => !q.disabled && q.onChange(letter)}
                           size="sm"
                         />
                       </td>

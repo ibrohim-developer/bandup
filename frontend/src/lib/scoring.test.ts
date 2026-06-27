@@ -34,6 +34,28 @@ describe("isAnswerCorrect — free text", () => {
   });
 });
 
+describe("isAnswerCorrect — tfng / ynng equivalence", () => {
+  it("treats TRUE and YES as equivalent in both directions", () => {
+    expect(isAnswerCorrect("ynng", "TRUE", "YES")).toBe(true);
+    expect(isAnswerCorrect("tfng", "YES", "TRUE")).toBe(true);
+  });
+
+  it("treats FALSE and NO as equivalent in both directions", () => {
+    expect(isAnswerCorrect("ynng", "FALSE", "NO")).toBe(true);
+    expect(isAnswerCorrect("tfng", "NO", "FALSE")).toBe(true);
+  });
+
+  it("keeps NOT GIVEN distinct", () => {
+    expect(isAnswerCorrect("ynng", "NOT GIVEN", "YES")).toBe(false);
+    expect(isAnswerCorrect("tfng", "TRUE", "NOT GIVEN")).toBe(false);
+    expect(isAnswerCorrect("ynng", "NOT GIVEN", "NOT GIVEN")).toBe(true);
+  });
+
+  it("does not pass a blank correct answer", () => {
+    expect(isAnswerCorrect("ynng", "YES", "")).toBe(false);
+  });
+});
+
 describe("isAnswerCorrect — mcq_multiple", () => {
   it("is order-independent and case-insensitive", () => {
     expect(isAnswerCorrect("mcq_multiple", "E,C", "C,E")).toBe(true);

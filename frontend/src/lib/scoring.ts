@@ -61,6 +61,22 @@ const normalizeLetterSet = (answer: string): string =>
     .sort()
     .join(",");
 
+// True/False/Not Given and Yes/No/Not Given are the same logical answer space:
+// TRUE means "agrees" (= YES) and FALSE means "contradicts" (= NO). The UI label
+// shown to the student depends on the question_type, but the answer key may be
+// stored in either vocabulary, so grade them as equivalent. This never merges
+// genuinely different answers (NOT GIVEN stays distinct), so it can't turn a
+// wrong answer correct — it only fixes the TRUE-vs-YES mismatch.
+const TFNG_EQUIVALENTS: Record<string, string> = {
+  yes: "true",
+  no: "false",
+};
+
+const normalizeTfng = (answer: string): string => {
+  const base = normalizeText(answer);
+  return TFNG_EQUIVALENTS[base] ?? base;
+};
+
 export function isAnswerCorrect(
   questionType: string | undefined,
   userAnswer: string | undefined,
@@ -71,6 +87,10 @@ export function isAnswerCorrect(
     // A blank/missing correct answer is a data error — never auto-pass it
     // (previously an empty user answer matched an empty key and scored a point).
     return correct !== "" && normalizeLetterSet(userAnswer ?? "") === correct;
+  }
+  if (questionType === "tfng" || questionType === "ynng") {
+    const correct = normalizeTfng(correctAnswer ?? "");
+    return correct !== "" && normalizeTfng(userAnswer ?? "") === correct;
   }
   const correct = normalizeText(correctAnswer ?? "");
   return correct !== "" && normalizeText(userAnswer ?? "") === correct;
