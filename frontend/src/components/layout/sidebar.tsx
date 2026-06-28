@@ -16,6 +16,8 @@ import {
   PlayCircle,
   Layers,
   LayoutDashboard,
+  Clock,
+  X,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -25,6 +27,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import { signOut } from "@/actions/auth";
 import { useTestStore } from "@/stores/test-store";
 import { useTheme } from "next-themes";
@@ -246,6 +255,12 @@ export function Sidebar({ user }: SidebarProps) {
                     )}
                   </div>
                   <DropdownMenuSeparator className="w-full" />
+                  <DropdownMenuItem asChild className="cursor-pointer w-full justify-center">
+                    <Link href="/dashboard/history">
+                      <Clock className="mr-2 h-4 w-4" />
+                      <span>Test History</span>
+                    </Link>
+                  </DropdownMenuItem>
                   <DropdownMenuItem
                     className="cursor-pointer w-full justify-center group"
                     onClick={handleSignOut}
@@ -285,8 +300,8 @@ export function Sidebar({ user }: SidebarProps) {
               </span>
             </button>
           {user ? (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
+            <Sheet>
+              <SheetTrigger asChild>
                 <button className="rounded-full focus:outline-none focus:ring-2 focus:ring-primary">
                   <Avatar className="h-8 w-8">
                     <AvatarImage
@@ -298,62 +313,100 @@ export function Sidebar({ user }: SidebarProps) {
                     </AvatarFallback>
                   </Avatar>
                 </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent
-                align="end"
-                side="bottom"
-                className="w-64 p-4"
+              </SheetTrigger>
+              <SheetContent
+                side="right"
+                className="w-full max-w-none p-0 gap-0"
+                showCloseButton={false}
               >
-                <div className="flex flex-col items-center gap-3">
-                  <Avatar className="h-16 w-16">
+                <SheetTitle className="sr-only">Account menu</SheetTitle>
+
+                {/* Drawer header */}
+                <div className="flex items-center justify-between px-5 pt-5 pb-2">
+                  <span className="text-xl font-black tracking-tighter text-foreground">
+                    band<span className="text-primary">.</span>up
+                  </span>
+                  <SheetClose asChild>
+                    <button
+                      aria-label="Close menu"
+                      className="flex h-10 w-10 items-center justify-center rounded-full text-muted-foreground hover:bg-muted transition-colors"
+                    >
+                      <X className="h-6 w-6" />
+                    </button>
+                  </SheetClose>
+                </div>
+
+                {/* Profile block */}
+                <div className="flex flex-col items-center gap-3 px-6 pt-4 pb-6 border-b border-border">
+                  <Avatar className="h-20 w-20">
                     <AvatarImage
                       src={user?.user_metadata?.avatar_url}
                       alt={user?.user_metadata?.full_name || "User"}
                     />
-                    <AvatarFallback className="bg-muted text-muted-foreground font-bold text-lg">
+                    <AvatarFallback className="bg-muted text-muted-foreground font-bold text-2xl">
                       {userInitials}
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex flex-col items-center text-center">
-                    <span className="text-sm font-bold">
+                    <span className="text-lg font-bold">
                       {user?.user_metadata?.full_name || "User"}
                     </span>
                     {displayEmail && (
-                      <span className="text-xs text-muted-foreground truncate max-w-full">
+                      <span className="text-sm text-muted-foreground truncate max-w-full">
                         {displayEmail}
                       </span>
                     )}
                   </div>
-                  <DropdownMenuSeparator className="w-full" />
-                  <DropdownMenuItem asChild className="cursor-pointer w-full justify-center">
-                    <Link href="/dashboard/progress">
-                      <LayoutDashboard className="mr-2 h-4 w-4" />
-                      <span>Dashboard</span>
-                    </Link>
-                  </DropdownMenuItem>
-                  {learnItems.map((item) => (
-                    <DropdownMenuItem
-                      key={item.href}
-                      asChild
-                      className="cursor-pointer w-full justify-center"
-                    >
-                      <Link href={item.href}>
-                        <item.icon className="mr-2 h-4 w-4" />
-                        <span>{item.title}</span>
-                      </Link>
-                    </DropdownMenuItem>
-                  ))}
-                  <DropdownMenuSeparator className="w-full" />
-                  <DropdownMenuItem
-                    className="cursor-pointer w-full justify-center group"
-                    onClick={handleSignOut}
-                  >
-                    <LogOut className="mr-2 h-4 w-4 text-foreground group-hover:text-white dark:group-hover:text-white" />
-                    <span>Sign Out</span>
-                  </DropdownMenuItem>
                 </div>
-              </DropdownMenuContent>
-            </DropdownMenu>
+
+                {/* Menu items */}
+                <nav className="flex-1 overflow-y-auto p-4 space-y-1">
+                  {[
+                    { title: "Dashboard", href: "/dashboard/progress", icon: LayoutDashboard },
+                    { title: "Test History", href: "/dashboard/history", icon: Clock },
+                    ...learnItems,
+                  ].map((item) => {
+                    const isActive = pathname.startsWith(item.href);
+                    return (
+                      <SheetClose asChild key={item.href}>
+                        <Link
+                          href={item.href}
+                          className={cn(
+                            "flex items-center gap-4 px-4 h-12 rounded-xl text-base font-bold transition-colors",
+                            isActive
+                              ? "bg-primary/10 text-primary"
+                              : "text-foreground hover:bg-muted",
+                          )}
+                        >
+                          <item.icon className="h-5 w-5 shrink-0" />
+                          <span>{item.title}</span>
+                        </Link>
+                      </SheetClose>
+                    );
+                  })}
+                </nav>
+
+                {/* Footer */}
+                <div className="mt-auto border-t border-border p-4 space-y-1">
+                  <button
+                    onClick={() => setTheme(isDark ? "light" : "dark")}
+                    className="flex items-center gap-4 px-4 h-12 w-full rounded-xl text-base font-bold text-foreground hover:bg-muted transition-colors"
+                  >
+                    <span className="h-5 w-5 shrink-0" suppressHydrationWarning>
+                      {mounted && (isDark ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />)}
+                    </span>
+                    <span>Toggle Theme</span>
+                  </button>
+                  <button
+                    onClick={handleSignOut}
+                    className="flex items-center gap-4 px-4 h-12 w-full rounded-xl text-base font-bold text-foreground hover:bg-muted transition-colors"
+                  >
+                    <LogOut className="h-5 w-5 shrink-0" />
+                    <span>Sign Out</span>
+                  </button>
+                </div>
+              </SheetContent>
+            </Sheet>
           ) : (
             <Link
               href="/sign-in"

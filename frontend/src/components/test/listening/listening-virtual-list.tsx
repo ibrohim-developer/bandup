@@ -42,8 +42,12 @@ export function ListeningVirtualList({
   return (
     <VirtualTestList
       items={tests}
-      renderCard={(group) => (
-        <BookTestCard group={group} basePath="/dashboard/listening" />
+      renderCard={(group, index) => (
+        <BookTestCard
+          group={group}
+          basePath="/dashboard/listening"
+          defaultOpen={index === 0}
+        />
       )}
       emptyMessage="No listening tests available yet."
       hasMore={hasMore}

@@ -1,6 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { Clock } from "lucide-react";
 import { TestFilters } from "@/components/test/common/test-filters";
 import { SpeakingVirtualList } from "@/components/test/speaking/speaking-virtual-list";
 import { fetchSpeakingTests } from "./actions";
@@ -56,21 +54,11 @@ export default async function SpeakingQuestionsPage({
 
   return (
     <div className="space-y-6 md:space-y-8 pb-12">
-      <div className="flex items-start md:items-center justify-between gap-4 pb-2 border-b border-border/50">
-        <div>
-          <h2 className="text-2xl md:text-3xl font-black mb-1">Speaking Tests</h2>
-          <p className="text-xs text-muted-foreground font-bold uppercase tracking-widest">
-            {totalCount} Available Tests
-          </p>
-        </div>
-        <Link
-          href="/dashboard/speaking/history"
-          className="flex items-center gap-2 text-xs font-bold px-3 py-2 md:px-4 bg-card border border-border rounded-lg hover:bg-muted transition-colors shrink-0"
-        >
-          <Clock className="h-3.5 w-3.5" />
-          <span className="hidden sm:inline">Completed Tests</span>
-          <span className="sm:hidden">History</span>
-        </Link>
+      <div className="pb-2 border-b border-border/50">
+        <h2 className="text-2xl md:text-3xl font-black mb-1">Speaking Tests</h2>
+        <p className="text-xs text-muted-foreground font-bold uppercase tracking-widest">
+          {totalCount} Available Tests
+        </p>
       </div>
 
       <TestFilters filters={speakingFilters} />

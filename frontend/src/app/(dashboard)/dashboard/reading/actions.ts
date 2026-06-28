@@ -35,12 +35,19 @@ const getReadingTests = unstable_cache(
         (sum: number, p: any) => sum + (p.questions?.length ?? 0),
         0,
       );
+      const partNumbers: number[] = passages
+        .map((p: any) => p.passage_number)
+        .filter((n: any) => typeof n === "number");
+      const partLabels = [...new Set(partNumbers)]
+        .sort((a, b) => a - b)
+        .map((n) => `Part ${n}`)
+        .join(" · ");
       return {
         id: test.documentId,
         slug: test.slug ?? test.documentId,
         title: test.title,
         difficulty: test.difficulty_level ?? "medium",
-        metric: `${questions} questions`,
+        metric: partLabels || `${questions} questions`,
         type: "academic",
       };
     });
