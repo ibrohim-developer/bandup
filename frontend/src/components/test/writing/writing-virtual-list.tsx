@@ -42,11 +42,12 @@ export function WritingVirtualList({
   return (
     <VirtualTestList
       items={tests}
-      renderCard={(group) => (
+      renderCard={(group, index) => (
         <BookTestCard
           group={group}
           basePath="/dashboard/writing"
           collapseSingle={false}
+          defaultOpen={index === 0}
         />
       )}
       emptyMessage="No writing tests available yet."

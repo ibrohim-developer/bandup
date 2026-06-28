@@ -57,10 +57,10 @@ function TestFiltersContent({
     <div className="flex flex-col md:flex-row gap-4 items-center">
       <div className="relative flex-1 w-full">
         <Search
-          className={`absolute top-1/2 -translate-y-1/2 text-muted-foreground ${lg ? "left-3 h-4 w-4 md:left-3.5 md:h-5 md:w-5" : "left-3 h-4 w-4"}`}
+          className={`absolute top-1/2 -translate-y-1/2 text-muted-foreground ${lg ? "left-3 h-4 w-4" : "left-3 h-4 w-4"}`}
         />
         <input
-          className={`w-full bg-card border border-neutral-200 dark:border-neutral-700 rounded-lg focus:ring-1 focus:ring-primary focus:border-primary outline-none ${lg ? "h-[38px] md:h-12 pl-10 pr-4 text-base md:pl-12 md:text-lg" : "py-2.5 pl-10 pr-4 text-sm"}`}
+          className={`w-full bg-card border border-neutral-200 dark:border-neutral-700 rounded-lg focus:ring-1 focus:ring-primary focus:border-primary outline-none ${lg ? "h-10 pl-10 pr-4 text-base" : "py-2.5 pl-10 pr-4 text-sm"}`}
           placeholder={searchPlaceholder}
           type="text"
           defaultValue={searchParams.get("q") ?? ""}
@@ -83,7 +83,7 @@ function TestFiltersContent({
             onValueChange={(value) => updateParams(filter.key, value)}
           >
             <SelectTrigger
-              className={`w-full font-bold bg-card border-neutral-200 dark:border-neutral-700 ${lg ? "md:w-48 text-base md:text-lg h-[38px]! md:h-12!" : "md:w-40 text-xs"}`}
+              className={`w-full font-bold bg-card border-neutral-200 dark:border-neutral-700 ${lg ? "md:w-44 text-base h-10!" : "md:w-40 text-xs"}`}
             >
               <SelectValue placeholder={filter.placeholder} />
             </SelectTrigger>
@@ -117,10 +117,10 @@ function TestFiltersFallback({
     <div className="flex flex-col md:flex-row gap-4 items-center">
       <div className="relative flex-1 w-full">
         <Search
-          className={`absolute top-1/2 -translate-y-1/2 text-muted-foreground ${lg ? "left-3 h-4 w-4 md:left-3.5 md:h-5 md:w-5" : "left-3 h-4 w-4"}`}
+          className={`absolute top-1/2 -translate-y-1/2 text-muted-foreground ${lg ? "left-3 h-4 w-4" : "left-3 h-4 w-4"}`}
         />
         <input
-          className={`w-full bg-card border border-neutral-200 dark:border-neutral-700 rounded-lg focus:ring-1 focus:ring-primary focus:border-primary outline-none ${lg ? "h-[38px] md:h-12 pl-10 pr-4 text-base md:pl-12 md:text-lg" : "py-2.5 pl-10 pr-4 text-sm"}`}
+          className={`w-full bg-card border border-neutral-200 dark:border-neutral-700 rounded-lg focus:ring-1 focus:ring-primary focus:border-primary outline-none ${lg ? "h-10 pl-10 pr-4 text-base" : "py-2.5 pl-10 pr-4 text-sm"}`}
           placeholder="Search tests..."
           type="text"
           disabled
@@ -132,7 +132,7 @@ function TestFiltersFallback({
         {filters.map((filter) => (
           <div
             key={filter.key}
-            className={`bg-card border border-neutral-200 dark:border-neutral-700 rounded-md ${lg ? "w-full md:w-48 h-[38px] md:h-12" : "w-full md:w-40 h-10"}`}
+            className={`bg-card border border-neutral-200 dark:border-neutral-700 rounded-md ${lg ? "w-full md:w-44 h-10" : "w-full md:w-40 h-10"}`}
           />
         ))}
       </div>

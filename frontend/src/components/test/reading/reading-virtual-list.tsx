@@ -42,8 +42,12 @@ export function ReadingVirtualList({
   return (
     <VirtualTestList
       items={tests}
-      renderCard={(group) => (
-        <BookTestCard group={group} basePath="/dashboard/reading" />
+      renderCard={(group, index) => (
+        <BookTestCard
+          group={group}
+          basePath="/dashboard/reading"
+          defaultOpen={index === 0}
+        />
       )}
       emptyMessage="No reading tests available yet."
       hasMore={hasMore}
