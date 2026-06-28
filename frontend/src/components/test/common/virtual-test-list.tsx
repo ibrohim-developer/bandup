@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { Loader2 } from "lucide-react";
 import { useScrollContainer } from "./scroll-container-context";
+import { useIsMobile } from "@/hooks/use-is-mobile";
 
 interface VirtualTestListProps<T> {
   items: T[];
@@ -24,6 +25,14 @@ export function VirtualTestList<T extends { id: string }>({
 }: VirtualTestListProps<T>) {
   const scrollElement = useScrollContainer();
   const sentinelRef = useRef<HTMLDivElement>(null);
+
+  // On mobile the cards are collapsible accordions. Virtualizing them makes the
+  // expand/collapse janky: changing an item's height forces the virtualizer to
+  // re-measure and re-offset every absolutely-positioned item below it a frame
+  // later, so the list visibly stutters/jumps. In normal document flow the same
+  // toggle is smooth and browser-native. Desktop keeps virtualization (cards are
+  // always expanded there, so there's no toggling to stutter).
+  const isMobile = useIsMobile();
 
   // Keep latest values in refs so the observer callback never goes stale
   const onLoadMoreRef = useRef(onLoadMore);
@@ -68,40 +77,41 @@ export function VirtualTestList<T extends { id: string }>({
     );
   }
 
-  // Render cards directly until scroll container is available to avoid empty flash
-  if (!scrollElement) {
-    return (
-      <div className="space-y-3">
-        {items.map((item, index) => (
-          <div key={item.id}>{renderCard(item, index)}</div>
-        ))}
-      </div>
-    );
-  }
+  // Mobile (or before the scroll container is known) renders in normal document
+  // flow so accordion expand/collapse stays smooth; desktop windows the list.
+  const useFlow = isMobile || !scrollElement;
 
   return (
     <>
-      <div
-        style={{ height: `${virtualizer.getTotalSize()}px` }}
-        className="relative w-full"
-      >
-        {virtualizer.getVirtualItems().map((virtualItem) => (
-          <div
-            key={virtualItem.key}
-            data-index={virtualItem.index}
-            ref={virtualizer.measureElement}
-            style={{
-              position: "absolute",
-              top: 0,
-              left: 0,
-              width: "100%",
-              transform: `translateY(${virtualItem.start}px)`,
-            }}
-          >
-            {renderCard(items[virtualItem.index], virtualItem.index)}
-          </div>
-        ))}
-      </div>
+      {useFlow ? (
+        <div className="space-y-3">
+          {items.map((item, index) => (
+            <div key={item.id}>{renderCard(item, index)}</div>
+          ))}
+        </div>
+      ) : (
+        <div
+          style={{ height: `${virtualizer.getTotalSize()}px` }}
+          className="relative w-full"
+        >
+          {virtualizer.getVirtualItems().map((virtualItem) => (
+            <div
+              key={virtualItem.key}
+              data-index={virtualItem.index}
+              ref={virtualizer.measureElement}
+              style={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                width: "100%",
+                transform: `translateY(${virtualItem.start}px)`,
+              }}
+            >
+              {renderCard(items[virtualItem.index], virtualItem.index)}
+            </div>
+          ))}
+        </div>
+      )}
       <div ref={sentinelRef} className="h-1" />
       {isLoading && (
         <div className="flex justify-center py-4">

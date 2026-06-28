@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { cn } from "@/lib/utils";
 import { GripVertical, ChevronsUpDown } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-is-mobile";
 
 interface SplitViewProps {
   leftPanel: React.ReactNode;
@@ -17,16 +18,8 @@ export function SplitView({
 }: SplitViewProps) {
   const [ratio, setRatio] = useState(defaultRatio);
   const [isDragging, setIsDragging] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
+  const isMobile = useIsMobile();
   const containerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const mql = window.matchMedia("(max-width: 767px)");
-    setIsMobile(mql.matches);
-    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
-    mql.addEventListener("change", handler);
-    return () => mql.removeEventListener("change", handler);
-  }, []);
 
   const handleMouseDown = () => {
     setIsDragging(true);
