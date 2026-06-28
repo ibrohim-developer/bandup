@@ -23,17 +23,32 @@ export function BookTestCard({
   basePath,
   collapseSingle = true,
   defaultOpen = true,
+  open: controlledOpen,
+  onOpenChange,
 }: {
   group: BookGroup;
   basePath: string;
   /** When true, a group with one test renders as a flat card. */
   collapseSingle?: boolean;
-  /** Initial expanded state of the accordion on mobile. */
+  /** Initial expanded state of the accordion on mobile (uncontrolled mode). */
   defaultOpen?: boolean;
+  /**
+   * Controlled expanded state. When provided, the parent owns the open state —
+   * required inside a virtualized list, where the card unmounts/remounts on
+   * scroll and local state would reset.
+   */
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }) {
   const typeLabel = group.type.charAt(0).toUpperCase() + group.type.slice(1);
   const testCount = group.tests.length;
-  const [open, setOpen] = useState(defaultOpen);
+  const [internalOpen, setInternalOpen] = useState(defaultOpen);
+  const isControlled = controlledOpen !== undefined;
+  const open = isControlled ? controlledOpen : internalOpen;
+  const toggleOpen = () => {
+    if (isControlled) onOpenChange?.(!open);
+    else setInternalOpen((o) => !o);
+  };
 
   if (collapseSingle && testCount === 1) {
     const test = group.tests[0];
@@ -72,7 +87,7 @@ export function BookTestCard({
       {/* Book header — tap to toggle on mobile, static on md+ */}
       <button
         type="button"
-        onClick={() => setOpen((o) => !o)}
+        onClick={toggleOpen}
         aria-expanded={open}
         className="w-full flex items-center justify-between gap-3 text-left p-5 md:p-6 md:cursor-default md:pointer-events-none"
       >

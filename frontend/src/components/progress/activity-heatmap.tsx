@@ -1,7 +1,8 @@
 "use client";
 
-import { Fragment, useEffect, useState } from "react";
+import { Fragment, useState } from "react";
 import { cn } from "@/lib/utils";
+import { useIsMobile } from "@/hooks/use-is-mobile";
 
 const WEEKS_DESKTOP = 52;
 const WEEKS_MOBILE = 16;
@@ -76,14 +77,7 @@ interface Props {
 
 export function ActivityHeatmap({ activityMap, totalActive }: Props) {
   const [tooltip, setTooltip] = useState<{ text: string; x: number; y: number } | null>(null);
-  const [isMobile, setIsMobile] = useState(false);
-  useEffect(() => {
-    const mql = window.matchMedia("(max-width: 767px)");
-    setIsMobile(mql.matches);
-    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
-    mql.addEventListener("change", handler);
-    return () => mql.removeEventListener("change", handler);
-  }, []);
+  const isMobile = useIsMobile();
 
   const weekCount = isMobile ? WEEKS_MOBILE : WEEKS_DESKTOP;
   const weeks = buildGrid(activityMap, weekCount);

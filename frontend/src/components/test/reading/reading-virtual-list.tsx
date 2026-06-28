@@ -21,11 +21,15 @@ export function ReadingVirtualList({
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(initialHasMore);
   const [isLoading, setIsLoading] = useState(false);
+  // Accordion open state is owned here (not in the card) so it survives the
+  // unmount/remount the virtualizer does as cards scroll out of view.
+  const [openMap, setOpenMap] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     setTests(initialTests);
     setPage(0);
     setHasMore(initialHasMore);
+    setOpenMap({});
   }, [initialTests, initialHasMore]);
 
   const loadMore = useCallback(async () => {
@@ -46,7 +50,10 @@ export function ReadingVirtualList({
         <BookTestCard
           group={group}
           basePath="/dashboard/reading"
-          defaultOpen={index === 0}
+          open={openMap[group.id] ?? index === 0}
+          onOpenChange={(o) =>
+            setOpenMap((m) => ({ ...m, [group.id]: o }))
+          }
         />
       )}
       emptyMessage="No reading tests available yet."
