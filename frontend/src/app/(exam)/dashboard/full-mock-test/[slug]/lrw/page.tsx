@@ -617,7 +617,7 @@ function LRWExamContent({ testId }: { testId: string }) {
                             />
                         }
                         rightPanel={
-                            <div className="h-full p-3 md:p-6 space-y-6" style={{ backgroundColor: theme.bg }}>
+                            <div className="h-full min-w-0 p-3 md:p-6 space-y-6 break-words" style={{ backgroundColor: theme.bg }}>
                                 <ReadingQuestions
                                     questionGroups={questionGroups}
                                     passageQuestions={currentPassage.questions}

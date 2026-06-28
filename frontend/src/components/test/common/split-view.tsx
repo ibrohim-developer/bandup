@@ -111,10 +111,10 @@ export function SplitView({
         >
           {/* Top Panel */}
           <div
-            className="flex flex-col overflow-y-auto "
+            className="flex flex-col overflow-y-auto overflow-x-hidden"
             style={{ height: `${ratio}%` }}
           >
-            <div className="flex-1">{leftPanel}</div>
+            <div className="flex-1 min-w-0">{leftPanel}</div>
           </div>
 
           {/* Horizontal Resizer — line with centered pill icon */}
@@ -138,10 +138,10 @@ export function SplitView({
 
           {/* Bottom Panel */}
           <div
-            className="flex flex-col overflow-y-auto bg-white"
+            className="flex flex-col overflow-y-auto overflow-x-hidden"
             style={{ height: `${100 - ratio}%` }}
           >
-            <div className="flex-1">{rightPanel}</div>
+            <div className="flex-1 min-w-0">{rightPanel}</div>
           </div>
         </div>
       </div>
@@ -159,10 +159,12 @@ export function SplitView({
       >
         {/* Left Panel - Passage */}
         <div
-          className={cn("flex flex-col overflow-y-auto border-r border-gray-200")}
+          className={cn(
+            "flex flex-col overflow-y-auto overflow-x-hidden border-r border-gray-200",
+          )}
           style={{ width: `${ratio}%` }}
         >
-          <div className="flex-1">{leftPanel}</div>
+          <div className="flex-1 min-w-0">{leftPanel}</div>
         </div>
 
         {/* Resizer */}
@@ -180,10 +182,10 @@ export function SplitView({
 
         {/* Right Panel - Questions */}
         <div
-          className={cn("flex flex-col overflow-y-auto")}
+          className={cn("flex flex-col overflow-y-auto overflow-x-hidden")}
           style={{ width: `${100 - ratio}%` }}
         >
-          <div className="flex-1">{rightPanel}</div>
+          <div className="flex-1 min-w-0">{rightPanel}</div>
         </div>
       </div>
     </div>
