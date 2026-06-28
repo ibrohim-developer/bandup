@@ -67,7 +67,10 @@ export function useTestOptions() {
     backgroundColor: theme.bg,
     color: theme.text,
     zoom: scale,
-    height: `calc(100vh / ${scale})`,
+    // Use dvh (dynamic viewport height) so the layout fits the *visible* area on
+    // mobile browsers — 100vh is the large viewport (ignores the address bar),
+    // which pushed the bottom action bar below the fold on iOS Safari.
+    height: `calc(100dvh / ${scale})`,
   } as React.CSSProperties;
 
   return {
