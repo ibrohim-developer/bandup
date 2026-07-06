@@ -156,24 +156,11 @@ export async function getUser() {
   }
 }
 
-export async function signInWithGoogle(redirectTo?: string | null) {
-  // Strapi Google OAuth — redirect URL is configured in Strapi admin
-  // (Settings → Providers → Google → Redirect URL = http://localhost:3000/auth/callback)
-  // Strapi doesn't forward our own state through the OAuth roundtrip, so stash the
-  // post-login destination in a short-lived cookie that the callback can read.
-  if (redirectTo) {
-    const { cookies } = await import('next/headers')
-    const cookieStore = await cookies()
-    cookieStore.set('post_oauth_redirect', redirectTo, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      path: '/',
-      maxAge: 600, // 10 minutes
-    })
-  }
-  redirect(`${STRAPI_URL}/api/connect/google`)
-}
+// NOTE: Google OAuth is now initiated by a Route Handler at
+// /api/auth/google/start (see src/app/api/auth/google/start/route.ts), not a
+// Server Action. Server Actions are addressed by a build-hashed id that rotates
+// on every deploy, so a stale client bundle would POST an unknown id and crash
+// with "Failed to find Server Action" → 502. A URL-addressed handler can't drift.
 
 // NOTE: A legacy Telegram OpenID Connect login (signInWithTelegram + an
 // /api/auth/telegram/callback route) was removed — login uses the 6-digit code
