@@ -21,8 +21,8 @@ export function ListeningVirtualList({
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(initialHasMore);
   const [isLoading, setIsLoading] = useState(false);
-  // Accordion open state is owned here (not in the card) so it survives the
-  // unmount/remount the virtualizer does as cards scroll out of view.
+  // Accordion open state is owned here (not in the card) so it can be reset
+  // when filters change and default the first book open.
   const [openMap, setOpenMap] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
@@ -46,6 +46,7 @@ export function ListeningVirtualList({
   return (
     <VirtualTestList
       items={tests}
+      virtualize={false}
       renderCard={(group, index) => (
         <BookTestCard
           group={group}

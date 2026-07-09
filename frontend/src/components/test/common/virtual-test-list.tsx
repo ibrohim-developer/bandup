@@ -13,6 +13,12 @@ interface VirtualTestListProps<T> {
   hasMore?: boolean;
   isLoading?: boolean;
   onLoadMore?: () => void;
+  /**
+   * When false, always render in normal document flow instead of windowing.
+   * Lists of collapsible cards must opt out: toggling an item's height under
+   * the virtualizer stutters (see comment below).
+   */
+  virtualize?: boolean;
 }
 
 export function VirtualTestList<T extends { id: string }>({
@@ -22,16 +28,18 @@ export function VirtualTestList<T extends { id: string }>({
   hasMore = false,
   isLoading = false,
   onLoadMore,
+  virtualize = true,
 }: VirtualTestListProps<T>) {
   const scrollElement = useScrollContainer();
   const sentinelRef = useRef<HTMLDivElement>(null);
 
-  // On mobile the cards are collapsible accordions. Virtualizing them makes the
-  // expand/collapse janky: changing an item's height forces the virtualizer to
-  // re-measure and re-offset every absolutely-positioned item below it a frame
-  // later, so the list visibly stutters/jumps. In normal document flow the same
-  // toggle is smooth and browser-native. Desktop keeps virtualization (cards are
-  // always expanded there, so there's no toggling to stutter).
+  // Virtualizing collapsible cards makes expand/collapse janky: changing an
+  // item's height forces the virtualizer to re-measure and re-offset every
+  // absolutely-positioned item below it a frame later, so the list visibly
+  // stutters/jumps. In normal document flow the same toggle is smooth and
+  // browser-native. Accordion lists (listening/reading/writing book groups)
+  // pass virtualize={false}; flat-card lists (speaking, full mock) keep
+  // windowing on desktop but still use flow on mobile.
   const isMobile = useIsMobile();
 
   // Keep latest values in refs so the observer callback never goes stale
@@ -77,9 +85,9 @@ export function VirtualTestList<T extends { id: string }>({
     );
   }
 
-  // Mobile (or before the scroll container is known) renders in normal document
-  // flow so accordion expand/collapse stays smooth; desktop windows the list.
-  const useFlow = isMobile || !scrollElement;
+  // Opted-out, mobile, or before the scroll container is known: render in
+  // normal document flow; otherwise window the list.
+  const useFlow = !virtualize || isMobile || !scrollElement;
 
   return (
     <>

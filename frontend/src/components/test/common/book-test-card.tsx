@@ -11,10 +11,10 @@ import type { BookGroup } from "@/lib/tests/book-grouping";
  * tiles inside a grouped card; a book with a single test (or a standalone test
  * that doesn't fit the "<Book> Test N" pattern) renders as a flat card.
  *
- * On mobile the grouped card is a collapsible accordion (tap the header to
- * expand/collapse) to cut down on endless scrolling; on `md+` it always shows
- * the test tiles. `defaultOpen` controls the initial mobile state — list pages
- * pass `true` for the first book and `false` for the rest.
+ * The grouped card is a collapsible accordion (click the header to
+ * expand/collapse) to cut down on endless scrolling. `defaultOpen` controls
+ * the initial state — list pages pass `true` for the first book and `false`
+ * for the rest.
  *
  * `basePath` is the module route the tests link to, e.g. "/dashboard/reading".
  */
@@ -30,7 +30,7 @@ export function BookTestCard({
   basePath: string;
   /** When true, a group with one test renders as a flat card. */
   collapseSingle?: boolean;
-  /** Initial expanded state of the accordion on mobile (uncontrolled mode). */
+  /** Initial expanded state of the accordion (uncontrolled mode). */
   defaultOpen?: boolean;
   /**
    * Controlled expanded state. When provided, the parent owns the open state —
@@ -84,12 +84,12 @@ export function BookTestCard({
 
   return (
     <div className="bg-card border border-border rounded-2xl overflow-hidden">
-      {/* Book header — tap to toggle on mobile, static on md+ */}
+      {/* Book header — click to toggle */}
       <button
         type="button"
         onClick={toggleOpen}
         aria-expanded={open}
-        className="w-full flex items-center justify-between gap-3 text-left p-5 md:p-6 md:cursor-default md:pointer-events-none"
+        className="w-full flex items-center justify-between gap-3 text-left p-5 md:p-6 cursor-pointer transition-colors hover:bg-muted/30"
       >
         <div className="min-w-0">
           <h3 className="text-xl md:text-[22px] font-extrabold tracking-tight truncate">
@@ -100,15 +100,15 @@ export function BookTestCard({
             {testCount === 1 ? group.memberNoun : `${group.memberNoun}s`}
           </p>
         </div>
-        <span className="md:hidden shrink-0 flex h-9 w-9 items-center justify-center rounded-full border border-border text-muted-foreground">
+        <span className="shrink-0 flex h-9 w-9 items-center justify-center rounded-full border border-border text-muted-foreground">
           <ChevronDown
             className={cn("h-5 w-5 transition-transform", open && "rotate-180")}
           />
         </span>
       </button>
 
-      {/* Tests inside the book — collapsible on mobile, always shown on md+ */}
-      <div className={cn("md:block", open ? "block" : "hidden")}>
+      {/* Tests inside the book — shown only while expanded */}
+      <div className={open ? "block" : "hidden"}>
         {/* Mobile: rows separated by divider lines */}
         <div className="md:hidden border-t border-border divide-y divide-border px-5">
           {group.tests.map((test) => (
