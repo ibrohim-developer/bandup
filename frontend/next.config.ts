@@ -18,6 +18,10 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "bandup-media.fra1.cdn.digitaloceanspaces.com",
       },
+      {
+        protocol: "https",
+        hostname: "bandup-audio-prod.s3.eu-central-1.amazonaws.com",
+      },
     ],
     formats: ["image/avif", "image/webp"],
   },
