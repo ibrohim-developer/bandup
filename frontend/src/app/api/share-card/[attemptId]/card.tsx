@@ -11,7 +11,7 @@
 export type CardTheme = "light" | "dark";
 
 export interface CardFooter {
-  /** Left-hand footer line, e.g. "Ibrohim · 10 Jul 2026" or just the date. */
+  /** Left-hand footer line — the learner's name (empty for guest cards). */
   left: string;
 }
 

@@ -1,6 +1,5 @@
 import { ImageResponse } from "next/og";
 import { NextRequest } from "next/server";
-import { format } from "date-fns";
 import { find, findOne } from "@/lib/strapi/api";
 import { getCurrentUser } from "@/lib/strapi/server";
 import { rawToBand, roundToHalf } from "@/lib/band-score";
@@ -97,11 +96,9 @@ function isAdminUser(user: any): boolean {
   return user?.role?.type === "admin" || user?.role?.name === "Admin";
 }
 
-function footerFor(owner: any, dateStr?: string | null): CardFooter {
+function footerFor(owner: any): CardFooter {
   const name = owner?.full_name || owner?.username || null;
-  const date = dateStr ? format(new Date(dateStr), "d MMM yyyy") : null;
-  if (name && date) return { left: `${name} · ${date}` };
-  return { left: name || date || "bandup.uz" };
+  return { left: name || "" };
 }
 
 function levelFor(pct: number): string {
@@ -202,7 +199,7 @@ async function renderMockCard(attemptId: string, user: any, theme: CardTheme) {
         { label: "Writing", color: MODULE_ACCENTS.writing, band: writingBand },
         { label: "Speaking", color: MODULE_ACCENTS.speaking, band: speakingBand },
       ]}
-      footer={footerFor(session.user, session.createdAt)}
+      footer={footerFor(session.user)}
     />,
   );
 }
@@ -227,8 +224,7 @@ async function renderModuleCard(attemptId: string, user: any, theme: CardTheme) 
 
   const moduleType = attempt.module_type as string;
   if (!(moduleType in MODULE_ACCENTS)) return notFound();
-  const date = attempt.completed_at ?? attempt.createdAt;
-  const footer = footerFor(attempt.user, date);
+  const footer = footerFor(attempt.user);
 
   if (moduleType === "writing" || moduleType === "speaking") {
     if (attempt.status !== "completed" || attempt.band_score == null) return notFound();
