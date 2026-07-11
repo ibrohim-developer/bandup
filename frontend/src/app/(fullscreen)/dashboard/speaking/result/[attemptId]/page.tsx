@@ -17,6 +17,7 @@ import { SpeakingRecommendations } from "@/components/test/speaking/speaking-rec
 import { SpeakingEvaluatingBanner } from "./evaluating-banner";
 import { FeedbackModal } from "@/components/test/common/feedback-modal";
 import { TelegramCta } from "@/components/test/common/telegram-cta";
+import { ShareResultsButton } from "@/components/test/common/share-results-button";
 import { FeedbackForm } from "@/app/(dashboard)/dashboard/results/[attemptId]/feedback-form";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -237,6 +238,12 @@ export default async function SpeakingResultPage({
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-3 md:gap-4">
+          {attempt.band_score != null && (
+            <ShareResultsButton
+              attemptId={attemptId}
+              shareText={`I got Band ${bandScore} in IELTS Speaking on bandup.uz — free IELTS practice`}
+            />
+          )}
           <Link href="/dashboard/speaking/questions">
             <Button
               variant="outline"

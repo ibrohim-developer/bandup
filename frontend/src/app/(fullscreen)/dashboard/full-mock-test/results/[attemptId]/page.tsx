@@ -19,6 +19,8 @@ import { SpeakingEvalTrigger } from "../../[slug]/results/speaking-eval-trigger"
 import { PremiumUpgradeDialog } from "@/components/premium-upgrade-dialog";
 import { FeedbackModal } from "@/components/test/common/feedback-modal";
 import { TelegramCta } from "@/components/test/common/telegram-cta";
+import { ShareResultsButton } from "@/components/test/common/share-results-button";
+import { rawToBand } from "@/lib/band-score";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -84,24 +86,6 @@ async function fetchLROAnswers(
             };
         })
         .sort((a, b) => a.questionNumber - b.questionNumber);
-}
-
-function rawToBand(raw: number): number {
-    if (raw <= 0) return 0;
-    if (raw >= 39) return 9;
-    if (raw >= 37) return 8.5;
-    if (raw >= 35) return 8;
-    if (raw >= 33) return 7.5;
-    if (raw >= 30) return 7;
-    if (raw >= 27) return 6.5;
-    if (raw >= 23) return 6;
-    if (raw >= 20) return 5.5;
-    if (raw >= 16) return 5;
-    if (raw >= 13) return 4.5;
-    if (raw >= 10) return 4;
-    if (raw >= 6) return 3.5;
-    if (raw >= 4) return 3;
-    return 2.5;
 }
 
 export default async function FullMockResultsByAttemptPage({
@@ -379,6 +363,14 @@ export default async function FullMockResultsByAttemptPage({
             </div>
 
             <div className="mt-10 flex flex-col sm:flex-row gap-3 justify-end">
+                {!isEvaluating && overallBand > 0 && (
+                    <ShareResultsButton
+                        attemptId={attemptId}
+                        mock
+                        shareText={`I scored Band ${overallBand} on a full IELTS mock test at bandup.uz — free IELTS practice`}
+                        className="w-full sm:w-auto"
+                    />
+                )}
                 <Link href="/dashboard/full-mock-test">
                     <Button variant="outline" size="lg" className="w-full sm:w-auto">
                         View All Tests
