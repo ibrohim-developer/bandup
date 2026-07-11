@@ -21,6 +21,7 @@ import { EvaluatingBanner } from "./evaluating-banner";
 import { FeedbackForm } from "./feedback-form"
 import { FeedbackModal } from "@/components/test/common/feedback-modal";
 import { TelegramCta } from "@/components/test/common/telegram-cta";
+import { ShareResultsButton } from "@/components/test/common/share-results-button";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 interface ResultsPageProps {
@@ -244,6 +245,7 @@ function ResultsContent({ attempt, testTitle, answerResults, attemptCount }: {
   const rawScore = attempt.raw_score || 0;
   const totalQuestions = answerResults.length || 40;
   const scorePercent = totalQuestions > 0 ? Math.round((rawScore / totalQuestions) * 100) : 0;
+  const moduleLabel = attempt.module_type.charAt(0).toUpperCase() + attempt.module_type.slice(1);
 
   return (
     <div className="max-w-7xl mx-auto mt-8 px-4 md:px-6">
@@ -259,6 +261,12 @@ function ResultsContent({ attempt, testTitle, answerResults, attemptCount }: {
           <p className="text-base md:text-xl font-bold text-muted-foreground mt-2 uppercase">{testTitle}</p>
         </div>
         <div className="flex flex-wrap items-center gap-3 md:gap-4">
+          {attempt.raw_score != null && (
+            <ShareResultsButton
+              attemptId={attempt.id}
+              shareText={`I scored ${rawScore}/${totalQuestions} in IELTS ${moduleLabel} on bandup.uz — free IELTS practice`}
+            />
+          )}
           <Link href={`/dashboard/${attempt.module_type}`}><Button variant="outline" className="gap-2 px-5 md:px-8 h-11 md:h-12 rounded-xl font-bold text-sm md:text-md uppercase flex items-center"><List className="h-4 w-4" />View All Tests</Button></Link>
           <Link href={`/dashboard/${attempt.module_type}/${attempt.test_id}`}><Button className="gap-2 px-5 md:px-8 h-11 md:h-12 rounded-xl font-bold text-sm md:text-md uppercase flex items-center"><RotateCcw className="h-4 w-4" />Try Again</Button></Link>
         </div>
@@ -382,6 +390,12 @@ function WritingResultsContent({ attempt, testTitle, tasks, submissions, attempt
           <p className="text-base md:text-lg font-bold text-muted-foreground mt-2 uppercase">{testTitle}</p>
         </div>
         <div className="flex flex-wrap items-center gap-3 md:gap-4">
+          {attempt.band_score != null && (
+            <ShareResultsButton
+              attemptId={attempt.id}
+              shareText={`I got Band ${bandScore} in IELTS Writing on bandup.uz — free IELTS practice`}
+            />
+          )}
           <Link href="/dashboard/writing">
             <Button variant="outline" className="gap-2 px-5 md:px-8 h-11 md:h-12 rounded-xl font-bold text-sm md:text-md uppercase flex items-center">
               <List className="h-4 w-4" />View All Tests
