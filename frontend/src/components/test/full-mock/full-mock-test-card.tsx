@@ -74,7 +74,7 @@ export function FullMockTestCard({ test }: { test: FullMockTestItem }) {
                     <div className="rounded-md bg-muted p-1.5">
                         <PenTool className="h-3.5 w-3.5 text-muted-foreground" />
                     </div>
-                    <div>
+                    <div className="min-w-0">
                         <p className="text-xs font-semibold text-foreground">Writing</p>
                         <p className="text-[10px] text-muted-foreground">{test.writingTasks} tasks</p>
                     </div>
@@ -83,7 +83,7 @@ export function FullMockTestCard({ test }: { test: FullMockTestItem }) {
                     <div className="rounded-md bg-muted p-1.5">
                         <Mic className="h-3.5 w-3.5 text-muted-foreground" />
                     </div>
-                    <div>
+                    <div className="min-w-0">
                         <p className="text-xs font-semibold text-foreground">Speaking</p>
                         <p className="text-[10px] text-muted-foreground">{test.speakingTopics} parts</p>
                     </div>

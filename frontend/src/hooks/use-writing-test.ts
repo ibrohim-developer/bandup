@@ -190,6 +190,17 @@ const handleSubmit = useCallback(async () => {
         }),
       });
 
+      // Out of energy: server blocked scoring before creating the attempt.
+      // Show the reason (retrying won't help) and keep the essay on-screen.
+      if (res.status === 402) {
+        const data = await res.json().catch(() => null);
+        toast.error(data?.error || "You don't have enough energy to score this test.");
+        submittingRef.current = false;
+        setIsSubmitting(false);
+        setShowSubmitDialog(false);
+        return;
+      }
+
       if (!res.ok) {
         throw new Error("Failed to submit test");
       }

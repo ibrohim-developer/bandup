@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAuthUser, create, findOne } from "@/lib/strapi/api";
 import { resolveSafeAudioUrl } from "@/lib/safe-audio-url";
 import { ownsFullMockSession } from "@/lib/full-mock";
+import { checkEvaluationQuota, quotaExceededBody } from "@/lib/quota";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -34,6 +35,18 @@ export async function POST(request: NextRequest) {
 
   if (!topicGroups.length || topicGroups.some((g) => !g.recordings?.length)) {
     return NextResponse.json({ error: "Missing recordings" }, { status: 400 });
+  }
+
+  // Energy gate for standalone speaking tests — fail before the topic lookups
+  // and before creating records, so a user who can't afford scoring doesn't
+  // leave an orphaned attempt. Full-mock speaking is gated at evaluate time
+  // instead (the results page shows the paywall), keeping the mock's parallel
+  // LRW batch submit simple. The evaluate route stays the pre-Gemini gate.
+  if (!body.fullMockAttemptId) {
+    const { allowed, status } = await checkEvaluationQuota(user, "speaking");
+    if (!allowed) {
+      return NextResponse.json(quotaExceededBody(status, "speaking"), { status: 402 });
+    }
   }
 
   // SSRF guard: audio_url is fetched server-side during evaluation, so every

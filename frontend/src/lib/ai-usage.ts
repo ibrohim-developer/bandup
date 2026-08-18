@@ -1,13 +1,18 @@
 import { create } from "./strapi/api";
 
-type Model = "gemini-2.5-pro" | "gemini-2.5-flash";
-type ModuleName = "writing" | "speaking" | "quiz";
+type Model = "gemini-2.5-pro" | "gemini-2.5-flash" | "gemini-2.5-flash-tts";
+type ModuleName = "writing" | "speaking" | "quiz" | "practice" | "practice-tts";
 
 // Vertex AI pricing per 1M tokens (USD), as of Jan 2026.
 // Audio input is metered in tokens at 32 tokens/sec for Gemini 2.5.
+// TTS output is audio tokens, also at 32 tokens/sec — it has no meaningful
+// input cost but a much higher output rate, which makes spoken replies the
+// dominant line item in a practice session. Verify against current Vertex
+// pricing before relying on the reported figures.
 const PRICING: Record<Model, { input: number; output: number }> = {
   "gemini-2.5-pro": { input: 1.25, output: 10 },
   "gemini-2.5-flash": { input: 0.3, output: 2.5 },
+  "gemini-2.5-flash-tts": { input: 0.5, output: 10 },
 };
 
 interface UsageMetadata {

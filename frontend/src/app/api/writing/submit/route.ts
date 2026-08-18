@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { getAuthUser, create, resolveTestId } from "@/lib/strapi/api";
 import { GUEST_ATTEMPTS_COOKIE, GUEST_ATTEMPTS_MAX_AGE, addGuestAttempt } from "@/lib/guest-claim";
 import { ownsFullMockSession } from "@/lib/full-mock";
+import { checkEvaluationQuota, quotaExceededBody } from "@/lib/quota";
 
 // The response itself is fast (~hundreds of ms), but the `after()` background
 // callback awaits the writing/evaluate fetch (~10-30s). Keep the function alive
@@ -36,6 +37,17 @@ export async function POST(request: NextRequest) {
   // otherwise a user could inject their attempt into a stranger's session.
   if (fullMockAttemptId && !(await ownsFullMockSession(fullMockAttemptId, user?.id))) {
     return NextResponse.json({ error: "Invalid full mock session" }, { status: 403 });
+  }
+
+  // Energy gate for standalone writing tests by signed-in users — fail before
+  // creating records. Guests aren't metered; full-mock writing is gated at
+  // evaluate time (paywall on the results page). The evaluate route remains the
+  // authoritative pre-Gemini gate.
+  if (user && !fullMockAttemptId) {
+    const { allowed, status } = await checkEvaluationQuota(user, "writing");
+    if (!allowed) {
+      return NextResponse.json(quotaExceededBody(status, "writing"), { status: 402 });
+    }
   }
 
   // Create the test attempt with "evaluating" status

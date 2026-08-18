@@ -260,15 +260,18 @@ function ResultsContent({ attempt, testTitle, answerResults, attemptCount }: {
           </div>
           <p className="text-base md:text-xl font-bold text-muted-foreground mt-2 uppercase">{testTitle}</p>
         </div>
-        <div className="flex flex-wrap items-center gap-3 md:gap-4">
+        <div className="flex flex-col md:flex-row md:items-center gap-3 md:gap-4 w-full md:w-auto">
+          <div className="flex gap-3 md:gap-4 w-full md:w-auto">
+            <Link href={`/dashboard/${attempt.module_type}`} className="flex-1 md:flex-none"><Button variant="outline" className="w-full justify-center gap-2 px-5 md:px-8 h-11 md:h-12 rounded-xl font-bold text-sm md:text-md uppercase flex items-center"><List className="h-4 w-4" />View All Tests</Button></Link>
+            <Link href={`/dashboard/${attempt.module_type}/${attempt.test_id}`} className="flex-1 md:flex-none"><Button variant="outline" className="w-full justify-center gap-2 px-5 md:px-8 h-11 md:h-12 rounded-xl font-bold text-sm md:text-md uppercase flex items-center"><RotateCcw className="h-4 w-4" />Try Again</Button></Link>
+          </div>
           {attempt.raw_score != null && (
             <ShareResultsButton
               attemptId={attempt.id}
               shareText={`I scored ${rawScore}/${totalQuestions} in IELTS ${moduleLabel} on bandup.uz — free IELTS practice`}
+              className="w-full md:w-auto"
             />
           )}
-          <Link href={`/dashboard/${attempt.module_type}`}><Button variant="outline" className="gap-2 px-5 md:px-8 h-11 md:h-12 rounded-xl font-bold text-sm md:text-md uppercase flex items-center"><List className="h-4 w-4" />View All Tests</Button></Link>
-          <Link href={`/dashboard/${attempt.module_type}/${attempt.test_id}`}><Button className="gap-2 px-5 md:px-8 h-11 md:h-12 rounded-xl font-bold text-sm md:text-md uppercase flex items-center"><RotateCcw className="h-4 w-4" />Try Again</Button></Link>
         </div>
       </div>
       <div className="border-1 border-border rounded-xl p-6 md:p-12 mb-12">
@@ -389,23 +392,26 @@ function WritingResultsContent({ attempt, testTitle, tasks, submissions, attempt
           </div>
           <p className="text-base md:text-lg font-bold text-muted-foreground mt-2 uppercase">{testTitle}</p>
         </div>
-        <div className="flex flex-wrap items-center gap-3 md:gap-4">
+        <div className="flex flex-col md:flex-row md:items-center gap-3 md:gap-4 w-full md:w-auto">
+          <div className="flex gap-3 md:gap-4 w-full md:w-auto">
+            <Link href="/dashboard/writing" className="flex-1 md:flex-none">
+              <Button variant="outline" className="w-full justify-center gap-2 px-5 md:px-8 h-11 md:h-12 rounded-xl font-bold text-sm md:text-md uppercase flex items-center">
+                <List className="h-4 w-4" />View All Tests
+              </Button>
+            </Link>
+            <Link href={`/dashboard/writing/${attempt.test_id}`} className="flex-1 md:flex-none">
+              <Button variant="outline" className="w-full justify-center gap-2 px-5 md:px-8 h-11 md:h-12 rounded-xl font-bold text-sm md:text-md uppercase flex items-center">
+                <RotateCcw className="h-4 w-4" />Try Again
+              </Button>
+            </Link>
+          </div>
           {attempt.band_score != null && (
             <ShareResultsButton
               attemptId={attempt.id}
               shareText={`I got Band ${bandScore} in IELTS Writing on bandup.uz — free IELTS practice`}
+              className="w-full md:w-auto"
             />
           )}
-          <Link href="/dashboard/writing">
-            <Button variant="outline" className="gap-2 px-5 md:px-8 h-11 md:h-12 rounded-xl font-bold text-sm md:text-md uppercase flex items-center">
-              <List className="h-4 w-4" />View All Tests
-            </Button>
-          </Link>
-          <Link href={`/dashboard/writing/${attempt.test_id}`}>
-            <Button className="gap-2 px-5 md:px-8 h-11 md:h-12 rounded-xl font-bold text-sm md:text-md uppercase flex items-center">
-              <RotateCcw className="h-4 w-4" />Try Again
-            </Button>
-          </Link>
         </div>
       </div>
 

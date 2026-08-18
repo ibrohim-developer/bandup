@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { CheckCircle, ChevronRight, ChevronDown } from "lucide-react";
-import { LoginRequiredLink } from "@/components/auth/login-required-link";
+import { EnergyGatedStart } from "@/components/energy-gated-start";
+import { EnergyCost } from "@/components/energy-cost";
 import { cn } from "@/lib/utils";
 import type { BookGroup } from "@/lib/tests/book-grouping";
 
@@ -25,11 +26,14 @@ export function BookTestCard({
   defaultOpen = true,
   open: controlledOpen,
   onOpenChange,
+  energyCost,
 }: {
   group: BookGroup;
   basePath: string;
   /** When true, a group with one test renders as a flat card. */
   collapseSingle?: boolean;
+  /** AI-scoring energy cost per test, shown as a ⚡ pill. Omit for free modules. */
+  energyCost?: number;
   /** Initial expanded state of the accordion (uncontrolled mode). */
   defaultOpen?: boolean;
   /**
@@ -71,13 +75,18 @@ export function BookTestCard({
             {test.metric ? ` · ${test.metric}` : ""}
           </p>
         </div>
-        <LoginRequiredLink
-          href={`${basePath}/${test.slug}`}
-          className="shrink-0 flex items-center gap-0.5 font-bold text-base text-primary hover:opacity-80 transition-all md:gap-1 md:text-primary-foreground md:bg-primary md:px-6 md:py-2.5 md:rounded-xl md:hover:opacity-90"
-        >
-          {test.isCompleted ? "Retake" : "Start"}
-          <ChevronRight className="h-5 w-5 md:h-4 md:w-4" />
-        </LoginRequiredLink>
+        {/* Energy cost pill sits just left of the Start button. */}
+        <div className="shrink-0 flex items-center gap-3">
+          {energyCost != null && <EnergyCost cost={energyCost} />}
+          <EnergyGatedStart
+            href={`${basePath}/${test.slug}`}
+            cost={energyCost}
+            className="flex items-center gap-0.5 font-bold text-base text-primary hover:opacity-80 transition-all md:gap-1 md:text-primary-foreground md:bg-primary md:px-6 md:py-2.5 md:rounded-xl md:hover:opacity-90"
+          >
+            {test.isCompleted ? "Retake" : "Start"}
+            <ChevronRight className="h-5 w-5 md:h-4 md:w-4" />
+          </EnergyGatedStart>
+        </div>
       </div>
     );
   }
@@ -112,9 +121,10 @@ export function BookTestCard({
         {/* Mobile: rows separated by divider lines */}
         <div className="md:hidden border-t border-border divide-y divide-border px-5">
           {group.tests.map((test) => (
-            <LoginRequiredLink
+            <EnergyGatedStart
               key={test.id}
               href={`${basePath}/${test.slug}`}
+              cost={energyCost}
               className="w-full flex items-center justify-between gap-3 py-4 text-left"
             >
               <span className="min-w-0">
@@ -133,20 +143,25 @@ export function BookTestCard({
                   </span>
                 )}
               </span>
-              <span className="flex items-center gap-0.5 shrink-0 font-bold text-base text-primary">
-                {test.isCompleted ? "Retake" : "Start"}
-                <ChevronRight className="h-5 w-5" />
+              {/* Energy cost pill sits just right of the Start affordance. */}
+              <span className="flex items-center gap-2.5 shrink-0">
+                <span className="flex items-center gap-0.5 font-bold text-base text-primary">
+                  {test.isCompleted ? "Retake" : "Start"}
+                  <ChevronRight className="h-5 w-5" />
+                </span>
+                {energyCost != null && <EnergyCost cost={energyCost} />}
               </span>
-            </LoginRequiredLink>
+            </EnergyGatedStart>
           ))}
         </div>
 
         {/* md+: test tiles */}
         <div className="hidden md:flex md:flex-row gap-3 px-6 pb-6">
           {group.tests.map((test) => (
-            <LoginRequiredLink
+            <EnergyGatedStart
               key={test.id}
               href={`${basePath}/${test.slug}`}
+              cost={energyCost}
               className="group relative md:flex-1 min-w-0 flex flex-col items-start gap-2 text-left border border-border rounded-xl px-4 py-3.5 hover:border-primary hover:bg-primary/5 transition-colors"
             >
               {test.isCompleted && (
@@ -163,11 +178,15 @@ export function BookTestCard({
                   {test.metric}
                 </span>
               )}
-              <span className="flex items-center gap-0.5 text-sm font-bold text-primary">
-                {test.isCompleted ? "Retake" : "Start"}
-                <ChevronRight className="h-4 w-4" />
+              {/* Energy cost pill sits just right of the Start affordance. */}
+              <span className="flex items-center gap-2.5">
+                <span className="flex items-center gap-0.5 text-sm font-bold text-primary">
+                  {test.isCompleted ? "Retake" : "Start"}
+                  <ChevronRight className="h-4 w-4" />
+                </span>
+                {energyCost != null && <EnergyCost cost={energyCost} />}
               </span>
-            </LoginRequiredLink>
+            </EnergyGatedStart>
           ))}
         </div>
       </div>

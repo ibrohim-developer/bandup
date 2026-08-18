@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { VirtualTestList } from "@/components/test/common/virtual-test-list";
 import { BookTestCard } from "@/components/test/common/book-test-card";
 import type { BookGroup } from "@/lib/tests/book-grouping";
+import { WRITING_ENERGY_COST } from "@/lib/energy";
 import { fetchWritingTests } from "@/app/(dashboard)/dashboard/writing/actions";
 
 interface Props {
@@ -51,6 +52,7 @@ export function WritingVirtualList({
         <BookTestCard
           group={group}
           basePath="/dashboard/writing"
+          energyCost={WRITING_ENERGY_COST}
           collapseSingle={false}
           open={openMap[group.id] ?? index === 0}
           onOpenChange={(o) =>

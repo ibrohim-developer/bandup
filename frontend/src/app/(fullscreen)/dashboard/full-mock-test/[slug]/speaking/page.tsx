@@ -97,11 +97,16 @@ export default function FullMockSpeakingPage({
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ attemptId }),
     });
-    if (!evalRes.ok) {
+    // 402 = AI quota reached. Don't fail the whole mock — recordings are
+    // saved and the attempt stays "evaluating"; the results page shows the
+    // upgrade prompt via SpeakingEvalTrigger. Finish the session flow.
+    let speakingScore: number | null = null;
+    if (evalRes.ok) {
+      ({ bandScore: speakingScore } = await evalRes.json());
+    } else if (evalRes.status !== 402) {
       const data = await evalRes.json();
       throw new Error(data.error || "Evaluation failed");
     }
-    const { bandScore: speakingScore } = await evalRes.json();
 
     let completed = false;
     if (sessionId) {
