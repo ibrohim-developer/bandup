@@ -17,7 +17,7 @@
     },
     "module": {
       "type": "enumeration",
-      "enum": ["writing", "speaking", "quiz"],
+      "enum": ["writing", "speaking", "quiz", "practice", "practice-tts", "practice-live"],
       "required": true
     },
     "model": {

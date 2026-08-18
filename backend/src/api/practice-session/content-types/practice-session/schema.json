@@ -1,0 +1,51 @@
+{
+  "kind": "collectionType",
+  "collectionName": "practice_sessions",
+  "info": {
+    "singularName": "practice-session",
+    "pluralName": "practice-sessions",
+    "displayName": "Practice Session",
+    "description": "One AI speaking practice conversation. Doubles as the metering ledger — spoken_seconds is the billable unit, measured server-side from received audio (never client-reported)."
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "user": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user",
+      "required": false
+    },
+    "practice_prompt": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::practice-prompt.practice-prompt"
+    },
+    "started_at": {
+      "type": "datetime"
+    },
+    "ended_at": {
+      "type": "datetime"
+    },
+    "spoken_seconds": {
+      "type": "integer",
+      "default": 0
+    },
+    "turn_count": {
+      "type": "integer",
+      "default": 0
+    },
+    "transcript": {
+      "type": "json"
+    },
+    "status": {
+      "type": "enumeration",
+      "enum": ["active", "completed", "abandoned"],
+      "default": "active"
+    },
+    "granted_seconds": {
+      "type": "integer"
+    }
+  }
+}
