@@ -3,11 +3,11 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "concurrently -n next,strapi -c blue,magenta \"npm run dev --prefix frontend\" \"npm run dev --prefix backend\"",
-    "dev:next": "npm run dev --prefix frontend",
-    "dev:strapi": "npm run dev --prefix backend",
-    "build": "npm run build --prefix frontend",
-    "install:all": "cd frontend && npm install && cd ../backend && npm install"
+    "dev": "concurrently -n next,strapi -c blue,magenta \"pnpm -C frontend run dev\" \"pnpm -C backend run dev\"",
+    "dev:next": "pnpm -C frontend run dev",
+    "dev:strapi": "pnpm -C backend run dev",
+    "build": "pnpm -C frontend run build",
+    "install:all": "pnpm -C frontend install && pnpm -C backend install"
   },
   "devDependencies": {
     "concurrently": "^9.2.1"

@@ -18,7 +18,7 @@ Monorepo with two apps managed from root `package.json` using `concurrently`:
 | Auth | Strapi users-permissions (JWT in `strapi_jwt` cookie) |
 | Database | Strapi 5 (SQLite via better-sqlite3) |
 | AI evaluation | Google Gemini (`@google/generative-ai`) + OpenAI for writing/speaking scoring |
-| Package manager | pnpm (root), npm (backend) |
+| Package manager | pnpm (root, frontend, backend) |
 | Icons | Lucide React |
 | Notifications | Sonner (toast) |
 
