@@ -34,6 +34,7 @@ pnpm build            # Build frontend
 pnpm dev              # Next.js dev with Turbopack
 pnpm build            # Production build
 pnpm lint             # ESLint
+pnpm test             # Vitest unit tests (single run)
 ```
 
 ## Project Structure
@@ -105,7 +106,7 @@ Key content types: `test`, `listening-section`, `reading-passage`, `writing-task
 
 Question types: `tfng`, `mcq_single`, `mcq_multiple`, `gap_fill`, `matching_headings`, `matching_info`, `summary_completion`, `short_answer`
 
-Module types: `listening`, `reading`, `writing`, `full`
+Module types: `listening`, `reading`, `writing`, `speaking`, `full`
 
 Test attempt statuses: `in_progress`, `completed`, `evaluating`, `failed`, `abandoned`
 
