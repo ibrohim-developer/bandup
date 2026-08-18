@@ -109,13 +109,13 @@ quota mechanism as freemium — credits are just quota top-ups.
 
 ### Phase 1 — Quotas & entitlements (prerequisite for everything)
 
-> **Shipped 2026-07-16** as a single "Energy" currency (`frontend/src/lib/quota.ts`):
+> **Shipped 2026-08-18** as a single "Energy" currency (`frontend/src/lib/quota.ts`):
 > writing eval = 2 energy, speaking = 4, free grant = 8 per rolling 7 days,
 > Premium fair-use = 400 per rolling 30 days. Entitlement = the existing
 > `mock_test_expires_at` user field (Telegram-bot payments) instead of a new
 > `subscription` content type. Usage counted per evaluated `test-attempt`
 > (not per `ai-usage-log` row — one speaking test fires ~9 Gemini calls).
-> Enforced with HTTP 402 in the writing/speaking/free-write evaluate routes;
+> Enforced with HTTP 402 in the writing/speaking submit + evaluate routes and free-write;
 > indicator + upgrade dialog on writing/speaking pages. §3.3 credits become
 > purchasable energy top-ups when payments land.
 

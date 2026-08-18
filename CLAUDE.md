@@ -102,7 +102,7 @@ bandup/
 ```
 
 ## Database Schema (Strapi)
-Key content types: `test`, `listening-section`, `reading-passage`, `writing-task`, `speaking-topic`, `question`, `test-attempt`, `user-answer`, `writing-submission`, `test-progress`, `full-mock-test-attempt`, `telegram-auth-code`, `feature-notification`, `payment`, `practice-prompt`, `practice-session`, `ai-usage-log`
+Key content types: `test`, `listening-section`, `reading-passage`, `writing-task`, `speaking-topic`, `question`, `question-group`, `test-attempt`, `user-answer`, `writing-submission`, `speaking-submission`, `test-progress`, `full-mock-test-attempt`, `telegram-auth`, `telegram-auth-code`, `feature-notification`, `payment`, `practice-prompt`, `practice-session`, `ai-usage-log`, `flashcard`, `video-lesson`, `business-inquiry`, `issue-report`, `test-feedback`
 
 Question types: `tfng`, `mcq_single`, `mcq_multiple`, `gap_fill`, `matching_headings`, `matching_info`, `summary_completion`, `short_answer`
 
@@ -158,7 +158,7 @@ test fires ~9 Gemini calls). Attempts in status `evaluating` or `completed` coun
 `failed` ones do not, so a broken evaluation is free. Routes gate **before**
 claiming the lock and return HTTP 402 + `code: "quota_exceeded"`; the UI renders
 `QuotaPaywallCard`. `EnergyBadge` (sidebar/mobile) and `EnergyGatedStart` (test
-cards) are UX guards only — the evaluate routes are the real enforcement.
+cards) are UX guards only — the submit + evaluate routes are the real enforcement (5 of them: writing/speaking `submit` and `evaluate`, plus `writing/free-write`).
 
 ### Telegram payment bot
 `backend/src/telegram-bot.ts` long-polls `getUpdates` (login codes + payments).
