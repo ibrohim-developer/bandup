@@ -735,6 +735,10 @@ export interface ApiPaymentPayment extends Struct.CollectionTypeSchema {
       'api::payment.payment'
     > &
       Schema.Attribute.Private;
+    method: Schema.Attribute.Enumeration<['card', 'stars']> &
+      Schema.Attribute.DefaultTo<'card'>;
+    plan_days: Schema.Attribute.Integer;
+    plan_id: Schema.Attribute.String;
     premium_expires_set_to: Schema.Attribute.DateTime;
     publishedAt: Schema.Attribute.DateTime;
     receipt_file_id: Schema.Attribute.String;
