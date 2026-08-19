@@ -20,8 +20,26 @@
     },
     "status": {
       "type": "enumeration",
-      "enum": ["pending", "approved", "rejected"],
+      "enum": [
+        "pending",
+        "approved",
+        "rejected"
+      ],
       "default": "pending"
+    },
+    "method": {
+      "type": "enumeration",
+      "enum": [
+        "card",
+        "stars"
+      ],
+      "default": "card"
+    },
+    "plan_id": {
+      "type": "string"
+    },
+    "plan_days": {
+      "type": "integer"
     },
     "amount": {
       "type": "decimal"

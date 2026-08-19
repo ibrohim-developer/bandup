@@ -138,7 +138,9 @@ Backend-only, for the Telegram bot (`backend/.env`):
 - `TELEGRAM_BOT_TOKEN`, `TELEGRAM_BOT_ENABLED`
 - `TELEGRAM_ADMIN_CHAT_ID` / `TELEGRAM_ADMIN_IDS` (comma-separated) — who receives
   receipts and may Approve/Reject. **With none set the payment flow dead-ends.**
-- `PAYMENT_CARD_NUMBER`, `PREMIUM_PRICE`, `PREMIUM_CURRENCY`, `PREMIUM_DURATION_DAYS` (default 30)
+- `PAYMENT_CARD_NUMBER`, `PREMIUM_CARD_CURRENCY` (default UZS), and per-plan local
+  prices `PREMIUM_CARD_PRICE_1M` / `_3M` / `_12M`. `PREMIUM_DURATION_DAYS` (default
+  30) is now only a fallback for payment rows created before plans were tracked.
 
 ## Monetization
 
@@ -162,12 +164,26 @@ cards) are UX guards only — the submit + evaluate routes are the real enforcem
 
 ### Telegram payment bot
 `backend/src/telegram-bot.ts` long-polls `getUpdates` (login codes + payments).
-`/buy` shows the price and card number → the user sends a receipt photo/PDF in
-chat → a `payment` row is created and forwarded to the admin chats with inline
-Approve/Reject buttons → Approve calls `activatePremium`, which stacks
-`PREMIUM_DURATION_DAYS` onto any remaining time. Approve/Reject is restricted to
-`adminChatIds()` and guarded on `status === "pending"` so a payment can't be
-activated twice. `api::payment` is REST-revoked for both roles — bot-only.
+`/buy` shows the three plans from `PREMIUM_PLANS` (mirrors `PLANS` in
+`premium-upgrade-dialog.tsx` — keep in sync), then offers two rails. Either way a
+`payment` row is opened **before** paying, recording `plan_id`, `plan_days`,
+`method`, and `amount`, so activation grants what was actually bought rather than
+a global default.
+
+- **Card** — shows the local price + card number; the buyer sends a receipt
+  photo/PDF, which attaches to that pending row and is forwarded to the admin
+  chats with inline Approve/Reject. A receipt with no pending row is refused
+  (the plan would be unknowable). Approve/Reject is restricted to
+  `adminChatIds()` and guarded on `status === "pending"`.
+- **Telegram Stars** — `sendInvoice` in `XTR` (empty `provider_token`), priced at
+  parity with the USD sticker price (250/600/1950 ⭐). Telegram verifies the
+  charge, so Premium activates with no admin review. This requires
+  `pre_checkout_query` in the poll loop's `allowed_updates` — an explicit list
+  filters out everything unnamed, and an unanswered pre-checkout is cancelled.
+  `successful_payment` is guarded on `status === "pending"` against redelivery.
+
+`activatePremium` stacks the plan's days onto any remaining time.
+`api::payment` is REST-revoked for both roles — bot-only.
 
 ## Speaking Practice (turn-based)
 `/dashboard/practice` is a turn-based voice conversation: the browser records one OGG-Opus utterance at a time (VAD hook `hooks/use-utterance-recorder.ts`) → POST `/api/practice/turn` → `lib/practice-conversation.ts` runs **two** Vertex Flash calls — (1) TRANSCRIBE, which sees only the audio with no question or history so it cannot invent an answer, then (2) CONVERSE, text-only, producing the reply plus grammar corrections — and `lib/tts.ts` voices the reply. The route streams NDJSON events (`transcript` → `reply` → `audio` → `done`) so text lands on screen while voice synthesis (the slow tail) is still running. Corrections render in a side panel, anchored to the transcript by verbatim substring match (`lib/highlight-corrections.ts`); any correction the model can't quote verbatim is dropped server-side. Quota bills `practice-session.spoken_seconds` measured server-side from the received audio (`lib/ogg-duration.ts`), never client-supplied — free 600s/day, premium 3600s/day on a rolling 24h window (`lib/practice-quota.ts`). Opening questions are pre-voiced once by `scripts/seed-practice-prompts.ts` and stored on the prompt (`opening_audio`); filler clips in `public/practice-fillers/` cover the thinking gap.

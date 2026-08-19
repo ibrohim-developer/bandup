@@ -21,9 +21,12 @@ const BUY_LINK = `https://t.me/${BOT_USERNAME}?start=buy`;
 
 /**
  * One Premium tier, three durations. Longer plans are the same entitlement
- * (`mock_test_expires_at` pushed further out — see lib/premium.ts), so nothing
- * downstream has to know which one was bought: the transferred amount is what
- * identifies the plan during receipt review in the Telegram bot.
+ * (`mock_test_expires_at` pushed further out — see lib/premium.ts), just with
+ * the expiry pushed further out.
+ *
+ * These mirror `PREMIUM_PLANS` in backend/src/telegram-bot.ts, which records
+ * the chosen plan on the payment row so activation grants the right duration.
+ * Keep the two lists in sync.
  */
 interface Plan {
   id: string;
@@ -193,9 +196,9 @@ export function PremiumUpgradeDialog({
           <div className="rounded-lg bg-muted/50 border border-border p-4 space-y-2 text-sm text-foreground">
             <p className="font-semibold">How to buy:</p>
             <ol className="space-y-1.5 text-muted-foreground list-decimal list-inside">
-              <li>Tap <span className="font-bold text-foreground">Buy in Telegram</span> below and send <span className="font-bold text-foreground">/buy</span> to the bot</li>
-              <li>Transfer <span className="font-bold text-foreground">${selected.price}</span> for the <span className="font-bold text-foreground">{selected.label}</span> plan, then send your receipt right in the chat</li>
-              <li>We verify it and your Premium activates automatically</li>
+              <li>Tap <span className="font-bold text-foreground">Buy in Telegram</span> below and pick the <span className="font-bold text-foreground">{selected.label}</span> plan in the bot</li>
+              <li>Pay with <span className="font-bold text-foreground">Telegram Stars</span> for instant access, or transfer to our card and send the receipt in the chat</li>
+              <li>Stars activate Premium immediately; card receipts are checked by hand</li>
             </ol>
           </div>
         </div>
