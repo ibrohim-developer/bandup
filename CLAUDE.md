@@ -185,5 +185,14 @@ a global default.
 `activatePremium` stacks the plan's days onto any remaining time.
 `api::payment` is REST-revoked for both roles — bot-only.
 
+## Feature flags
+`lib/feature-flags.ts`. Default OFF, so merging to main never launches anything by
+itself — the env has to opt in. `NEXT_PUBLIC_PRACTICE_ENABLED=true` turns on
+speaking practice; while off the sidebar entry and the Premium practice-time
+benefit are hidden, both pages `notFound()`, and all five `/api/practice/*` route
+handlers return 404 (they spend Vertex quota and are reachable by URL, so hiding
+the links is not enough). Turn it on only once
+`scripts/seed-practice-prompts.ts` has been run against that environment.
+
 ## Speaking Practice (turn-based)
 `/dashboard/practice` is a turn-based voice conversation: the browser records one OGG-Opus utterance at a time (VAD hook `hooks/use-utterance-recorder.ts`) → POST `/api/practice/turn` → `lib/practice-conversation.ts` runs **two** Vertex Flash calls — (1) TRANSCRIBE, which sees only the audio with no question or history so it cannot invent an answer, then (2) CONVERSE, text-only, producing the reply plus grammar corrections — and `lib/tts.ts` voices the reply. The route streams NDJSON events (`transcript` → `reply` → `audio` → `done`) so text lands on screen while voice synthesis (the slow tail) is still running. Corrections render in a side panel, anchored to the transcript by verbatim substring match (`lib/highlight-corrections.ts`); any correction the model can't quote verbatim is dropped server-side. Quota bills `practice-session.spoken_seconds` measured server-side from the received audio (`lib/ogg-duration.ts`), never client-supplied — free 600s/day, premium 3600s/day on a rolling 24h window (`lib/practice-quota.ts`). Opening questions are pre-voiced once by `scripts/seed-practice-prompts.ts` and stored on the prompt (`opening_audio`); filler clips in `public/practice-fillers/` cover the thinking gap.

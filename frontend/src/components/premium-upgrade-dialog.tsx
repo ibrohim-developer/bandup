@@ -15,6 +15,7 @@ import {
   FREE_DAILY_PRACTICE_SECONDS,
   PREMIUM_DAILY_PRACTICE_SECONDS,
 } from "@/lib/practice-limits";
+import { PRACTICE_ENABLED } from "@/lib/feature-flags";
 
 const BOT_USERNAME = process.env.NEXT_PUBLIC_TELEGRAM_BOT_NAME || "bandupuz_bot";
 const BUY_LINK = `https://t.me/${BOT_USERNAME}?start=buy`;
@@ -61,9 +62,14 @@ const DEFAULT_PLAN_ID = "3m";
  * (practice-limits.ts), mock tests gate on Premium directly.
  */
 const BENEFITS = [
-  `${Math.round(PREMIUM_DAILY_PRACTICE_SECONDS / 60)} min of AI speaking practice a day — ${Math.round(
-    PREMIUM_DAILY_PRACTICE_SECONDS / FREE_DAILY_PRACTICE_SECONDS
-  )}× the free limit`,
+  // Only sold while speaking practice is actually reachable.
+  ...(PRACTICE_ENABLED
+    ? [
+        `${Math.round(PREMIUM_DAILY_PRACTICE_SECONDS / 60)} min of AI speaking practice a day — ${Math.round(
+          PREMIUM_DAILY_PRACTICE_SECONDS / FREE_DAILY_PRACTICE_SECONDS
+        )}× the free limit`,
+      ]
+    : []),
   "All full mock tests unlocked",
 ];
 

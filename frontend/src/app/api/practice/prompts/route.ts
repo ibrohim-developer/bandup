@@ -1,11 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAuthUser, find } from "@/lib/strapi/api";
 import { getPracticeQuota } from "@/lib/practice-quota";
+import { PRACTICE_ENABLED } from "@/lib/feature-flags";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 /** Prompt picker feed for the practice section, plus the user's remaining time. */
 export async function GET(request: NextRequest) {
+  if (!PRACTICE_ENABLED) {
+    return new Response("Not found", { status: 404 });
+  }
   const user = await getAuthUser(request);
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

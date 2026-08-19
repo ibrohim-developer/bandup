@@ -9,6 +9,7 @@ import { checkPracticeQuota, practiceQuotaExceededBody } from "@/lib/practice-qu
 import { measureSpokenSeconds, getOggOpusDurationSeconds } from "@/lib/ogg-duration";
 import { MAX_UTTERANCE_SECONDS, MIN_UTTERANCE_SECONDS } from "@/lib/practice-limits";
 import { synthesizeSpeech } from "@/lib/tts";
+import { PRACTICE_ENABLED } from "@/lib/feature-flags";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -25,6 +26,9 @@ const MIN_AUDIO_BYTES = 2000;
 const ALLOWED_AUDIO_MIMES = new Set(["audio/ogg", "audio/webm"]);
 
 export async function POST(request: NextRequest) {
+  if (!PRACTICE_ENABLED) {
+    return new Response("Not found", { status: 404 });
+  }
   const user = await getAuthUser(request);
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

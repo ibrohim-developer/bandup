@@ -1,5 +1,6 @@
 import { NextRequest } from "next/server";
 import { resolveSafeAudioUrl } from "@/lib/safe-audio-url";
+import { PRACTICE_ENABLED } from "@/lib/feature-flags";
 
 /**
  * Re-serves a pre-generated practice audio file from Strapi with a
@@ -13,6 +14,9 @@ import { resolveSafeAudioUrl } from "@/lib/safe-audio-url";
  * Strapi uploads, so this can't be turned into an open proxy / SSRF vector.
  */
 export async function GET(request: NextRequest) {
+  if (!PRACTICE_ENABLED) {
+    return new Response("Not found", { status: 404 });
+  }
   const path = request.nextUrl.searchParams.get("path");
   const safeUrl = resolveSafeAudioUrl(path);
   if (!safeUrl) {

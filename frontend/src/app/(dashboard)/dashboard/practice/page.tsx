@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 
 import { PracticeClient } from "@/components/practice/practice-client";
+import { PRACTICE_ENABLED } from "@/lib/feature-flags";
 
 export const metadata: Metadata = {
   title: "Speaking Practice — Talk with an AI Partner",
@@ -10,6 +12,7 @@ export const metadata: Metadata = {
 };
 
 export default function PracticePage() {
+  if (!PRACTICE_ENABLED) notFound();
   return (
     <div className="pb-12">
       <PracticeClient />

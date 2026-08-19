@@ -5,6 +5,7 @@ import {
   practiceQuotaExceededBody,
   MIN_SECONDS_TO_START,
 } from "@/lib/practice-quota";
+import { PRACTICE_ENABLED } from "@/lib/feature-flags";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -22,6 +23,9 @@ function openingAudioProxyUrl(url: string | null | undefined): string | null {
 
 /** Start a practice conversation on a given prompt. */
 export async function POST(request: NextRequest) {
+  if (!PRACTICE_ENABLED) {
+    return new Response("Not found", { status: 404 });
+  }
   const user = await getAuthUser(request);
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -87,6 +91,9 @@ export async function POST(request: NextRequest) {
 
 /** End a practice conversation. */
 export async function PATCH(request: NextRequest) {
+  if (!PRACTICE_ENABLED) {
+    return new Response("Not found", { status: 404 });
+  }
   const user = await getAuthUser(request);
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
