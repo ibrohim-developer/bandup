@@ -153,7 +153,7 @@ same entitlement with the expiry pushed further out.
 
 ### Energy (AI evaluation currency)
 `lib/energy.ts` (client-safe costs) + `lib/quota.ts` (server enforcement).
-Writing costs 2, speaking 4; free users get 8 per rolling 7 days, Premium 400 per
+Writing costs 2, speaking 4; free users get 12 per rolling 7 days, Premium 400 per
 rolling 30 days. The billable unit is an *evaluation session* — a `test-attempt`
 whose `evaluation_started_at` is set — not raw `ai-usage-log` rows (one speaking
 test fires ~9 Gemini calls). Attempts in status `evaluating` or `completed` count;

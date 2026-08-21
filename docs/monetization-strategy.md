@@ -43,8 +43,9 @@ content free forever, monetize AI evaluation and B2B.**
 
 Free tier (acquisition engine — never degrade it):
 - Unlimited reading & listening tests (zero marginal cost)
-- **8 Energy per rolling week** for AI evaluations (writing costs 2,
-  speaking costs 4 — i.e. 2 writings + 1 speaking, or any mix)
+- **12 Energy per rolling week** for AI evaluations (writing costs 2,
+  speaking costs 4 — enough to try both modules and retry each once:
+  2 speakings + 2 writings, or any mix)
 - Band score + brief feedback only
 - Flashcards and free video lessons
 
@@ -110,7 +111,7 @@ quota mechanism as freemium — credits are just quota top-ups.
 ### Phase 1 — Quotas & entitlements (prerequisite for everything)
 
 > **Shipped 2026-08-18** as a single "Energy" currency (`frontend/src/lib/quota.ts`):
-> writing eval = 2 energy, speaking = 4, free grant = 8 per rolling 7 days,
+> writing eval = 2 energy, speaking = 4, free grant = 12 per rolling 7 days,
 > Premium fair-use = 400 per rolling 30 days. Entitlement = the existing
 > `mock_test_expires_at` user field (Telegram-bot payments) instead of a new
 > `subscription` content type. Usage counted per evaluated `test-attempt`
