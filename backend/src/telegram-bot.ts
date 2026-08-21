@@ -1,6 +1,6 @@
 import type { Core } from '@strapi/strapi';
 import crypto from 'crypto';
-import { identityLabel, realEmail } from './telegram-account';
+import { PLACEHOLDER_EMAIL_DOMAIN, identityLabel, realEmail } from './telegram-account';
 
 const TELEGRAM_API = 'https://api.telegram.org';
 const POLL_TIMEOUT_SEC = 30;
@@ -294,6 +294,154 @@ async function handleContact(strapi: Core.Strapi, token: string, msg: TelegramMe
 
 // --- Premium purchase flow -------------------------------------------------
 
+/**
+ * Buyers who tapped "another account" and owe us an email address.
+ *
+ * In-memory on purpose: a ten-minute step inside one conversation, not state
+ * worth a table. A restart just means the buyer taps /buy again.
+ */
+const awaitingEmail = new Map<number, number>();
+const EMAIL_PROMPT_TTL_MS = 10 * 60 * 1000;
+
+function expectEmailFrom(telegramId: number): void {
+  if (awaitingEmail.size > 1000) {
+    const now = Date.now();
+    for (const [id, expiresAt] of awaitingEmail) {
+      if (expiresAt < now) awaitingEmail.delete(id);
+    }
+  }
+  awaitingEmail.set(telegramId, Date.now() + EMAIL_PROMPT_TTL_MS);
+}
+
+function isAwaitingEmail(telegramId: number): boolean {
+  const expiresAt = awaitingEmail.get(telegramId);
+  if (expiresAt === undefined) return false;
+  if (expiresAt < Date.now()) {
+    awaitingEmail.delete(telegramId);
+    return false;
+  }
+  return true;
+}
+
+type BuyerAccount = { id: number; email?: string | null; phone?: string | null };
+
+/** Short label for the account a purchase will be credited to. */
+function accountLabel(account: BuyerAccount): string {
+  return realEmail(account) || account.phone?.trim() || `account #${account.id}`;
+}
+
+/**
+ * Second step of /buy: the target account is settled, now pick a plan. Its id
+ * rides along in the button data so the rest of the flow — and the payment row
+ * it opens — credits the account the buyer actually chose.
+ */
+async function showPlans(token: string, chatId: number, account: BuyerAccount) {
+  await tg(token, 'sendMessage', {
+    chat_id: chatId,
+    text: [
+      '💎 *BandUp Premium*',
+      `Activating on: ${escapeMd(accountLabel(account))}`,
+      '',
+      '⚡ Unlimited Energy — unlimited AI Writing & Speaking evaluations',
+      '🎯 All full mock tests unlocked',
+      '',
+      'Choose a plan:',
+    ].join('\n'),
+    parse_mode: 'Markdown',
+    reply_markup: {
+      inline_keyboard: PREMIUM_PLANS.map((plan) => [
+        { text: `${plan.label} — $${plan.usd}`, callback_data: `plan:${plan.id}:${account.id}` },
+      ]),
+    },
+  });
+}
+
+/** First step of /buy: the buyer said which account to credit. */
+async function handleAccountChoice(
+  strapi: Core.Strapi,
+  token: string,
+  cb: TelegramCallbackQuery,
+  choice: string,
+  ack: (text?: string) => Promise<unknown>
+) {
+  if (!cb.message) {
+    await ack();
+    return;
+  }
+  const chatId = cb.message.chat.id;
+
+  if (choice === 'email') {
+    expectEmailFrom(cb.from.id);
+    await tg(token, 'sendMessage', {
+      chat_id: chatId,
+      text: [
+        'Send me the email you sign in with at bandup.uz.',
+        '',
+        'Premium will be activated on that account. Tap /buy to start over.',
+      ].join('\n'),
+    });
+    await ack();
+    return;
+  }
+
+  // 'me' resolves from the sender rather than the button payload, so this
+  // branch can only ever pick the Telegram-linked account.
+  const account = await requireAccount(strapi, token, chatId, cb.from.id);
+  if (!account) {
+    await ack();
+    return;
+  }
+  awaitingEmail.delete(cb.from.id);
+  await showPlans(token, chatId, account);
+  await ack();
+}
+
+/**
+ * The buyer answered the "which account?" prompt with an email address.
+ *
+ * This only decides who the purchase is *credited* to — it deliberately does
+ * not write telegram_id onto the account it finds. Linking on an address
+ * anyone can type would hand whoever typed it a Telegram login to that
+ * account; crediting it merely lets someone pay for a stranger's Premium.
+ */
+async function handleEmailReply(strapi: Core.Strapi, token: string, msg: TelegramMessage) {
+  const user = msg.from;
+  if (!user) return;
+
+  const email = (msg.text || '').trim().toLowerCase();
+  const chatId = msg.chat.id;
+
+  // Nobody signs in with the placeholder domain — we mint it ourselves — so
+  // treat it as a typo rather than a way to name a Telegram-only account.
+  if (
+    !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ||
+    email.endsWith(`@${PLACEHOLDER_EMAIL_DOMAIN}`)
+  ) {
+    expectEmailFrom(user.id);
+    await tg(token, 'sendMessage', {
+      chat_id: chatId,
+      text: 'That does not look like an email address. Send the email you sign in with at bandup.uz, or tap /buy to start over.',
+    });
+    return;
+  }
+
+  const account = await strapi.db.query('plugin::users-permissions.user').findOne({
+    where: { email: { $eqi: email } },
+  });
+
+  if (!account) {
+    expectEmailFrom(user.id);
+    await tg(token, 'sendMessage', {
+      chat_id: chatId,
+      text: 'No BandUp account uses that email. Check the spelling and send it again, or tap /buy to choose a different account.',
+    });
+    return;
+  }
+
+  awaitingEmail.delete(user.id);
+  await showPlans(token, chatId, account);
+}
+
 async function handleBuy(strapi: Core.Strapi, token: string, msg: TelegramMessage) {
   const user = msg.from;
   if (!user) return;
@@ -314,21 +462,24 @@ async function handleBuy(strapi: Core.Strapi, token: string, msg: TelegramMessag
     return;
   }
 
+  awaitingEmail.delete(user.id);
+
+  // The bot only ever sees a Telegram id, never the browser session, so it
+  // cannot tell which account the buyer uses on the site. Ask, instead of
+  // defaulting to the Telegram-created one — which usually is not it.
   await tg(token, 'sendMessage', {
     chat_id: msg.chat.id,
     text: [
       '💎 *BandUp Premium*',
       '',
-      '⚡ Unlimited Energy — unlimited AI Writing & Speaking evaluations',
-      '🎯 All full mock tests unlocked',
-      '',
-      'Choose a plan:',
+      'Which account should Premium be activated on?',
     ].join('\n'),
     parse_mode: 'Markdown',
     reply_markup: {
-      inline_keyboard: PREMIUM_PLANS.map((plan) => [
-        { text: `${plan.label} — $${plan.usd}`, callback_data: `plan:${plan.id}` },
-      ]),
+      inline_keyboard: [
+        [{ text: `📱 This one — ${accountLabel(account)}`, callback_data: 'acct:me' }],
+        [{ text: '✉️ Another — my bandup.uz email', callback_data: 'acct:email' }],
+      ],
     },
   });
 }
@@ -338,6 +489,7 @@ async function handlePlanChoice(
   token: string,
   cb: TelegramCallbackQuery,
   planId: string,
+  accountId: number,
   ack: (text?: string) => Promise<unknown>
 ) {
   const plan = findPlan(planId);
@@ -349,11 +501,17 @@ async function handlePlanChoice(
   const buttons: { text: string; callback_data: string }[][] = [];
   if (PAYMENT_CARD_NUMBER) {
     buttons.push([
-      { text: `💳 Card — ${cardPriceLabel(plan)}`, callback_data: `pay_card:${plan.id}` },
+      {
+        text: `💳 Card — ${cardPriceLabel(plan)}`,
+        callback_data: `pay_card:${plan.id}:${accountId}`,
+      },
     ]);
   }
   buttons.push([
-    { text: `⭐ Telegram Stars — ${plan.stars}`, callback_data: `pay_stars:${plan.id}` },
+    {
+      text: `⭐ Telegram Stars — ${plan.stars}`,
+      callback_data: `pay_stars:${plan.id}:${accountId}`,
+    },
   ]);
 
   await tg(token, 'sendMessage', {
@@ -426,11 +584,34 @@ async function requireAccount(
   return account;
 }
 
+/**
+ * The account a purchase will be credited to, carried through the buttons
+ * from the "which account?" step of /buy.
+ */
+async function resolveTargetAccount(
+  strapi: Core.Strapi,
+  token: string,
+  chatId: number,
+  accountId: number
+) {
+  const account = Number.isInteger(accountId)
+    ? await strapi.query('plugin::users-permissions.user').findOne({ where: { id: accountId } })
+    : null;
+  if (!account) {
+    await tg(token, 'sendMessage', {
+      chat_id: chatId,
+      text: 'That account is no longer available. Tap /buy to start again.',
+    }).catch(() => {});
+  }
+  return account;
+}
+
 async function handlePayByCard(
   strapi: Core.Strapi,
   token: string,
   cb: TelegramCallbackQuery,
   planId: string,
+  accountId: number,
   ack: (text?: string) => Promise<unknown>
 ) {
   const plan = findPlan(planId);
@@ -444,7 +625,7 @@ async function handlePayByCard(
   }
 
   const chatId = cb.message.chat.id;
-  const account = await requireAccount(strapi, token, chatId, cb.from.id);
+  const account = await resolveTargetAccount(strapi, token, chatId, accountId);
   if (!account) {
     await ack();
     return;
@@ -456,6 +637,7 @@ async function handlePayByCard(
     chat_id: chatId,
     text: [
       `💎 *BandUp Premium — ${plan.label}*`,
+      `Activating on: ${escapeMd(accountLabel(account))}`,
       '',
       `💳 Transfer *${cardPriceLabel(plan)}* to: \`${PAYMENT_CARD_NUMBER}\``,
       '',
@@ -471,6 +653,7 @@ async function handlePayByStars(
   token: string,
   cb: TelegramCallbackQuery,
   planId: string,
+  accountId: number,
   ack: (text?: string) => Promise<unknown>
 ) {
   const plan = findPlan(planId);
@@ -480,7 +663,7 @@ async function handlePayByStars(
   }
 
   const chatId = cb.message.chat.id;
-  const account = await requireAccount(strapi, token, chatId, cb.from.id);
+  const account = await resolveTargetAccount(strapi, token, chatId, accountId);
   if (!account) {
     await ack();
     return;
@@ -493,7 +676,7 @@ async function handlePayByStars(
   await tg(token, 'sendInvoice', {
     chat_id: chatId,
     title: `BandUp Premium — ${plan.label}`,
-    description: 'Unlimited AI Writing & Speaking evaluations, and every full mock test.',
+    description: `For ${accountLabel(account)} — unlimited AI Writing & Speaking evaluations, and every full mock test.`,
     payload: documentId,
     provider_token: '',
     currency: 'XTR',
@@ -622,15 +805,18 @@ async function handleReceipt(strapi: Core.Strapi, token: string, msg: TelegramMe
 
   // The row was opened when they picked a plan, so we know what they bought.
   // Without one we cannot tell 1 month from 12 — ask them to start at /buy
-  // rather than guess and under-grant.
+  // rather than guess and under-grant. Keyed on the Telegram id rather than
+  // the account, because /buy asks who to activate Premium for: the row may
+  // be credited to a different account than this chat is signed in as.
   const pending = await strapi.db.query('api::payment.payment').findOne({
     where: {
-      user: account.id,
+      telegram_id: user.id,
       method: 'card',
       status: 'pending',
       receipt_file_id: { $null: true },
     },
     orderBy: { createdAt: 'desc' },
+    populate: { user: true },
   });
 
   if (!pending) {
@@ -648,18 +834,21 @@ async function handleReceipt(strapi: Core.Strapi, token: string, msg: TelegramMe
   });
 
   const plan = findPlan(pending.plan_id || '');
+  // Who actually gets the Premium: the account picked at /buy, which is not
+  // necessarily the Telegram-created one that sent the receipt.
+  const credited = pending.user || account;
   const buyerName = escapeMd(
     account.full_name || user.first_name || account.username || 'User'
   );
   // Telegram sign-ups have no email, so this is often null — say so plainly
   // rather than printing the synthetic tg_<id>@ address as if it were one.
-  const buyerEmail = realEmail(account);
+  const buyerEmail = realEmail(credited);
   const expected = plan ? cardPriceLabel(plan) : `${pending.amount ?? '?'} ${pending.currency ?? ''}`;
   const caption = [
     `🧾 *Payment receipt* from ${buyerName}`,
-    `email: ${buyerEmail ? escapeMd(buyerEmail) : '— none (Telegram sign-up)'}`,
-    `phone: ${account.phone ? escapeMd(account.phone) : '—'}`,
-    `tg: @${escapeMd(user.username || '—')} (id ${user.id}) · account #${account.id}`,
+    `activate on: ${buyerEmail ? escapeMd(buyerEmail) : '— no email (Telegram sign-up)'}`,
+    `phone: ${credited.phone ? escapeMd(credited.phone) : '—'}`,
+    `account: #${credited.id} · sent by @${escapeMd(user.username || '—')} (tg ${user.id})`,
     `Plan: *${plan?.label ?? pending.plan_id ?? 'unknown'}* — expected *${expected}*`,
     '',
     'Check the amount matches, then Approve or Reject.',
@@ -748,20 +937,26 @@ async function handleCallbackQuery(
     tg(token, 'answerCallbackQuery', { callback_query_id: cb.id, text }).catch(() => {});
 
   const data = cb.data || '';
-  const [action, documentId] = data.split(':');
+  const [action, arg, accountArg] = data.split(':');
+  const documentId = arg;
+  const accountId = Number(accountArg);
 
   // Buyer-facing steps of /buy. These are routed before the admin gate below,
   // which guards approve/reject only.
-  if (action === 'plan' && documentId) {
-    await handlePlanChoice(token, cb, documentId, ack);
+  if (action === 'acct' && arg) {
+    await handleAccountChoice(strapi, token, cb, arg, ack);
     return;
   }
-  if (action === 'pay_card' && documentId) {
-    await handlePayByCard(strapi, token, cb, documentId, ack);
+  if (action === 'plan' && arg) {
+    await handlePlanChoice(token, cb, arg, accountId, ack);
     return;
   }
-  if (action === 'pay_stars' && documentId) {
-    await handlePayByStars(strapi, token, cb, documentId, ack);
+  if (action === 'pay_card' && arg) {
+    await handlePayByCard(strapi, token, cb, arg, accountId, ack);
+    return;
+  }
+  if (action === 'pay_stars' && arg) {
+    await handlePayByStars(strapi, token, cb, arg, accountId, ack);
     return;
   }
 
@@ -889,7 +1084,10 @@ async function handleUpdate(strapi: Core.Strapi, token: string, update: Telegram
   if (text === '/buy' || text === '/start buy' || text.startsWith('/buy ')) {
     await handleBuy(strapi, token, msg);
   } else if (text === '/start' || text.startsWith('/start ')) {
+    if (msg.from) awaitingEmail.delete(msg.from.id);
     await handleStart(strapi, token, msg);
+  } else if (msg.from && isAwaitingEmail(msg.from.id)) {
+    await handleEmailReply(strapi, token, msg);
   } else {
     await tg(token, 'sendMessage', {
       chat_id: msg.chat.id,
