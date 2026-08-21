@@ -25,7 +25,7 @@ export { ENERGY_COSTS };
 export type { AiModule };
 
 /** Free weekly grant: 4 writings, or 2 speakings, or 2 writings + 1 speaking. */
-export const FREE_WEEKLY_ENERGY = 8;
+export const FREE_WEEKLY_ENERGY = 12;
 
 /** Fair-use cap for Premium (≈200 writings or 100 speakings a month). */
 export const PREMIUM_MONTHLY_ENERGY = 400;

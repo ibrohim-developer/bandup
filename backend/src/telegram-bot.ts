@@ -60,6 +60,19 @@ function cardPriceLabel(plan: PremiumPlan): string {
   return local === null ? `${plan.usd} USD` : `${local.toLocaleString('en-US')} ${CARD_CURRENCY}`;
 }
 
+/**
+ * Escape the legacy-Markdown control characters.
+ *
+ * Telegram rejects the WHOLE message with 400 "can't parse entities" if these
+ * are unbalanced, and a name or @username is user-controlled: an underscore in
+ * `@some_user` opens an italic span that never closes. That 400 lands in a
+ * .catch() and the admin simply never receives the receipt, so anything
+ * interpolated into a Markdown message has to go through here.
+ */
+function escapeMd(value: string): string {
+  return value.replace(/[_*`[\]]/g, '\\$&');
+}
+
 function adminChatIds(): string[] {
   const ids = new Set<string>();
   if (process.env.TELEGRAM_ADMIN_CHAT_ID) ids.add(process.env.TELEGRAM_ADMIN_CHAT_ID.trim());
@@ -634,11 +647,13 @@ async function handleReceipt(strapi: Core.Strapi, token: string, msg: TelegramMe
   });
 
   const plan = findPlan(pending.plan_id || '');
-  const buyerName = account.full_name || user.first_name || account.username || 'User';
+  const buyerName = escapeMd(
+    account.full_name || user.first_name || account.username || 'User'
+  );
   const expected = plan ? cardPriceLabel(plan) : `${pending.amount ?? '?'} ${pending.currency ?? ''}`;
   const caption = [
     `🧾 *Payment receipt* from ${buyerName}`,
-    `tg: @${user.username || '—'} (id ${user.id})`,
+    `tg: @${escapeMd(user.username || '—')} (id ${user.id})`,
     `Plan: *${plan?.label ?? pending.plan_id ?? 'unknown'}* — expected *${expected}*`,
     '',
     'Check the amount matches, then Approve or Reject.',
@@ -673,6 +688,20 @@ async function handleReceipt(strapi: Core.Strapi, token: string, msg: TelegramMe
       where: { documentId },
       data: { admin_message_id: adminMessageId },
     });
+  }
+
+  if (adminMessageId === null) {
+    // Every admin send failed. The buyer has already paid, so tell them the
+    // truth and give them a way through rather than claiming success — and
+    // shout in the log, because nobody is going to see an Approve button.
+    strapi.log.error(
+      `[telegram] payment ${documentId}: receipt reached NO admin — nobody can approve it`
+    );
+    await tg(token, 'sendMessage', {
+      chat_id: msg.chat.id,
+      text: 'We received your receipt but could not reach our team automatically. Please contact @bandup_admin with a screenshot so we can activate your Premium.',
+    }).catch(() => {});
+    return;
   }
 
   await tg(token, 'sendMessage', {
@@ -775,7 +804,7 @@ async function handleCallbackQuery(
       where: { documentId },
       data: { status: 'approved', reviewed_at: new Date(), premium_expires_set_to: expiry },
     });
-    await editAdminMessage(`✅ Approved by ${cb.from.first_name || cb.from.id}`);
+    await editAdminMessage(`✅ Approved by ${escapeMd(String(cb.from.first_name || cb.from.id))}`);
     if (payment.telegram_id) {
       await tg(token, 'sendMessage', {
         chat_id: String(payment.telegram_id),
@@ -800,7 +829,7 @@ async function handleCallbackQuery(
     where: { documentId },
     data: { status: 'rejected', reviewed_at: new Date() },
   });
-  await editAdminMessage(`❌ Rejected by ${cb.from.first_name || cb.from.id}`);
+  await editAdminMessage(`❌ Rejected by ${escapeMd(String(cb.from.first_name || cb.from.id))}`);
   if (payment.telegram_id) {
     await tg(token, 'sendMessage', {
       chat_id: String(payment.telegram_id),
