@@ -69,6 +69,9 @@ export default {
       'api::test-feedback',
       'api::flashcard',
       'api::video-lesson',
+      // Payment records contain receipt data + drive premium activation; never
+      // exposed via REST — only the internal bot writes them.
+      'api::payment',
     ];
 
     const authenticatedRevokeUids = [
@@ -89,6 +92,8 @@ export default {
       'api::feature-notification',
       // Telegram login codes + phone PII
       'api::telegram-auth-code',
+      // Payment records (receipt data, premium activation) — bot-only.
+      'api::payment',
       // Internal / user-submitted data that must only be reached through route
       // handlers (admin token), never read or written directly via REST.
       'api::ai-usage-log',

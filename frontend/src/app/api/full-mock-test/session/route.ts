@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAuthUser, create, update, find, findOne, resolveTestId } from "@/lib/strapi/api";
+import { isPremiumUser } from "@/lib/premium";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -15,6 +16,21 @@ export async function POST(request: NextRequest) {
 
     const testId = await resolveTestId(testIdOrSlug);
     if (!testId) return NextResponse.json({ error: "Test not found" }, { status: 404 });
+
+    // Premium gate: full mock tests beyond the first require an active Premium
+    // subscription. The UI only blurs locked cards, which is bypassable — this
+    // is the authoritative server-side check. Order here matches the listing in
+    // dashboard/full-mock-test/actions.ts (no sort → Strapi default order).
+    if (!isPremiumUser(user)) {
+        const fullMocks = await find("tests", {
+            filters: { is_full_mock_test: { $eq: true }, is_published: { $eq: true } },
+            fields: ["documentId"],
+        });
+        const index = fullMocks.findIndex((t: any) => t.documentId === testId);
+        if (index > 0) {
+            return NextResponse.json({ error: "Premium required" }, { status: 403 });
+        }
+    }
 
     const session = await create("full-mock-test-attempts", {
         user: user.id,

@@ -3,6 +3,7 @@
 import { unstable_cache } from "next/cache";
 import { find } from "@/lib/strapi/api";
 import { getToken, getCurrentUser } from "@/lib/strapi/server";
+import { isPremiumUser } from "@/lib/premium";
 
 const PAGE_SIZE = 20;
 
@@ -73,6 +74,9 @@ const getFullMockTests = unstable_cache(
         writingTasks: writings.length,
         speakingTopics: speakings.length,
         duration: 165, // ~2h 45min total
+        // Base paywall: tests beyond the first require Premium. The cache is
+        // shared across users, so the per-user unlock is applied below in
+        // fetchFullMockTests once we know the user's Premium status.
         isLocked: index > 0,
       };
     });
@@ -88,10 +92,12 @@ export async function fetchFullMockTests(
   const allTests = await getFullMockTests();
 
   const completedTestIds = new Set<string>();
+  let premium = false;
   const token = await getToken();
   if (token) {
     const user = await getCurrentUser();
     if (user) {
+      premium = isPremiumUser(user);
       // Get all sessions sorted newest-first. A test is "completed" only if
       // its MOST RECENT session is completed — so an in-progress retake
       // correctly removes the "Completed" badge.
@@ -115,7 +121,12 @@ export async function fetchFullMockTests(
   }
 
   const filtered = allTests
-    .map((test) => ({ ...test, isCompleted: completedTestIds.has(test.id) }))
+    .map((test) => ({
+      ...test,
+      // Premium users unlock every full mock test.
+      isLocked: test.isLocked && !premium,
+      isCompleted: completedTestIds.has(test.id),
+    }))
     .filter((test) => {
       if (
         params.q &&

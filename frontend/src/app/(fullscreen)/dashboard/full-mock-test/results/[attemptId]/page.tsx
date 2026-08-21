@@ -362,27 +362,31 @@ export default async function FullMockResultsByAttemptPage({
                 />
             </div>
 
-            <div className="mt-10 flex flex-col sm:flex-row gap-3 justify-end">
+            <div className="mt-10 flex flex-col md:flex-row md:items-center gap-3 md:gap-4 md:justify-end">
+                <div className="flex gap-3 md:gap-4 w-full md:w-auto">
+                    <Link href="/dashboard/full-mock-test" className="flex-1 md:flex-none">
+                        <Button variant="outline" size="lg" className="w-full justify-center">
+                            View All Tests
+                        </Button>
+                    </Link>
+                    <div className="flex-1 md:flex-none">
+                        <PremiumUpgradeDialog
+                            trigger={
+                                <Button variant="outline" size="lg" className="w-full justify-center gap-2">
+                                    <RotateCcw className="h-4 w-4" /> Retake
+                                </Button>
+                            }
+                        />
+                    </div>
+                </div>
                 {!isEvaluating && overallBand > 0 && (
                     <ShareResultsButton
                         attemptId={attemptId}
                         mock
                         shareText={`I scored Band ${overallBand} on a full IELTS mock test at bandup.uz — free IELTS practice`}
-                        className="w-full sm:w-auto"
+                        className="w-full md:w-auto"
                     />
                 )}
-                <Link href="/dashboard/full-mock-test">
-                    <Button variant="outline" size="lg" className="w-full sm:w-auto">
-                        View All Tests
-                    </Button>
-                </Link>
-                <PremiumUpgradeDialog
-                    trigger={
-                        <Button size="lg" className="w-full sm:w-auto gap-2">
-                            <RotateCcw className="h-4 w-4" /> Retake
-                        </Button>
-                    }
-                />
             </div>
             <FeedbackModal attemptId={attemptId} attemptCount={attemptCount} />
             <div className="mt-10">

@@ -1,0 +1,50 @@
+{
+  "kind": "collectionType",
+  "collectionName": "practice_prompts",
+  "info": {
+    "singularName": "practice-prompt",
+    "pluralName": "practice-prompts",
+    "displayName": "Practice Prompt",
+    "description": "Conversation starters for the AI speaking practice section. Not IELTS test content — everyday topics for low-stakes daily practice."
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "category": {
+      "type": "enumeration",
+      "enum": ["daily_life", "work_study", "travel", "opinion", "describe"],
+      "required": true
+    },
+    "difficulty": {
+      "type": "enumeration",
+      "enum": ["beginner", "intermediate", "advanced"],
+      "default": "intermediate",
+      "required": true
+    },
+    "opening_question": {
+      "type": "text",
+      "required": true
+    },
+    "follow_up_hints": {
+      "type": "json"
+    },
+    "cue_card": {
+      "type": "json"
+    },
+    "opening_audio": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
+      "allowedTypes": ["audios"]
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true
+    }
+  }
+}

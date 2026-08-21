@@ -41,7 +41,7 @@ pnpm install
 
 echo "=== Installing backend dependencies ==="
 cd "$APP_DIR/backend"
-npm install
+pnpm install
 
 echo "=== Building frontend ==="
 cd "$APP_DIR/frontend"

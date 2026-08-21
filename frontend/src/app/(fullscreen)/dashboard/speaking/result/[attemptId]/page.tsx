@@ -237,29 +237,32 @@ export default async function SpeakingResultPage({
             {testTitle}
           </p>
         </div>
-        <div className="flex flex-wrap items-center gap-3 md:gap-4">
+        <div className="flex flex-col md:flex-row md:items-center gap-3 md:gap-4 w-full md:w-auto">
+          <div className="flex gap-3 md:gap-4 w-full md:w-auto">
+            <Link href="/dashboard/speaking/questions" className="flex-1 md:flex-none">
+              <Button
+                variant="outline"
+                className="w-full justify-center gap-2 px-5 md:px-8 h-11 md:h-12 rounded-xl font-bold text-sm md:text-md uppercase flex items-center"
+              >
+                <List className="h-4 w-4" />
+                All Topics
+              </Button>
+            </Link>
+            {retryHref && (
+              <Link href={retryHref} className="flex-1 md:flex-none">
+                <Button variant="outline" className="w-full justify-center gap-2 px-5 md:px-8 h-11 md:h-12 rounded-xl font-bold text-sm md:text-md uppercase flex items-center">
+                  <RotateCcw className="h-4 w-4" />
+                  Try Again
+                </Button>
+              </Link>
+            )}
+          </div>
           {attempt.band_score != null && (
             <ShareResultsButton
               attemptId={attemptId}
               shareText={`I got Band ${bandScore} in IELTS Speaking on bandup.uz — free IELTS practice`}
+              className="w-full md:w-auto"
             />
-          )}
-          <Link href="/dashboard/speaking/questions">
-            <Button
-              variant="outline"
-              className="gap-2 px-5 md:px-8 h-11 md:h-12 rounded-xl font-bold text-sm md:text-md uppercase flex items-center"
-            >
-              <List className="h-4 w-4" />
-              All Topics
-            </Button>
-          </Link>
-          {retryHref && (
-            <Link href={retryHref}>
-              <Button className="gap-2 px-5 md:px-8 h-11 md:h-12 rounded-xl font-bold text-sm md:text-md uppercase flex items-center">
-                <RotateCcw className="h-4 w-4" />
-                Try Again
-              </Button>
-            </Link>
           )}
         </div>
       </div>

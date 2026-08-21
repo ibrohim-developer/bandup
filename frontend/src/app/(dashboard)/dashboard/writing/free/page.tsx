@@ -3,9 +3,12 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useQueryClient } from "@tanstack/react-query";
+import { QUOTA_QUERY_KEY } from "@/hooks/use-quota-status";
 import { Button } from "@/components/ui/button";
 import { WritingEditor } from "@/components/test/writing/writing-editor";
 import { WritingFeedback } from "@/components/test/writing/writing-feedback";
+import { AiQuotaIndicator, QuotaPaywallCard } from "@/components/ai-quota-indicator";
 import {
   ArrowLeft,
   Loader2,
@@ -29,6 +32,7 @@ interface EvaluationResult {
 
 export default function FreeWritePage() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [topic, setTopic] = useState("");
   const taskType = "essay";
   const minWords = 250;
@@ -36,6 +40,7 @@ export default function FreeWritePage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [result, setResult] = useState<EvaluationResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [quotaMessage, setQuotaMessage] = useState<string | null>(null);
   const wordCount = content
     .trim()
     .split(/\s+/)
@@ -45,6 +50,7 @@ export default function FreeWritePage() {
     if (wordCount < minWords) return;
     setIsSubmitting(true);
     setError(null);
+    setQuotaMessage(null);
 
     try {
       const res = await fetch("/api/writing/free-write", {
@@ -58,6 +64,12 @@ export default function FreeWritePage() {
         }),
       });
 
+      if (res.status === 402) {
+        // AI quota reached — show the upgrade prompt, keep the essay in the editor.
+        const data = await res.json().catch(() => null);
+        setQuotaMessage(data?.error ?? "Not enough energy for an AI evaluation.");
+        return;
+      }
       if (!res.ok) {
         const data = await res.json();
         throw new Error(data.error || "Evaluation failed");
@@ -65,6 +77,8 @@ export default function FreeWritePage() {
 
       const data: EvaluationResult = await res.json();
       setResult(data);
+      // Energy was spent without a navigation — refresh the shared balance.
+      queryClient.invalidateQueries({ queryKey: QUOTA_QUERY_KEY });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
@@ -77,6 +91,7 @@ export default function FreeWritePage() {
     setContent("");
     setResult(null);
     setError(null);
+    setQuotaMessage(null);
   };
 
   // Evaluating state
@@ -190,6 +205,8 @@ export default function FreeWritePage() {
         </p>
       </div>
 
+      <AiQuotaIndicator module="writing" />
+
       {/* Topic Input */}
       <div className="border-1 border-border rounded-xl p-5 md:p-6 space-y-4">
         <div>
@@ -223,6 +240,13 @@ export default function FreeWritePage() {
           placeholder="Start writing your essay here..."
         />
       </div>
+
+      {/* Quota reached */}
+      {quotaMessage && (
+        <QuotaPaywallCard
+          message={`${quotaMessage} Your essay stays right here — upgrade or come back when your energy refills.`}
+        />
+      )}
 
       {/* Error */}
       {error && (

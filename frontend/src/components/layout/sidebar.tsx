@@ -15,6 +15,7 @@ import {
   Moon,
   PlayCircle,
   Layers,
+  MessagesSquare,
   LayoutDashboard,
   Clock,
   X,
@@ -37,6 +38,8 @@ import {
 import { signOut } from "@/actions/auth";
 import { useTestStore } from "@/stores/test-store";
 import { useTheme } from "next-themes";
+import { EnergyBadge } from "@/components/energy-badge";
+import { PRACTICE_ENABLED } from "@/lib/feature-flags";
 
 // Clear any persisted in-progress test answers before signing out, so the next
 // user on this browser can't inherit them from sessionStorage.
@@ -95,6 +98,16 @@ const testItems = [
 ];
 
 const learnItems = [
+  // Hidden until PRACTICE_ENABLED — see lib/feature-flags.ts.
+  ...(PRACTICE_ENABLED
+    ? [
+        {
+          title: "Speaking Practice",
+          href: "/dashboard/practice",
+          icon: MessagesSquare,
+        },
+      ]
+    : []),
   {
     title: "Video Lessons",
     href: "/dashboard/videos",
@@ -194,6 +207,9 @@ export function Sidebar({ user }: SidebarProps) {
           </div>
         </nav>
 
+        {/* AI evaluation Energy balance */}
+        {user && <EnergyBadge variant="sidebar" />}
+
         {/* Theme Toggle */}
         <div className="px-4 pb-2">
           <button
@@ -290,6 +306,7 @@ export function Sidebar({ user }: SidebarProps) {
             band<span className="text-primary">.</span>up
           </span>
           <div className="flex items-center gap-2">
+            {user && <EnergyBadge variant="mobile" />}
             <button
               onClick={() => setTheme(isDark ? "light" : "dark")}
               aria-label="Toggle theme"

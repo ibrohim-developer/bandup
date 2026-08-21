@@ -43,7 +43,8 @@ content free forever, monetize AI evaluation and B2B.**
 
 Free tier (acquisition engine — never degrade it):
 - Unlimited reading & listening tests (zero marginal cost)
-- **2 AI writing evaluations + 1 AI speaking evaluation per week**
+- **8 Energy per rolling week** for AI evaluations (writing costs 2,
+  speaking costs 4 — i.e. 2 writings + 1 speaking, or any mix)
 - Band score + brief feedback only
 - Flashcards and free video lessons
 
@@ -107,6 +108,17 @@ quota mechanism as freemium — credits are just quota top-ups.
 ## 4. Implementation roadmap
 
 ### Phase 1 — Quotas & entitlements (prerequisite for everything)
+
+> **Shipped 2026-08-18** as a single "Energy" currency (`frontend/src/lib/quota.ts`):
+> writing eval = 2 energy, speaking = 4, free grant = 8 per rolling 7 days,
+> Premium fair-use = 400 per rolling 30 days. Entitlement = the existing
+> `mock_test_expires_at` user field (Telegram-bot payments) instead of a new
+> `subscription` content type. Usage counted per evaluated `test-attempt`
+> (not per `ai-usage-log` row — one speaking test fires ~9 Gemini calls).
+> Enforced with HTTP 402 in the writing/speaking submit + evaluate routes and free-write;
+> indicator + upgrade dialog on writing/speaking pages. §3.3 credits become
+> purchasable energy top-ups when payments land.
+
 1. New Strapi content type `subscription` (user, plan, status, expires_at,
    source) + `credit-balance` (or fields on subscription).
 2. Quota check in the writing/speaking `evaluate` route handlers before

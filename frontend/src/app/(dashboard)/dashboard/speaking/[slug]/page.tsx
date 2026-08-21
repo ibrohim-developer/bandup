@@ -58,7 +58,9 @@ export default function SpeakingTestPage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ attemptId }),
     });
-    if (!evalRes.ok) {
+    // 402 = AI quota reached. Recordings are saved — go to the result page
+    // anyway; it shows the upgrade prompt instead of scores.
+    if (!evalRes.ok && evalRes.status !== 402) {
       const data = await evalRes.json();
       throw new Error(data.error || "Evaluation failed");
     }

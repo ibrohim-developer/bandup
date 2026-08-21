@@ -11,8 +11,8 @@
     "develop": "strapi develop",
     "start": "strapi start",
     "strapi": "strapi",
-    "upgrade": "npx @strapi/upgrade latest",
-    "upgrade:dry": "npx @strapi/upgrade latest --dry"
+    "upgrade": "pnpm dlx @strapi/upgrade latest",
+    "upgrade:dry": "pnpm dlx @strapi/upgrade latest --dry"
   },
   "dependencies": {
     "@strapi/plugin-cloud": "5.37.1",
@@ -32,10 +32,19 @@
   },
   "engines": {
     "node": ">=20.0.0 <=24.x.x",
-    "npm": ">=6.0.0"
+    "pnpm": ">=9.0.0"
   },
   "strapi": {
     "uuid": "e049e28f-b226-4892-b2ee-c3db3cc52f4d",
     "installId": "85b244e87d13305166bd4261085d0bc19d91f5207c6d18393f03126f34a3fa75"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "better-sqlite3",
+      "@swc/core",
+      "esbuild",
+      "sharp",
+      "core-js-pure"
+    ]
   }
 }

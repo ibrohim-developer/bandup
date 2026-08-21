@@ -1,5 +1,7 @@
 import { CheckCircle, Layers, ChevronRight } from "lucide-react";
-import { LoginRequiredLink } from "@/components/auth/login-required-link";
+import { EnergyGatedStart } from "@/components/energy-gated-start";
+import { EnergyCost } from "@/components/energy-cost";
+import { SPEAKING_ENERGY_COST } from "@/lib/energy";
 import type { SpeakingTestItem } from "@/app/(dashboard)/dashboard/speaking/questions/actions";
 
 export function SpeakingTestCard({ test }: { test: SpeakingTestItem }) {
@@ -25,13 +27,18 @@ export function SpeakingTestCard({ test }: { test: SpeakingTestItem }) {
           </span>
         </div>
       </div>
-      <LoginRequiredLink
-        href={`/dashboard/speaking/${test.slug}`}
-        className="shrink-0 flex items-center gap-0.5 font-bold text-base text-primary hover:opacity-80 transition-all md:gap-1 md:text-primary-foreground md:bg-primary md:px-6 md:py-2.5 md:rounded-xl md:hover:opacity-90"
-      >
-        {test.isCompleted ? "Retake" : "Start"}
-        <ChevronRight className="h-5 w-5 md:h-4 md:w-4" />
-      </LoginRequiredLink>
+      {/* Energy cost pill sits just left of the Start button. */}
+      <div className="shrink-0 flex items-center gap-3">
+        <EnergyCost cost={SPEAKING_ENERGY_COST} />
+        <EnergyGatedStart
+          href={`/dashboard/speaking/${test.slug}`}
+          cost={SPEAKING_ENERGY_COST}
+          className="flex items-center gap-0.5 font-bold text-base text-primary hover:opacity-80 transition-all md:gap-1 md:text-primary-foreground md:bg-primary md:px-6 md:py-2.5 md:rounded-xl md:hover:opacity-90"
+        >
+          {test.isCompleted ? "Retake" : "Start"}
+          <ChevronRight className="h-5 w-5 md:h-4 md:w-4" />
+        </EnergyGatedStart>
+      </div>
     </div>
   );
 }

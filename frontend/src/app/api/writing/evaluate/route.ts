@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAuthUser, find, update } from "@/lib/strapi/api";
 import { evaluateEssay } from "@/lib/evaluate-essay";
+import { checkEvaluationQuota, quotaExceededBody } from "@/lib/quota";
 
 export const maxDuration = 120;
 
@@ -56,6 +57,21 @@ export async function POST(request: NextRequest) {
         { status: 409 }
       );
     }
+  }
+
+  // Quota gate — must run before any Gemini call and before claiming the lock
+  // (claiming sets evaluation_started_at, which is what charges the quota).
+  // Excluding this attempt means a retry of a crashed/failed eval is never
+  // double-charged and can't be blocked by its own earlier run.
+  const { allowed, status: quotaStatus } = await checkEvaluationQuota(
+    user,
+    "writing",
+    attemptId
+  );
+  if (!allowed) {
+    return NextResponse.json(quotaExceededBody(quotaStatus, "writing"), {
+      status: 402,
+    });
   }
 
   // Claim the lock and (if retrying) flip status back to "evaluating" so the UI shows a spinner.

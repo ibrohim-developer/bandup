@@ -455,7 +455,16 @@ export interface ApiAiUsageLogAiUsageLog extends Struct.CollectionTypeSchema {
     > &
       Schema.Attribute.Private;
     model: Schema.Attribute.String & Schema.Attribute.Required;
-    module: Schema.Attribute.Enumeration<['writing', 'speaking', 'quiz']> &
+    module: Schema.Attribute.Enumeration<
+      [
+        'writing',
+        'speaking',
+        'quiz',
+        'practice',
+        'practice-tts',
+        'practice-live',
+      ]
+    > &
       Schema.Attribute.Required;
     output_tokens: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
     publishedAt: Schema.Attribute.DateTime;
@@ -698,6 +707,142 @@ export interface ApiListeningSectionListeningSection
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+  };
+}
+
+export interface ApiPaymentPayment extends Struct.CollectionTypeSchema {
+  collectionName: 'payments';
+  info: {
+    displayName: 'Payment';
+    pluralName: 'payments';
+    singularName: 'payment';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    admin_message_id: Schema.Attribute.Integer;
+    ai_checks: Schema.Attribute.JSON;
+    ai_extracted: Schema.Attribute.JSON;
+    amount: Schema.Attribute.Decimal;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    currency: Schema.Attribute.String;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::payment.payment'
+    > &
+      Schema.Attribute.Private;
+    method: Schema.Attribute.Enumeration<['card', 'stars']> &
+      Schema.Attribute.DefaultTo<'card'>;
+    plan_days: Schema.Attribute.Integer;
+    plan_id: Schema.Attribute.String;
+    premium_expires_set_to: Schema.Attribute.DateTime;
+    publishedAt: Schema.Attribute.DateTime;
+    receipt_file_id: Schema.Attribute.String;
+    reviewed_at: Schema.Attribute.DateTime;
+    status: Schema.Attribute.Enumeration<['pending', 'approved', 'rejected']> &
+      Schema.Attribute.DefaultTo<'pending'>;
+    telegram_id: Schema.Attribute.BigInteger;
+    transaction_id: Schema.Attribute.String;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    user: Schema.Attribute.Relation<
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
+  };
+}
+
+export interface ApiPracticePromptPracticePrompt
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'practice_prompts';
+  info: {
+    description: 'Conversation starters for the AI speaking practice section. Not IELTS test content \u2014 everyday topics for low-stakes daily practice.';
+    displayName: 'Practice Prompt';
+    pluralName: 'practice-prompts';
+    singularName: 'practice-prompt';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    category: Schema.Attribute.Enumeration<
+      ['daily_life', 'work_study', 'travel', 'opinion', 'describe']
+    > &
+      Schema.Attribute.Required;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    cue_card: Schema.Attribute.JSON;
+    difficulty: Schema.Attribute.Enumeration<
+      ['beginner', 'intermediate', 'advanced']
+    > &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'intermediate'>;
+    follow_up_hints: Schema.Attribute.JSON;
+    is_active: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::practice-prompt.practice-prompt'
+    > &
+      Schema.Attribute.Private;
+    opening_audio: Schema.Attribute.Media<'audios'>;
+    opening_question: Schema.Attribute.Text & Schema.Attribute.Required;
+    publishedAt: Schema.Attribute.DateTime;
+    title: Schema.Attribute.String & Schema.Attribute.Required;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface ApiPracticeSessionPracticeSession
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'practice_sessions';
+  info: {
+    description: 'One AI speaking practice conversation. Doubles as the metering ledger \u2014 spoken_seconds is the billable unit, measured server-side from received audio (never client-reported).';
+    displayName: 'Practice Session';
+    pluralName: 'practice-sessions';
+    singularName: 'practice-session';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    ended_at: Schema.Attribute.DateTime;
+    granted_seconds: Schema.Attribute.Integer;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::practice-session.practice-session'
+    > &
+      Schema.Attribute.Private;
+    practice_prompt: Schema.Attribute.Relation<
+      'manyToOne',
+      'api::practice-prompt.practice-prompt'
+    >;
+    publishedAt: Schema.Attribute.DateTime;
+    spoken_seconds: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
+    started_at: Schema.Attribute.DateTime;
+    status: Schema.Attribute.Enumeration<['active', 'completed', 'abandoned']> &
+      Schema.Attribute.DefaultTo<'active'>;
+    transcript: Schema.Attribute.JSON;
+    turn_count: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    user: Schema.Attribute.Relation<
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
   };
 }
 
@@ -1868,6 +2013,9 @@ declare module '@strapi/strapi' {
       'api::full-mock-test-attempt.full-mock-test-attempt': ApiFullMockTestAttemptFullMockTestAttempt;
       'api::issue-report.issue-report': ApiIssueReportIssueReport;
       'api::listening-section.listening-section': ApiListeningSectionListeningSection;
+      'api::payment.payment': ApiPaymentPayment;
+      'api::practice-prompt.practice-prompt': ApiPracticePromptPracticePrompt;
+      'api::practice-session.practice-session': ApiPracticeSessionPracticeSession;
       'api::question-group.question-group': ApiQuestionGroupQuestionGroup;
       'api::question.question': ApiQuestionQuestion;
       'api::reading-passage.reading-passage': ApiReadingPassageReadingPassage;

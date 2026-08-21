@@ -3,9 +3,11 @@
 import { useEffect, useRef, useState } from "react";
 import { AlertTriangle, Loader2, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { QuotaPaywallCard } from "@/components/ai-quota-indicator";
 
 export function EvaluatingBanner({ attemptId }: { attemptId: string }) {
   const [failed, setFailed] = useState(false);
+  const [quotaMessage, setQuotaMessage] = useState<string | null>(null);
   const [retryToken, setRetryToken] = useState(0);
 
   // Prevents the request from firing twice in dev (Strict Mode runs effects
@@ -32,6 +34,12 @@ export function EvaluatingBanner({ attemptId }: { attemptId: string }) {
           // URL in App Router, and we need the server component to re-fetch the
           // attempt's new status. A reload guarantees a fresh server render.
           window.location.reload();
+        } else if (res.status === 402) {
+          // Quota hit — the essay is saved; evaluation resumes after an
+          // upgrade or when the weekly window resets.
+          const data = await res.json().catch(() => null);
+          setQuotaMessage(data?.error ?? "Not enough energy for an AI evaluation.");
+          inFlightRef.current = false;
         } else {
           setFailed(true);
           inFlightRef.current = false;
@@ -42,6 +50,18 @@ export function EvaluatingBanner({ attemptId }: { attemptId: string }) {
       }
     })();
   }, [attemptId, retryToken]);
+
+  if (quotaMessage) {
+    return (
+      <div className="min-h-screen flex items-center justify-center px-4">
+        <div className="w-full max-w-xl">
+          <QuotaPaywallCard
+            message={`${quotaMessage} Your writing is saved — evaluation will run once you upgrade or your energy refills.`}
+          />
+        </div>
+      </div>
+    );
+  }
 
   if (failed) {
     return (

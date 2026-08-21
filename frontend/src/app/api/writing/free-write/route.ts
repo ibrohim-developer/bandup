@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAuthUser, create, update } from "@/lib/strapi/api";
 import { evaluateEssay } from "@/lib/evaluate-essay";
+import { checkEvaluationQuota, quotaExceededBody } from "@/lib/quota";
 
 export const maxDuration = 120;
 
@@ -40,12 +41,25 @@ export async function POST(request: NextRequest) {
     .split(/\s+/)
     .filter((w: string) => w).length;
 
-  // Create test attempt (test: null for free write)
+  // Quota gate — free writes are AI writing evaluations like any other.
+  const { allowed, status: quotaStatus } = await checkEvaluationQuota(
+    user,
+    "writing"
+  );
+  if (!allowed) {
+    return NextResponse.json(quotaExceededBody(quotaStatus, "writing"), {
+      status: 402,
+    });
+  }
+
+  // Create test attempt (test: null for free write). evaluation_started_at is
+  // what charges the quota — set it here since this route goes straight to Gemini.
   const attempt = await create("test-attempts", {
     user: user.id,
     module_type: "writing",
     status: "evaluating",
     completed_at: new Date().toISOString(),
+    evaluation_started_at: new Date().toISOString(),
   });
 
   if (!attempt) {
@@ -81,8 +95,10 @@ export async function POST(request: NextRequest) {
   );
 
   if (!evaluation) {
+    // "failed" (not "completed") so the attempt doesn't count against the
+    // user's AI evaluation quota — they got nothing for it.
     await update("test-attempts", attempt.documentId, {
-      status: "completed",
+      status: "failed",
       band_score: null,
     });
     return NextResponse.json(

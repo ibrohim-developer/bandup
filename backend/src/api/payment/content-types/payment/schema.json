@@ -1,0 +1,72 @@
+{
+  "kind": "collectionType",
+  "collectionName": "payments",
+  "info": {
+    "singularName": "payment",
+    "pluralName": "payments",
+    "displayName": "Payment"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "user": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user"
+    },
+    "telegram_id": {
+      "type": "biginteger"
+    },
+    "status": {
+      "type": "enumeration",
+      "enum": [
+        "pending",
+        "approved",
+        "rejected"
+      ],
+      "default": "pending"
+    },
+    "method": {
+      "type": "enumeration",
+      "enum": [
+        "card",
+        "stars"
+      ],
+      "default": "card"
+    },
+    "plan_id": {
+      "type": "string"
+    },
+    "plan_days": {
+      "type": "integer"
+    },
+    "amount": {
+      "type": "decimal"
+    },
+    "currency": {
+      "type": "string"
+    },
+    "transaction_id": {
+      "type": "string"
+    },
+    "receipt_file_id": {
+      "type": "string"
+    },
+    "ai_extracted": {
+      "type": "json"
+    },
+    "ai_checks": {
+      "type": "json"
+    },
+    "admin_message_id": {
+      "type": "integer"
+    },
+    "reviewed_at": {
+      "type": "datetime"
+    },
+    "premium_expires_set_to": {
+      "type": "datetime"
+    }
+  }
+}
