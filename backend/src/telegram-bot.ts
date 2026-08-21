@@ -653,6 +653,7 @@ async function handleReceipt(strapi: Core.Strapi, token: string, msg: TelegramMe
   const expected = plan ? cardPriceLabel(plan) : `${pending.amount ?? '?'} ${pending.currency ?? ''}`;
   const caption = [
     `🧾 *Payment receipt* from ${buyerName}`,
+    `account: ${escapeMd(account.email || account.username || `user ${account.id}`)}`,
     `tg: @${escapeMd(user.username || '—')} (id ${user.id})`,
     `Plan: *${plan?.label ?? pending.plan_id ?? 'unknown'}* — expected *${expected}*`,
     '',
@@ -789,7 +790,12 @@ async function handleCallbackQuery(
         message_id: cb.message.message_id,
         caption: `${cb.message.caption ?? ''}\n\n${suffix}`,
         parse_mode: 'Markdown',
-      }).catch(() => {});
+        // An empty keyboard REMOVES the buttons. Omitting reply_markup leaves
+        // them in place, so a decided payment keeps offering Approve/Reject.
+        reply_markup: { inline_keyboard: [] },
+      }).catch((e) => {
+        strapi.log.error(`[telegram] failed to edit admin message: ${(e as Error).message}`);
+      });
     }
   };
 
