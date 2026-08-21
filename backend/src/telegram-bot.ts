@@ -1,5 +1,6 @@
 import type { Core } from '@strapi/strapi';
 import crypto from 'crypto';
+import { identityLabel, realEmail } from './telegram-account';
 
 const TELEGRAM_API = 'https://api.telegram.org';
 const POLL_TIMEOUT_SEC = 30;
@@ -582,7 +583,7 @@ async function handleSuccessfulPayment(
   for (const adminId of adminChatIds()) {
     await tg(token, 'sendMessage', {
       chat_id: adminId,
-      text: `⭐ Stars payment: ${paid.total_amount} XTR for Premium ${payment.plan_id} (charge ${paid.telegram_payment_charge_id})`,
+      text: `⭐ Stars payment: ${paid.total_amount} XTR for Premium ${payment.plan_id} from ${identityLabel(payment.user)} (charge ${paid.telegram_payment_charge_id})`,
     }).catch(() => {});
   }
 }
@@ -650,11 +651,15 @@ async function handleReceipt(strapi: Core.Strapi, token: string, msg: TelegramMe
   const buyerName = escapeMd(
     account.full_name || user.first_name || account.username || 'User'
   );
+  // Telegram sign-ups have no email, so this is often null — say so plainly
+  // rather than printing the synthetic tg_<id>@ address as if it were one.
+  const buyerEmail = realEmail(account);
   const expected = plan ? cardPriceLabel(plan) : `${pending.amount ?? '?'} ${pending.currency ?? ''}`;
   const caption = [
     `🧾 *Payment receipt* from ${buyerName}`,
-    `account: ${escapeMd(account.email || account.username || `user ${account.id}`)}`,
-    `tg: @${escapeMd(user.username || '—')} (id ${user.id})`,
+    `email: ${buyerEmail ? escapeMd(buyerEmail) : '— none (Telegram sign-up)'}`,
+    `phone: ${account.phone ? escapeMd(account.phone) : '—'}`,
+    `tg: @${escapeMd(user.username || '—')} (id ${user.id}) · account #${account.id}`,
     `Plan: *${plan?.label ?? pending.plan_id ?? 'unknown'}* — expected *${expected}*`,
     '',
     'Check the amount matches, then Approve or Reject.',

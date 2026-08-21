@@ -1,7 +1,7 @@
 import type { Core } from '@strapi/strapi';
 import crypto from 'crypto';
+import { placeholderEmail as mintPlaceholderEmail } from '../../../telegram-account';
 
-const PLACEHOLDER_EMAIL_DOMAIN = 'telegram.bandup.uz';
 const MAX_FAILED_VERIFY_PER_IP = 8;
 const RATE_WINDOW_MS = 15 * 60 * 1000;
 const MAX_TRACKED_IPS = 10000;
@@ -82,7 +82,7 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
 
     const telegramId = String(record.telegram_id);
     const fullName = [record.first_name, record.last_name].filter(Boolean).join(' ').trim() || record.username || 'Telegram User';
-    const placeholderEmail = `tg_${telegramId}@${PLACEHOLDER_EMAIL_DOMAIN}`;
+    const placeholderEmail = mintPlaceholderEmail(telegramId);
 
     const existing = await strapi.query('plugin::users-permissions.user').findOne({
       where: { telegram_id: telegramId },
