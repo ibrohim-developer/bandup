@@ -6,7 +6,7 @@ BandUp (bandup.uz) is a free IELTS mock exam and practice test platform with AI-
 ## Architecture
 Monorepo with two apps managed from root `package.json` using `concurrently`:
 - **frontend/** — Next.js 16 (React 19, App Router, Turbopack dev)
-- **backend/** — Strapi 5 CMS (SQLite via better-sqlite3)
+- **backend/** — Strapi 5 CMS (PostgreSQL in prod, SQLite by default locally)
 
 ### Key Tech Stack
 | Layer | Technology |
@@ -16,7 +16,7 @@ Monorepo with two apps managed from root `package.json` using `concurrently`:
 | State management | Zustand (persisted to sessionStorage) |
 | Data fetching | React Query (@tanstack/react-query) |
 | Auth | Strapi users-permissions (JWT in `strapi_jwt` cookie) |
-| Database | Strapi 5 (SQLite via better-sqlite3) |
+| Database | Strapi 5 — PostgreSQL in production (`DATABASE_CLIENT=postgres`), SQLite locally |
 | AI evaluation | Google Gemini (`@google/generative-ai`) + OpenAI for writing/speaking scoring |
 | Package manager | pnpm (root, frontend, backend) |
 | Icons | Lucide React |
