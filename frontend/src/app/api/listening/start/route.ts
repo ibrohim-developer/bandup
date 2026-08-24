@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { find, findOne, resolveTestId } from "@/lib/strapi/api";
+import { checkFullMockAccess } from "@/lib/full-mock-access";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -51,8 +52,11 @@ export async function POST(request: NextRequest) {
 
   // Fetch the test to get audio_url
   const test = await findOne("tests", testId, {
-    fields: ["audio_url"],
+    fields: ["audio_url", "is_full_mock_test", "is_free_preview"],
   });
+
+  const accessDenied = await checkFullMockAccess(request, test);
+  if (accessDenied) return accessDenied;
 
   const audioUrl = test?.audio_url || "";
 

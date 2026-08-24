@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { findTestBySlugOrId } from "@/lib/strapi/api";
+import { checkFullMockAccess } from "@/lib/full-mock-access";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export async function GET(request: NextRequest) {
@@ -9,7 +10,7 @@ export async function GET(request: NextRequest) {
   }
 
   const test = await findTestBySlugOrId(testId, {
-    fields: ["title"],
+    fields: ["title", "is_full_mock_test", "is_free_preview"],
     populate: {
       speaking_topics: {
         // NOTE: sample_answers is intentionally NOT fetched here — it must not
@@ -22,6 +23,9 @@ export async function GET(request: NextRequest) {
   if (!test) {
     return NextResponse.json({ error: "Test not found" }, { status: 404 });
   }
+
+  const accessDenied = await checkFullMockAccess(request, test);
+  if (accessDenied) return accessDenied;
 
   const topics = (test.speaking_topics ?? [])
     .sort((a: any, b: any) => a.part_number - b.part_number)

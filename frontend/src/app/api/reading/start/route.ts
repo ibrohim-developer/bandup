@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { find, resolveTestId } from "@/lib/strapi/api";
+import { find, findOne, resolveTestId } from "@/lib/strapi/api";
+import { checkFullMockAccess } from "@/lib/full-mock-access";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -26,6 +27,12 @@ export async function POST(request: NextRequest) {
   if (!testId) {
     return NextResponse.json({ error: "Test not found" }, { status: 404 });
   }
+
+  const test = await findOne("tests", testId, {
+    fields: ["is_full_mock_test", "is_free_preview"],
+  });
+  const accessDenied = await checkFullMockAccess(request, test);
+  if (accessDenied) return accessDenied;
 
   // Fetch reading passages with question groups and questions populated
   const passages = await find("reading-passages", {

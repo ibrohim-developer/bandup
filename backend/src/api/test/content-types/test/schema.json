@@ -53,6 +53,10 @@
       "type": "boolean",
       "default": false
     },
+    "is_free_preview": {
+      "type": "boolean",
+      "default": false
+    },
     "reading_passages": {
       "type": "relation",
       "relation": "oneToMany",

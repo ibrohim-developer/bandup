@@ -9,8 +9,10 @@ import {
     ArrowLeft,
     ArrowRight,
     CheckCircle,
+    Lock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { FullMockUnlockButton } from "@/components/test/full-mock/full-mock-unlock-button";
 import { fetchFullMockTestDetail } from "./actions";
 
 export async function generateMetadata({
@@ -70,6 +72,12 @@ export default async function FullMockTestDetailPage({
                             <div className="inline-block rounded-full bg-primary/10 px-4 py-2 text-sm font-medium text-primary">
                                 Academic
                             </div>
+                            {test.isLocked && (
+                                <div className="flex items-center gap-1.5 rounded-full bg-amber-500/10 px-4 py-2 text-sm font-medium text-amber-600 dark:text-amber-400">
+                                    <Lock className="h-3.5 w-3.5" />
+                                    Premium Test
+                                </div>
+                            )}
                             {test.lrwCompleted && test.speakingCompleted && (
                                 <Link href={`/dashboard/full-mock-test/${testId}/results`}>
                                     <Button className="gap-2">
@@ -174,6 +182,8 @@ export default async function FullMockTestDetailPage({
                                         <CheckCircle className="h-4 w-4" />
                                         Completed
                                     </Button>
+                                ) : test.isLocked ? (
+                                    <FullMockUnlockButton />
                                 ) : (
                                     <Link href={`/dashboard/full-mock-test/${testId}/lrw`}>
                                         <Button className="gap-2">
@@ -235,6 +245,8 @@ export default async function FullMockTestDetailPage({
                                         <CheckCircle className="h-4 w-4" />
                                         Completed
                                     </Button>
+                                ) : test.isLocked ? (
+                                    <FullMockUnlockButton />
                                 ) : (
                                     <Link href={`/dashboard/full-mock-test/${testId}/speaking`}>
                                         <Button className="gap-2">
