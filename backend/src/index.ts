@@ -181,6 +181,39 @@ export default {
       console.log(`✅ Backfilled pixel_signup_fired for ${backfillCount} existing users`);
     }
 
+    // One-time migration: `is_free_preview` is new and defaults to false, so
+    // without this every existing full mock test would lock at once. Mark the
+    // oldest published full mock test as the free sampler, matching the
+    // index-based "first test is free" rule this field replaces. Guarded by a
+    // setting so a later admin un-marking it doesn't get re-flipped on restart.
+    const freePreviewMigrated = await pluginStore.get({
+      key: 'full_mock_free_preview_migrated',
+    });
+    if (!freePreviewMigrated) {
+      const existingFreePreview = await strapi
+        .query('api::test.test')
+        .count({ where: { is_full_mock_test: true, is_free_preview: true } });
+      if (existingFreePreview === 0) {
+        const oldestFullMock = await strapi.query('api::test.test').findMany({
+          where: { is_full_mock_test: true, is_published: true },
+          orderBy: { createdAt: 'asc' },
+          limit: 1,
+        });
+        if (oldestFullMock[0]) {
+          await strapi
+            .query('api::test.test')
+            .update({
+              where: { id: oldestFullMock[0].id },
+              data: { is_free_preview: true },
+            });
+          console.log(
+            `✅ Marked "${oldestFullMock[0].title}" as the free full mock test preview`
+          );
+        }
+      }
+      await pluginStore.set({ key: 'full_mock_free_preview_migrated', value: true });
+    }
+
     // Start Telegram bot (long-polling)
     startTelegramBot(strapi);
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Clock, Headphones, BookOpen, PenTool, Mic, CheckCircle, ArrowRight } from "lucide-react";
+import { Clock, Headphones, BookOpen, PenTool, Mic, CheckCircle, ArrowRight, Lock } from "lucide-react";
 import { LoginRequiredLink } from "@/components/auth/login-required-link";
 import { PremiumUpgradeDialog } from "@/components/premium-upgrade-dialog";
 
@@ -36,6 +36,12 @@ export function FullMockTestCard({ test }: { test: FullMockTestItem }) {
                             <span className="flex items-center gap-1 text-xs font-bold text-green-600 dark:text-green-400">
                                 <CheckCircle className="h-3.5 w-3.5" />
                                 Completed
+                            </span>
+                        )}
+                        {test.isLocked && (
+                            <span className="flex items-center gap-1 text-xs font-bold text-amber-600 dark:text-amber-400">
+                                <Lock className="h-3.5 w-3.5" />
+                                Premium
                             </span>
                         )}
                     </div>
@@ -96,7 +102,16 @@ export function FullMockTestCard({ test }: { test: FullMockTestItem }) {
                     <Clock className="h-3.5 w-3.5" />
                     ~{Math.round(test.duration / 60)}h {test.duration % 60}min
                 </div>
-                {test.isCompleted ? (
+                {test.isLocked ? (
+                    <button
+                        type="button"
+                        onClick={() => setPremiumOpen(true)}
+                        className="flex items-center gap-2 bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-lg font-bold text-sm transition-all"
+                    >
+                        <Lock className="h-4 w-4" />
+                        Unlock with Premium
+                    </button>
+                ) : test.isCompleted ? (
                     <button
                         type="button"
                         onClick={() => setPremiumOpen(true)}

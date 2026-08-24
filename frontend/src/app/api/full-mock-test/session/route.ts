@@ -17,17 +17,14 @@ export async function POST(request: NextRequest) {
     const testId = await resolveTestId(testIdOrSlug);
     if (!testId) return NextResponse.json({ error: "Test not found" }, { status: 404 });
 
-    // Premium gate: full mock tests beyond the first require an active Premium
-    // subscription. The UI only blurs locked cards, which is bypassable — this
-    // is the authoritative server-side check. Order here matches the listing in
-    // dashboard/full-mock-test/actions.ts (no sort → Strapi default order).
+    // Premium gate: full mock tests require an active Premium subscription
+    // unless flagged `is_free_preview`. The UI only blurs locked cards, which
+    // is bypassable — this is the authoritative server-side check.
     if (!isPremiumUser(user)) {
-        const fullMocks = await find("tests", {
-            filters: { is_full_mock_test: { $eq: true }, is_published: { $eq: true } },
-            fields: ["documentId"],
+        const test = await findOne("tests", testId, {
+            fields: ["is_free_preview"],
         });
-        const index = fullMocks.findIndex((t: any) => t.documentId === testId);
-        if (index > 0) {
+        if (!test?.is_free_preview) {
             return NextResponse.json({ error: "Premium required" }, { status: 403 });
         }
     }

@@ -2,6 +2,7 @@
 
 import { findTestBySlugOrId, find } from "@/lib/strapi/api";
 import { getToken, getCurrentUser } from "@/lib/strapi/server";
+import { isPremiumUser } from "@/lib/premium";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -18,13 +19,14 @@ export interface FullMockTestDetail {
     speakingTopics: number;
     lrwCompleted: boolean;
     speakingCompleted: boolean;
+    isLocked: boolean;
 }
 
 export async function fetchFullMockTestDetail(
     slugOrId: string,
 ): Promise<FullMockTestDetail | null> {
     const test = await findTestBySlugOrId(slugOrId, {
-        fields: ["title", "description", "audio_url"],
+        fields: ["title", "description", "audio_url", "is_free_preview"],
         populate: {
             listening_sections: {
                 fields: ["section_number"],
@@ -49,11 +51,13 @@ export async function fetchFullMockTestDetail(
 
     let lrwCompleted = false;
     let speakingCompleted = false;
- 
+    let premium = false;
+
     const token = await getToken();
     if (token) {
         const user = await getCurrentUser();
         if (user) {
+            premium = isPremiumUser(user);
             const sessions = await find("full-mock-test-attempts", {
                 filters: {
                     user: { id: { $eq: user.id } },
@@ -93,5 +97,6 @@ export async function fetchFullMockTestDetail(
         speakingTopics: speakings.length,
         lrwCompleted,
         speakingCompleted,
+        isLocked: !test.is_free_preview && !premium,
     };
 }

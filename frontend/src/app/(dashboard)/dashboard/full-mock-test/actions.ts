@@ -30,7 +30,7 @@ const getFullMockTests = unstable_cache(
         is_full_mock_test: { $eq: true },
         is_published: { $eq: true },
       },
-      fields: ["title", "description", "slug"],
+      fields: ["title", "description", "slug", "is_free_preview"],
       populate: {
         listening_sections: {
           fields: ["section_number"],
@@ -47,7 +47,7 @@ const getFullMockTests = unstable_cache(
 
     if (!tests?.length) return [];
 
-    return tests.map((test: any, index: number) => {
+    return tests.map((test: any) => {
       const listenings = test.listening_sections ?? [];
       const readings = test.reading_passages ?? [];
       const writings = test.writing_tasks ?? [];
@@ -74,10 +74,10 @@ const getFullMockTests = unstable_cache(
         writingTasks: writings.length,
         speakingTopics: speakings.length,
         duration: 165, // ~2h 45min total
-        // Base paywall: tests beyond the first require Premium. The cache is
-        // shared across users, so the per-user unlock is applied below in
-        // fetchFullMockTests once we know the user's Premium status.
-        isLocked: index > 0,
+        // Base paywall: only tests flagged `is_free_preview` in Strapi are
+        // free. The cache is shared across users, so the per-user unlock is
+        // applied below in fetchFullMockTests once we know Premium status.
+        isLocked: !test.is_free_preview,
       };
     });
   },
