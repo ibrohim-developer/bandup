@@ -148,5 +148,6 @@ export async function fetchFullMockTests(
     items,
     totalCount: filtered.length,
     hasMore: start + PAGE_SIZE < filtered.length,
+    isPremium: premium,
   };
 }
