@@ -45,9 +45,10 @@ interface Props {
     initialTests: FullMockTestItem[];
     hasMore: boolean;
     filterParams: Record<string, string | undefined>;
+    isPremium: boolean;
 }
 
-export function FullMockVirtualList({ initialTests, hasMore: initialHasMore, filterParams }: Props) {
+export function FullMockVirtualList({ initialTests, hasMore: initialHasMore, filterParams, isPremium }: Props) {
     const [tests, setTests] = useState(initialTests);
     const [page, setPage] = useState(0);
     const [hasMore, setHasMore] = useState(initialHasMore);
@@ -75,7 +76,9 @@ export function FullMockVirtualList({ initialTests, hasMore: initialHasMore, fil
     // they're never clickable/startable regardless of what's shown here. Real
     // tests (including real locked ones) always render through the main list
     // above with actual enforcement in FullMockTestCard + the server routes.
-    const showLocked = !filterParams.status || filterParams.status === "all";
+    // Premium users already have everything, so the upsell is hidden for them.
+    const showLocked =
+        !isPremium && (!filterParams.status || filterParams.status === "all");
 
     return (
         <>

@@ -28,7 +28,7 @@ export default async function FullMockTestPage({
   searchParams: Promise<{ [key: string]: string | undefined }>;
 }) {
   const params = await searchParams;
-  const { items: initialTests, totalCount, hasMore } = await fetchFullMockTests(params, 0);
+  const { items: initialTests, totalCount, hasMore, isPremium } = await fetchFullMockTests(params, 0);
 
   return (
     <div className="space-y-8 pb-12">
@@ -48,6 +48,7 @@ export default async function FullMockTestPage({
         initialTests={initialTests}
         hasMore={hasMore}
         filterParams={params}
+        isPremium={isPremium}
       />
     </div>
   );
